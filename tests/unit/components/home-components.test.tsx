@@ -23,6 +23,19 @@ describe("HeroExamLevelSelector Component", () => {
     expect(screen.getByText(/Includes Clerical Ability/i)).toBeInTheDocument();
   });
 
+  it("renders quiet exam schedule line with link to schedule guide", () => {
+    const handleSelect = vi.fn();
+    render(
+      <HeroExamLevelSelector selectedLevel="professional" onSelectLevel={handleSelect} />
+    );
+
+    expect(screen.getByText("Exam schedule")).toBeInTheDocument();
+    expect(screen.getByText(/March 14, 2027/i)).toBeInTheDocument();
+    const viewDatesLink = screen.getByRole("link", { name: /View dates/i });
+    expect(viewDatesLink).toBeInTheDocument();
+    expect(viewDatesLink).toHaveAttribute("href", "/cse/exam-guide#schedule");
+  });
+
   it("renders single primary CTA button pointing to selected level and reassurance line", () => {
     const handleSelect = vi.fn();
     const { rerender } = render(
@@ -33,7 +46,7 @@ describe("HeroExamLevelSelector Component", () => {
     expect(cta).toBeInTheDocument();
     expect(cta).toHaveAttribute("href", "/exams/professional/quick");
 
-    expect(screen.getByText(/10 questions · About 10 minutes/i)).toBeInTheDocument();
+    expect(screen.getByText(/10 questions · 10-minute timer/i)).toBeInTheDocument();
     expect(screen.getByText(/No account required/i)).toBeInTheDocument();
 
     // Re-render with subprofessional
