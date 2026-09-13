@@ -32,7 +32,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     // Verify streamlined header navigation for new visitors (no premature dashboard)
     await expect(page.getByRole("link", { name: "Practice", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Study Guides", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "How It Works" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Exam Info", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /Sign In/i })).toBeVisible({ timeout: 15000 });
 
     // Verify presence of preparation mode cards below the fold
@@ -44,13 +44,18 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
   test("renders simplified hero with outcome study plan preview and navigates to how-it-works", async ({ page }) => {
     await page.goto("/");
 
-    // Verify subtle countdown line below navigation
-    await expect(page.getByText(/Next CSE-PPT: March 21, 2027/i)).toBeVisible();
-    await expect(page.getByText(/days remaining/i).first()).toBeVisible();
+    // Verify quiet exam schedule line aligned above the selector card
+    await expect(page.getByText("Exam schedule")).toBeVisible();
+    await expect(page.getByText(/March 14, 2027/i).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /View dates/i })).toHaveAttribute("href", "/cse/exam-guide#schedule");
 
-    // Verify left-side quiet "See how the diagnostic works" link
-    const diagnosticWorksLink = page.getByRole("link", { name: /See how the diagnostic works/i });
-    await expect(diagnosticWorksLink).toBeVisible();
+    // Verify outcome evidence cue under supporting copy
+    await expect(page.getByText("Your results include")).toBeVisible();
+    await expect(page.getByText(/Subject breakdown · Answer explanations · Recommended practice/i)).toBeVisible();
+
+    // Verify left-side quiet "See how the review works" link
+    const reviewWorksLink = page.getByRole("link", { name: /See how the review works/i });
+    await expect(reviewWorksLink).toBeVisible();
 
     // Verify exam-level selection card on the right
     await expect(page.getByText("START YOUR REVIEW")).toBeVisible();
@@ -74,7 +79,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(startDiagnosticBtn).toHaveAttribute("href", "/exams/subprofessional/quick");
 
     // Reassurance line
-    await expect(page.getByText(/10 questions · About 10 minutes/i)).toBeVisible();
+    await expect(page.getByText(/10 questions · 10-minute timer/i)).toBeVisible();
     await expect(page.getByText(/No account required/i)).toBeVisible();
 
     // Comparison helper link
@@ -82,18 +87,12 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(compareLink).toBeVisible();
     await expect(compareLink).toHaveAttribute("href", "#compare-levels");
 
-    // Capture screenshot of refined hero
-    await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/e4580727-e72d-4085-8b75-221d1cbba244/hero_page_refinement.png",
-      fullPage: false,
-    });
-
-    // Verify WHAT HAPPENS NEXT section
-    await expect(page.getByText("WHAT HAPPENS NEXT")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Start with 10 questions/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Take a short diagnostic" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "See where to focus" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Practise with purpose" })).toBeVisible();
+    // Verify HOW YOUR REVIEW WORKS section
+    await expect(page.getByText("HOW YOUR REVIEW WORKS")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /A short test\. A focused study plan\./i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Take the diagnostic" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Review your results" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Practice the recommended area" })).toBeVisible();
 
     // Verify WHY STUDY WITH CSEREVIEWPH.COM section
     await expect(page.getByText("WHY STUDY WITH CSEREVIEWPH.COM")).toBeVisible();
@@ -102,8 +101,8 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.getByRole("heading", { name: "Built for both CSE levels" })).toBeVisible();
 
     // Verify link scrolls to section
-    await diagnosticWorksLink.click();
-    await expect(page.locator("#what-happens-next")).toBeVisible();
+    await reviewWorksLink.click();
+    await expect(page.locator("#how-your-review-works")).toBeVisible();
   });
 
   test("takes Quick Test, flags a question, submits, and views results", async ({ page }) => {
