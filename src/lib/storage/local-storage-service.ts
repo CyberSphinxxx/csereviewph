@@ -691,7 +691,7 @@ export class LocalStorageService {
 
   public static getTargetExamConfig(): TargetExamConfig {
     return safeGetItem<TargetExamConfig>(STORAGE_KEYS.TARGET_EXAM, {
-      targetDate: "2027-03-21",
+      targetDate: "2027-03-14",
       examName: "March 2027 CSE-PPT",
       dailyGoal: 25,
     });
