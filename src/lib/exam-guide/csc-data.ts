@@ -1836,3 +1836,12 @@ export const EXAM_DAY_CHECKLIST = {
     { text: "Continuous timer: The exam operates on a single continuous time allotment (190 mins Professional / 160 mins Subprofessional). No per-subtest timeouts.", source: "src-ann-2026-03" },
   ],
 };
+
+/**
+ * Verified Next Upcoming CSE-PPT Session
+ * Source: CSC Examination Announcement No. 05, s. 2026
+ */
+export const NEXT_UPCOMING_EXAM_DATE = "2027-03-14";
+export const NEXT_UPCOMING_EXAM_LABEL = "March 14, 2027";
+export const NEXT_UPCOMING_EXAM_NAME = "March 2027 CSE-PPT";
+
