@@ -43,13 +43,37 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  compress: true,
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   async headers() {
     return [
       {
         // Apply security headers across all routes
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        // Cache static icons and manifest with 1-day freshness and 7-day stale revalidation
+        source: "/(icon-192.png|icon-512.png|icon.svg|manifest.webmanifest|robots.txt|sitemap.xml)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
+        // Service worker script should never be cached long-term to ensure immediate updates
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+        ],
       },
     ];
   },
