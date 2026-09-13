@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 
 export interface HeroExamLevelSelectorProps {
   selectedLevel: "professional" | "subprofessional";
@@ -15,7 +15,23 @@ export function HeroExamLevelSelector({
   const isPro = selectedLevel === "professional";
 
   return (
-    <div className="relative mx-auto w-full max-w-md">
+    <div className="relative mx-auto w-full max-w-md space-y-2.5">
+      {/* Quiet Exam Schedule Line aligned with card's left edge */}
+      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 px-0.5">
+        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" aria-hidden="true" />
+        <span className="font-medium text-slate-700 dark:text-slate-300">Exam schedule</span>
+        <span className="text-slate-300 dark:text-slate-700">&middot;</span>
+        <span>March 14, 2027</span>
+        <span className="text-slate-300 dark:text-slate-700">&middot;</span>
+        <Link
+          href="/cse/exam-guide#schedule"
+          className="inline-flex items-center gap-0.5 font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition underline underline-offset-2 decoration-brand-200 dark:decoration-brand-800 hover:decoration-brand-500"
+        >
+          <span>View dates</span>
+          <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
+
       {/* Selection Card: Clean white card, thin border, gentle shadow */}
       <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-lg shadow-slate-900/5 ring-1 ring-slate-900/5 dark:ring-white/5 text-slate-800 dark:text-slate-100 space-y-4">
         {/* Header: Label & Heading */}
@@ -36,7 +52,7 @@ export function HeroExamLevelSelector({
             role="radio"
             aria-checked={isPro}
             onClick={() => onSelectLevel("professional")}
-            className={`w-full text-left p-3.5 rounded-xl border transition flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
+            className={`w-full text-left p-3.5 rounded-xl border transition active:scale-[0.99] duration-75 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
               isPro
                 ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 shadow-xs ring-1 ring-brand-600 dark:ring-brand-400"
                 : "border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/40 dark:hover:bg-slate-800/40"
@@ -55,7 +71,7 @@ export function HeroExamLevelSelector({
 
             <div className="space-y-0.5 flex-1 min-w-0">
               <span className="text-sm font-bold text-slate-900 dark:text-white block">Professional</span>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal truncate sm:whitespace-normal">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
                 For second-level positions &middot; <span className="font-medium text-brand-700 dark:text-brand-400">Includes Analytical Ability</span>
               </p>
             </div>
@@ -67,7 +83,7 @@ export function HeroExamLevelSelector({
             role="radio"
             aria-checked={!isPro}
             onClick={() => onSelectLevel("subprofessional")}
-            className={`w-full text-left p-3.5 rounded-xl border transition flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
+            className={`w-full text-left p-3.5 rounded-xl border transition active:scale-[0.99] duration-75 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
               !isPro
                 ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 shadow-xs ring-1 ring-brand-600 dark:ring-brand-400"
                 : "border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/40 dark:hover:bg-slate-800/40"
@@ -86,7 +102,7 @@ export function HeroExamLevelSelector({
 
             <div className="space-y-0.5 flex-1 min-w-0">
               <span className="text-sm font-bold text-slate-900 dark:text-white block">Subprofessional</span>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal truncate sm:whitespace-normal">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
                 For first-level positions &middot; <span className="font-medium text-brand-700 dark:text-brand-400">Includes Clerical Ability</span>
               </p>
             </div>
@@ -104,15 +120,15 @@ export function HeroExamLevelSelector({
             <ArrowRight className="w-4 h-4" />
           </Link>
 
-          {/* Reassurance Copy */}
+          {/* Reassurance Copy with clear timing signal */}
           <div className="text-center text-xs text-slate-500 space-y-0.5">
-            <p>10 questions &middot; About 10 minutes</p>
-            <p className="font-medium text-slate-600">No account required</p>
+            <p>10 questions &middot; 10-minute timer &middot; Starts immediately</p>
+            <p className="font-medium text-slate-600 dark:text-slate-400">No account required</p>
           </div>
         </div>
 
         {/* Comparison Helper Link */}
-        <div className="pt-2 text-center border-t border-slate-100">
+        <div className="pt-2 text-center border-t border-slate-100 dark:border-slate-800">
           <a
             href="#compare-levels"
             className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700 transition underline underline-offset-4 decoration-brand-200 hover:decoration-brand-500"
