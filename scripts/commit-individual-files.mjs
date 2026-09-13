@@ -20,7 +20,7 @@ const shouldVerify = process.argv.includes("--verify");
 
 function run(cmd) {
   try {
-    return execSync(cmd, { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] }).trim();
+    return execSync(cmd, { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
   } catch (error) {
     return null;
   }
@@ -28,13 +28,13 @@ function run(cmd) {
 
 function getUncommittedFiles() {
   const output = run("git status --porcelain -uall");
-  if (!output) return [];
+  if (!output || !output.trim()) return [];
 
-  const lines = output.split("\n").filter(Boolean);
+  const lines = output.split(/\r?\n/).filter((l) => l.length > 0);
   const files = [];
 
   for (const line of lines) {
-    const match = line.match(/^([ MADRCU?!]{2})\s+(.*)$/);
+    const match = line.match(/^([ MADRCU?!]{1,2})\s+(.*)$/);
     if (!match) continue;
 
     const status = match[1].trim();
