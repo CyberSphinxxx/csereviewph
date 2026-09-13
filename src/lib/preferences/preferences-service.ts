@@ -10,13 +10,15 @@ import type {
 import { LocalStorageService } from "@/lib/storage/local-storage-service";
 import { getStoredConsent, saveStoredConsent } from "@/components/privacy/CookieConsentBanner";
 
+import { NEXT_UPCOMING_EXAM_DATE } from "@/lib/exam-guide/csc-data";
+
 export const PREFERENCES_STORAGE_KEY = "csereviewph_user_preferences_v1";
 export const PREFERENCES_CHANGED_EVENT = "csereviewph-preferences-changed";
 
 export const DEFAULT_STUDY_PREFERENCES: Readonly<StudyPreferences> = {
   examId: "cse",
   levelId: "cse-professional",
-  targetDate: "2027-03-21",
+  targetDate: NEXT_UPCOMING_EXAM_DATE,
   targetDateType: "verified",
   dailyGoal: 25,
   showDailyGoal: true,
