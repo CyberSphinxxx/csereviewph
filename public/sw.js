@@ -1,7 +1,7 @@
 // Service Worker for CSEReviewerPH (csereviewph.com)
 // Provides full offline study support for drills, guides, and mistake reviews.
 
-const CACHE_NAME = "csereviewph-v1";
+const CACHE_NAME = "csereviewph-v2";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -14,6 +14,11 @@ const PRECACHE_ASSETS = [
   "/dashboard/bookmarks",
   "/practice",
   "/guides",
+  "/articles",
+  "/cse/exam-guide",
+  "/exams/professional/quick",
+  "/exams/subprofessional/quick",
+  "/settings",
   "/faq",
 ];
 
@@ -53,8 +58,12 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests and external third-party requests (analytics, ads)
-  if (request.method !== "GET" || url.origin !== self.location.origin) {
+  // Skip non-GET requests, API endpoints, and external third-party requests
+  if (
+    request.method !== "GET" ||
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith("/api/")
+  ) {
     return;
   }
 
