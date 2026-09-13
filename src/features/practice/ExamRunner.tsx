@@ -191,7 +191,8 @@ export function ExamRunner({
   useEffect(() => {
     if (isSubmittingRef.current || session.timer.isExpired) return;
 
-    if (session.answers.size > 0 || session.timer.remainingSeconds < session.timer.totalSeconds) {
+    // Only auto-save if at least one question has been answered
+    if (session.answers.size > 0) {
       const answersObj: Record<string, StoredUserAnswer> = {};
       const flaggedIds: string[] = [];
 
@@ -230,7 +231,7 @@ export function ExamRunner({
   };
 
   const handleSaveAndExit = () => {
-    if (session.answers.size > 0 || session.timer.remainingSeconds < session.timer.totalSeconds) {
+    if (session.answers.size > 0) {
       const answersObj: Record<string, StoredUserAnswer> = {};
       const flaggedIds: string[] = [];
 
@@ -260,6 +261,9 @@ export function ExamRunner({
         startedAt: startedAtRef.current,
         lastSavedAt: new Date().toISOString(),
       });
+    } else {
+      // If 0 answers were submitted, ensure no empty draft lingers
+      LocalStorageService.clearActiveDraft(levelSlug, rules.mode, topicId);
     }
     setShowExitModal(false);
     router.push("/practice");
@@ -268,7 +272,7 @@ export function ExamRunner({
   const handleDiscardAndExit = () => {
     LocalStorageService.clearActiveDraft(levelSlug, rules.mode, topicId);
     setShowExitModal(false);
-    router.push("/practice");
+    router.push(rules.mode === "quick" ? "/" : "/practice");
   };
 
   // Submit test and persist results
