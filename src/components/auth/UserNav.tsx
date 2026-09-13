@@ -112,7 +112,7 @@ export function UserNav() {
       <div className="flex items-center gap-1 sm:gap-1.5">
         <Link
           href="/settings"
-          className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="hidden sm:inline-flex p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           title="Settings"
           aria-label="Settings"
         >
@@ -121,11 +121,11 @@ export function UserNav() {
 
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200 dark:border-slate-800 shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200 dark:border-slate-800 shadow-sm whitespace-nowrap shrink-0"
           title="Sign in to sync your exam history across devices"
         >
-          <Cloud className="h-4 w-4 text-slate-400" />
-          <span>Sign In</span>
+          <Cloud className="h-4 w-4 text-slate-400 shrink-0" />
+          <span className="whitespace-nowrap">Sign In</span>
         </button>
 
         <AuthModal
