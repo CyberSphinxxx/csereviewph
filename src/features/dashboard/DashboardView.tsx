@@ -42,7 +42,7 @@ export function DashboardView() {
 
   // Target Exam Countdown & Daily Goal State
   const [targetConfig, setTargetConfig] = useState<TargetExamConfig>({
-    targetDate: "2027-03-21",
+    targetDate: "2027-03-14",
     examName: "March 2027 CSE-PPT",
     dailyGoal: 25,
   });
