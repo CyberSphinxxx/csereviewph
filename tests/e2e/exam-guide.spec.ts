@@ -56,11 +56,14 @@ test.describe("CSE Exam Guide & Official CSC Resources E2E", () => {
 
     // Select the 9 August 2026 historical session
     const sessionSelect = page.getByLabel("Examination Session *");
+    await expect(sessionSelect).toBeVisible();
     await sessionSelect.selectOption("session-2026-08-09");
+    await expect(sessionSelect).toHaveValue("session-2026-08-09");
 
     // Select Region VIII (Eastern Visayas)
     const regionSelect = page.getByLabel("CSC Region *");
     await regionSelect.selectOption("region-8");
+    await expect(regionSelect).toHaveValue("region-8");
 
     // Verify Calbayog City is displayed with transfer history
     await expect(page.getByRole("heading", { name: "Calbayog City" })).toBeVisible();
@@ -139,11 +142,11 @@ test.describe("CSE Exam Guide & Official CSC Resources E2E", () => {
     // Verify we scrolled to testing center finder
     await expect(page.getByRole("heading", { name: "Testing-Center Finder" })).toBeVisible();
 
-    // Verify mobile header menu contains CSE Exam Guide
+    // Verify mobile header menu contains Exam Info
     const mobileMenuBtn = page.getByRole("button", { name: /Open navigation menu/i });
     await mobileMenuBtn.click();
 
-    const mobileExamGuideLink = page.getByRole("link", { name: "CSE Exam Guide", exact: true });
+    const mobileExamGuideLink = page.getByRole("link", { name: "Exam Info", exact: true });
     await expect(mobileExamGuideLink).toBeVisible();
   });
 });
