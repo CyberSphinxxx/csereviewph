@@ -100,8 +100,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
