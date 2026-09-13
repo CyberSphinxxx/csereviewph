@@ -22,8 +22,8 @@ export function ExamCalendarCard({
   onConfigChange,
 }: ExamCalendarCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editPreset, setEditPreset] = useState<string>("2027-03-21");
-  const [editDate, setEditDate] = useState<string>(config.targetDate || "2027-03-21");
+  const [editPreset, setEditPreset] = useState<string>("2027-03-14");
+  const [editDate, setEditDate] = useState<string>(config.targetDate || "2027-03-14");
   const [editName, setEditName] = useState<string>(config.examName || "March 2027 CSE-PPT");
   const [editGoal, setEditGoal] = useState<number>(config.dailyGoal || 25);
   const [formError, setFormError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function ExamCalendarCard({
     setEditDate(config.targetDate);
     setEditName(config.examName);
     setEditGoal(config.dailyGoal);
-    if (config.targetDate === "2027-03-21" || config.targetDate === "2027-08-08") {
+    if (config.targetDate === "2027-03-14" || config.targetDate === "2027-08-08") {
       setEditPreset(config.targetDate);
     } else {
       setEditPreset("custom");
@@ -96,7 +96,7 @@ export function ExamCalendarCard({
     }
 
     let finalName = editName.trim();
-    if (editPreset === "2027-03-21") {
+    if (editPreset === "2027-03-14") {
       finalName = "March 2027 CSE-PPT";
     } else if (editPreset === "2027-08-08") {
       finalName = "August 2027 CSE-PPT";
@@ -392,8 +392,8 @@ export function ExamCalendarCard({
                 onChange={(e) => {
                   const val = e.target.value;
                   setEditPreset(val);
-                  if (val === "2027-03-21") {
-                    setEditDate("2027-03-21");
+                  if (val === "2027-03-14") {
+                    setEditDate("2027-03-14");
                     setEditName("March 2027 CSE-PPT");
                   } else if (val === "2027-08-08") {
                     setEditDate("2027-08-08");
@@ -404,7 +404,7 @@ export function ExamCalendarCard({
                 }}
                 className="w-full text-xs rounded-lg p-2 bg-white border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
-                <option value="2027-03-21">March 21, 2027 (CSE-PPT Cycle 1)</option>
+                <option value="2027-03-14">March 14, 2027 (CSE-PPT Cycle 1)</option>
                 <option value="2027-08-08">August 8, 2027 (CSE-PPT Cycle 2)</option>
                 <option value="custom">Custom Date / Personal Schedule</option>
               </select>
