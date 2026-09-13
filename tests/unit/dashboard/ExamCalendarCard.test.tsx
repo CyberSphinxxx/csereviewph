@@ -5,7 +5,7 @@ import { ExamCalendarCard } from "@/features/dashboard/ExamCalendarCard";
 
 describe("ExamCalendarCard Component", () => {
   const mockConfig = {
-    targetDate: "2027-03-21",
+    targetDate: "2027-03-14",
     examName: "March 2027 CSE-PPT",
     dailyGoal: 25,
   };
@@ -21,7 +21,7 @@ describe("ExamCalendarCard Component", () => {
 
     expect(screen.getByText("Your Exam")).toBeInTheDocument();
     expect(screen.getByText("March 2027 CSE-PPT")).toBeInTheDocument();
-    expect(screen.getByText("March 21, 2027")).toBeInTheDocument();
+    expect(screen.getByText("March 14, 2027")).toBeInTheDocument();
     expect(screen.getByText(/remaining/i)).toBeInTheDocument();
     expect(screen.getByText("Change date")).toBeInTheDocument();
     expect(screen.getByText("10 / 25 items")).toBeInTheDocument();
