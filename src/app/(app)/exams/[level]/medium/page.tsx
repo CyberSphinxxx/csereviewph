@@ -3,6 +3,12 @@ import { SEED_LEVELS } from "@/db/seed-data";
 import { prepareExamSession } from "@/features/practice/practice-service";
 import { ExamRunner } from "@/features/practice/ExamRunner";
 
+export function generateStaticParams() {
+  return SEED_LEVELS.map((lvl) => ({
+    level: lvl.slug,
+  }));
+}
+
 export default async function MediumTestPage({
   params,
 }: {
