@@ -3,6 +3,12 @@ import { SEED_TOPICS, SEED_SUBJECTS } from "@/db/seed-data";
 import { prepareExamSession } from "@/features/practice/practice-service";
 import { ExamRunner } from "@/features/practice/ExamRunner";
 
+export function generateStaticParams() {
+  return SEED_TOPICS.map((t) => ({
+    topicId: t.id,
+  }));
+}
+
 export default async function TopicPracticeSessionPage({
   params,
 }: {
