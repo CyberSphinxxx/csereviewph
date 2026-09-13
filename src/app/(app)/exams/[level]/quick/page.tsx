@@ -3,6 +3,12 @@ import { SEED_LEVELS } from "@/db/seed-data";
 import { prepareExamSession } from "@/features/practice/practice-service";
 import { ExamRunner } from "@/features/practice/ExamRunner";
 
+export function generateStaticParams() {
+  return SEED_LEVELS.map((lvl) => ({
+    level: lvl.slug,
+  }));
+}
+
 export default async function QuickTestPage({
   params,
 }: {
@@ -23,7 +29,7 @@ export default async function QuickTestPage({
     <ExamRunner
       initialQuestions={questions}
       rules={rules}
-      title={`${examLevel.name} — Quick Test`}
+      title={`${examLevel.name} — Quick Diagnostic Test`}
       subtitle="10 questions &bull; 10 minutes &bull; Immediate score and concept explanations"
     />
   );
