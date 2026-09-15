@@ -114,7 +114,7 @@ export default async function ArticleDetailPage({
 
           {/* Key Highlights Card */}
           {article.keyHighlights && article.keyHighlights.length > 0 && (
-            <div className="bg-gradient-to-br from-brand-50 to-blue-50/50 rounded-2xl border border-brand-200 p-6 space-y-3 shadow-sm">
+            <div className="bg-gradient-to-br from-brand-50 to-brand-100/40 rounded-2xl border border-brand-200 p-6 space-y-3 shadow-sm">
               <span className="text-xs font-bold uppercase tracking-wider text-brand-800 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-gold-600" />
                 <span>Executive Summary & Key Takeaways</span>
