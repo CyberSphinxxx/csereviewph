@@ -90,7 +90,7 @@ export default function AboutPage() {
           {/* Key Platform Pillars */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <div className="p-2 w-fit rounded-lg bg-blue-50 text-blue-700">
+              <div className="p-2 w-fit rounded-lg bg-brand-50 text-brand-700">
                 <Clock className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-slate-900 text-base">Fidelity Countdown</h3>
