@@ -97,7 +97,7 @@ export function ResultsView({ attemptData }: ResultsViewProps) {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 animate-page-enter">
+    <div className="min-h-screen bg-background text-foreground py-8 px-4 sm:px-6 lg:px-8 animate-page-enter">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Navigation Breadcrumb / Header */}
         <div className="flex items-center justify-between print:hidden">
@@ -274,7 +274,7 @@ export function ResultsView({ attemptData }: ResultsViewProps) {
 
         {/* What Should I Study Next? Recommendation */}
         {scoreResult.recommendedTopics.length > 0 && (
-          <div className="bg-gradient-to-r from-brand-50 to-blue-50/50 rounded-2xl border border-brand-200 p-6 sm:p-8">
+          <div className="bg-gradient-to-r from-brand-50 to-brand-100/40 rounded-2xl border border-brand-200 p-6 sm:p-8">
             <h2 className="text-lg font-bold text-brand-950 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-brand-700" />
               <span>What Should I Study Next?</span>
