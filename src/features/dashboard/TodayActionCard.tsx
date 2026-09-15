@@ -56,7 +56,7 @@ export function TodayActionCard({
           <Link
             href={recommendation.actionHref}
             prefetch={true}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition active:scale-[0.98] w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-white bg-brand-700 hover:bg-brand-800 shadow-sm transition active:scale-[0.98] w-full sm:w-auto"
           >
             <span>{recommendation.actionLabel}</span>
             <ArrowRight className="w-4 h-4" />
