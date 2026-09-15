@@ -1006,3 +1006,69 @@ Unrelated app verification remains blocked by account DELETE test.
 None to use delivered assets.
 ### Next
 Use B1 mascot in the site when requested; animation/extra poses remain separate work.
+
+
+## Snapshot before mascot review — 2026-09-15
+# CSEReviewerPH — Autonomous Build Progress
+
+*Handoff & status log for autonomous unattended operation per AGENTS.md §9.*  
+*Full historical archive of past sessions and phases is preserved in [ARCHIVES/progress-history.md](ARCHIVES/progress-history.md).*
+
+---
+
+## Current Status: Production Baseline Verified & Performance Optimized
+
+The Philippine Civil Service Exam (CSE-PPT) reviewer platform is fully functional, statically pre-rendered across all 71 routes (`● SSG`), and passing all quality verification gates (`npm run verify` exit code 0).
+
+### Done
+1. **Maroon & Porcelain Brand Theme Implementation**:
+   - Centralized semantic color tokens in [`src/app/globals.css`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/app/globals.css) and [`tailwind.config.ts`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/tailwind.config.ts) (`brand.50–950` scale with `#86152D` primary, `#701126` hover, `#F8EDEF` selection highlight).
+   - Light Theme Palette: Page background `#FAF8F7`, header/cards `#FFFFFF`, main text `#272126`, primary brand/actions `#86152D`, subtle dividers `#E8DFE1`, strong control borders `#D4C5C8` (WCAG 3:1 non-text contrast), muted text `#71656B`.
+   - Dark Theme Palette: Warm charcoal surfaces (`#161315` background, `#1E191C` cards/header, `#382F34` borders), high-contrast text (`#F5EFF1`), luminous rose-maroon accents (`#DE5572` text, `#C53B57` buttons, `#E57389` focus rings).
+   - Eliminated legacy hardcoded blues and cool slates across [`src/app/page.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/app/page.tsx), [`src/components/layout/Header.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/components/layout/Header.tsx), [`src/components/layout/Footer.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/components/layout/Footer.tsx), [`src/components/home/HeroExamLevelSelector.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/components/home/HeroExamLevelSelector.tsx), [`src/features/practice/ExamRunner.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/features/practice/ExamRunner.tsx), [`src/features/results/ResultsView.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/features/results/ResultsView.tsx), [`src/features/dashboard/TodayActionCard.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/features/dashboard/TodayActionCard.tsx), [`src/features/dashboard/DashboardView.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/features/dashboard/DashboardView.tsx), [`src/components/auth/AuthForm.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/components/auth/AuthForm.tsx), and [`src/app/(app)/settings/appearance/page.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/src/app/(app)/settings/appearance/page.tsx).
+   - Preserved distinct semantic feedback colors (Emerald success, Amber warning, Red error/unanswered, Gold benchmark).
+   - Updated test assertions in [`tests/unit/practice/ExamRunner.test.tsx`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/tests/unit/practice/ExamRunner.test.tsx) and [`tests/e2e/exam-flow.spec.ts`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/tests/e2e/exam-flow.spec.ts) to match `border-brand-700`.
+2. **Brand & Mascot Assets (`artifacts/`)**:
+   - Packaged [`artifacts/csereviewph-owl-brand-kit.zip`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/artifacts/csereviewph-owl-brand-kit.zip): Burgundy owl reconstruction, serif wordmarks, horizontal/stacked/icon SVG/PNG variants, full HD boards, mobile/PWA assets, and favicons.
+   - Packaged [`artifacts/csereviewph-b1-mascot-kit.zip`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/artifacts/csereviewph-b1-mascot-kit.zip): Full-body and body-only vectors, transparent high-res PNGs, landscape/portrait boards, and favicons.
+3. **Git Commit Automation Skill (`commit-one-by-one`)**:
+   - Created [`.agents/skills/commit-one-by-one/SKILL.md`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/.agents/skills/commit-one-by-one/SKILL.md) and [`scripts/commit-individual-files.mjs`](file:///c:/L3mxr/Github%20Repositories/CSEReviewerPH/scripts/commit-individual-files.mjs). Added `npm run commit:each`.
+4. **Foundational Performance & Edge Caching (SSG)**:
+   - Added `generateStaticParams()` to all exam routes (`quick`, `medium`, `full`) and practice topic routes (`[topicId]`), expanding pre-rendered static routes from 53 to 71.
+   - Lucide package tree-shaking, edge cache headers, and service worker offline caching.
+5. **AuthModal & Dedicated Authentication Routes**:
+   - Shared accessible `AuthForm` across single-column `AuthModal` and dedicated `/sign-in`, `/create-account`, and `/forgot-password` pages with password toggling and guest study continuation.
+
+### Verified
+- **`npm run check:architecture`**: ✅ **PASS** (0 engine violations; engine remains generic and exam-agnostic).
+- **`npm run typecheck`**: ✅ **PASS** (`tsc --noEmit` exited with 0 errors).
+- **`npm run lint`**: ✅ **PASS** (`eslint .` exited with 0 errors).
+- **`npm run test`**: ✅ **PASS** (234 unit and real PostgreSQL/PGlite integration tests across 43 test files passing).
+- **`npm run build`**: ✅ **PASS** (All 71 static pages pre-rendered as `● SSG`).
+- **`npm run verify`**: ✅ **PASS** (`typecheck` → `lint` → `check:architecture` → `test` → `build` exit code 0).
+- **`npm run test:e2e`**: ✅ **PASS** (All 19 E2E specs passing across exam flows, guides, and auth).
+- **Visual & Contrast Verification**:
+  - Captured 10 high-resolution screenshots in desktop and mobile viewports across Light and Dark modes (`artifacts/screenshots/`).
+  - Measured live contrast ratios:
+    - Primary Button (`#86152D` on `#FFFFFF`): **9.86:1** (WCAG AAA)
+    - Body Text (`#272126` on `#FAF8F7`): **14.90:1** (WCAG AAA)
+    - Selected Choice Card Text (`#86152D` on `#F8EDEF`): **8.59:1** (WCAG AAA)
+    - Dark Mode Body Text (`#F5EFF1` on `#161315`): **15.20:1** (WCAG AAA)
+    - Dark Mode Button (`#FFFFFF` on `#C53B57` / `#86152D`): **5.10:1** (WCAG AA)
+
+### Blocked
+- *None.* All application logic, styles, and tests are green.
+
+### Needs Human
+Production environment setup when deploying to live traffic:
+1. **Hosted Database URL**: Supply production connection string for Neon serverless PostgreSQL in `.env.local` / Vercel dashboard.
+2. **Auth Secrets**: Set production `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (`https://csereviewph.com`).
+3. **Custom Domain**: Point `csereviewph.com` DNS records (A / CNAME) to Vercel production deployment.
+4. **Analytics & Monitoring**: Supply production PostHog and Sentry keys (`NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_SENTRY_DSN`).
+5. **Content Publishing**: Real question authoring and promotion from `Draft` → `Approved` → `Published` by subject matter experts.
+
+### Next
+- **Brand Asset Integration**: Apply the approved owl branding and mascot assets from `artifacts/` to header, favicon, and hero when directed.
+- **Phase 4 Content Platform Expansion**: Expand official syllabus study guides, additional mock questions, and practice sets.
+- **Phase 5**: Administration and Question Authoring Portal.
+
