@@ -4,8 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthForm, AuthMode } from "./AuthForm";
+import { Logo } from "@/components/ui/Logo";
 import {
-  Award,
   ArrowLeft,
   CheckCircle2,
   TrendingUp,
@@ -43,14 +43,15 @@ export function AuthPageLayout({ mode }: AuthPageLayoutProps) {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       {/* Top Header */}
       <header className="w-full border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2.5 group">
-          <div className="h-9 w-9 rounded-xl bg-brand-700 flex items-center justify-center text-white font-bold shadow-md shadow-brand-700/20 group-hover:bg-brand-800 transition">
-            <Award className="h-5 w-5 text-gold-400" />
-          </div>
-          <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
-            csereview<span className="text-brand-600 dark:text-brand-400">ph</span>
-            <span className="text-gold-600 dark:text-gold-400 font-semibold ml-0.5 text-sm">.com</span>
-          </span>
+        <Link
+          href="/"
+          className="inline-block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
+          aria-label="csereviewph home"
+        >
+          <Logo
+            format="horizontal"
+            className="h-8 w-auto text-brand-700 dark:text-white transition-opacity group-hover:opacity-90"
+          />
         </Link>
 
         <Link
