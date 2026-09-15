@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     orientation: "portrait-primary",
-    background_color: "#f8fafc",
-    theme_color: "#0369a1",
+    background_color: "#FAF8F7",
+    theme_color: "#86152D",
     categories: ["education", "productivity", "utilities"],
     icons: [
       {
@@ -24,10 +24,21 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
       {
-        src: "/icon-512.png",
+        src: "/maskable-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
+      },
+      {
+        src: "/favicon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
       },
       {
         src: "/icon.svg",
