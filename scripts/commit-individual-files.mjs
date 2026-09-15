@@ -173,6 +173,18 @@ function generateCommitMessage(file) {
   }
 
   // Documentation & Logs
+  if (filePath === "AGENTS.md") {
+    return "docs(agents): update guidelines for token efficiency and rolling progress handoffs";
+  }
+  if (filePath === "ARCHIVES/progress-history.md") {
+    return "docs(archives): update progress history archive";
+  }
+  if (filePath === "ARCHIVES/README.md") {
+    return "docs(archives): update archives directory documentation";
+  }
+  if (filePath === "ARCHIVES/implementation_plan2.md") {
+    return "docs(archives): record archived implementation plan 2";
+  }
   if (filePath.endsWith("PROGRESS.md")) {
     return "docs(progress): log live review report and foundational performance resolutions";
   }
@@ -181,11 +193,43 @@ function generateCommitMessage(file) {
   }
   if (filePath.startsWith(".design/")) {
     const docName = baseName.replace(/\.[^/.]+$/, "");
+    if (file.status.includes("D")) {
+      return `docs(design): remove legacy ${docName.replace(/-/g, " ")}`;
+    }
     return `docs(design): record ${docName.replace(/-/g, " ")}`;
   }
   if (filePath.startsWith("docs/")) {
     const docName = baseName.replace(/\.[^/.]+$/, "");
     return `docs(${docName}): update documentation for ${docName}`;
+  }
+
+  // Brand & PWA Assets
+  if (filePath === "src/app/(app)/settings/appearance/page.tsx") {
+    return "feat(settings): update appearance settings theme styling";
+  }
+  if (filePath === "src/app/(public)/about/page.tsx") {
+    return "feat(about): update about page brand layout";
+  }
+  if (filePath === "src/app/(public)/articles/[slug]/page.tsx") {
+    return "feat(articles): update article template styling";
+  }
+  if (filePath === "tailwind.config.ts") {
+    return "style(tailwind): refine brand color palette tokens";
+  }
+  if (filePath === "src/app/globals.css") {
+    return "style(theme): update porcelain and maroon theme styling";
+  }
+  if (filePath === "src/app/manifest.ts") {
+    return "feat(pwa): register new maskable and brand icons in web app manifest";
+  }
+  if (filePath === "src/components/home/PeekingOwl.tsx") {
+    return "feat(home): implement interactive fullbody peeking owl mascot with gaze tracking";
+  }
+  if (filePath === "src/components/ui/Logo.tsx") {
+    return "feat(ui): add brand Logo component with responsive mascot icon";
+  }
+  if (filePath.startsWith("public/icon") || filePath.startsWith("public/favicon") || filePath.startsWith("public/apple-touch-icon") || filePath.startsWith("public/maskable")) {
+    return `feat(assets): update ${baseName} brand asset`;
   }
 
   // Test Files
