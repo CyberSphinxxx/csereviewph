@@ -317,7 +317,7 @@ describe("ExamRunner Component", () => {
 
     // Press 'A' key to select choice A (Alpha Choice)
     fireEvent.keyDown(window, { key: "a" });
-    expect(screen.getByText("Alpha Choice").closest("div")).toHaveClass("border-slate-900");
+    expect(screen.getByText("Alpha Choice").closest("div")).toHaveClass("border-brand-700");
 
     // Press 'F' key to toggle flag
     fireEvent.keyDown(window, { key: "f" });
@@ -347,7 +347,7 @@ describe("ExamRunner Component", () => {
 
     // Clicking the eliminated button does not select it
     fireEvent.click(screen.getByText("Beta Choice"));
-    expect(screen.getByText("Beta Choice").closest("div")).not.toHaveClass("border-slate-900");
+    expect(screen.getByText("Beta Choice").closest("div")).not.toHaveClass("border-brand-700");
   });
 
   it("renders instant feedback and concept explanation in practice mode", () => {
