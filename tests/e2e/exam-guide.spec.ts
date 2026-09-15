@@ -53,6 +53,7 @@ test.describe("CSE Exam Guide & Official CSC Resources E2E", () => {
     page,
   }) => {
     await page.goto("/cse/exam-guide");
+    await page.waitForLoadState("networkidle");
 
     // Select the 9 August 2026 historical session
     const sessionSelect = page.getByLabel("Examination Session *");
