@@ -223,7 +223,7 @@ export function AuthForm({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Juan Dela Cruz"
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition"
+                  className="w-full rounded-xl border border-input dark:border-border bg-white dark:bg-[#1E191C] pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition"
                 />
               </div>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
@@ -249,7 +249,7 @@ export function AuthForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="juan@example.ph"
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition"
+                className="w-full rounded-xl border border-input dark:border-border bg-white dark:bg-[#1E191C] pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition"
               />
             </div>
           </div>
@@ -268,7 +268,7 @@ export function AuthForm({
                   <button
                     type="button"
                     onClick={() => handleModeChange("forgot-password")}
-                    className="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline font-medium"
+                    className="text-xs text-brand-700 hover:text-brand-800 dark:text-brand-400 hover:underline font-medium"
                   >
                     Forgot password?
                   </button>
@@ -287,7 +287,7 @@ export function AuthForm({
                       ? "At least 8 characters"
                       : "Enter your password"
                   }
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-10 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition"
+                  className="w-full rounded-xl border border-input dark:border-border bg-white dark:bg-[#1E191C] pl-9 pr-10 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition"
                 />
                 <button
                   type="button"
@@ -314,7 +314,7 @@ export function AuthForm({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-brand-600 hover:bg-brand-700 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+            className="w-full rounded-xl bg-brand-700 hover:bg-brand-800 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
           >
             {loading ? (
               <>
