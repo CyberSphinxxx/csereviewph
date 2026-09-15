@@ -156,7 +156,7 @@ export function DashboardView() {
             <Link
               href="/exams/professional/quick"
               prefetch={true}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 dark:bg-brand-600 hover:bg-slate-800 dark:hover:bg-brand-700 text-white text-xs sm:text-sm font-bold shadow-sm transition"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-sm transition"
             >
               <Clock className="w-4 h-4" />
               <span>Start Quick Drill</span>
