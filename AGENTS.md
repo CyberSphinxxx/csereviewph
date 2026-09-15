@@ -6,7 +6,7 @@ Full context lives in:
 - `/docs/product-plan.md` — original product plan (sections 1–46)
 - `/docs/product-plan-addendum.md` — legal, content, business, and technical gap-fill (sections 47–58)
 
-**Read both before planning any non-trivial task.** If a prompt conflicts with something in those docs, follow the docs and flag the conflict rather than silently picking one.
+**Read relevant sections before planning any non-trivial task** (use grep or targeted line ranges rather than loading entire doc files to conserve tokens). If a prompt conflicts with something in those docs, follow the docs and flag the conflict rather than silently picking one.
 
 ---
 
@@ -189,7 +189,7 @@ This project runs with minimal human interaction by design. The user expects to 
   - A missing external credential or account you cannot generate yourself (a real `DATABASE_URL` for a hosted DB, a paid API key, a domain/hosting account signup)
   - A genuine contradiction between the product plan and the addendum that changes architecture, not just an implementation detail
   - Everything else: proceed on your best judgment and log it in `PROGRESS.md` rather than stopping.
-- **Maintain `PROGRESS.md`** at the repo root, updated after every completed unit of work, with sections `## Done`, `## Verified` (with the actual `npm run verify` result), `## Blocked` (what and why), `## Needs Human` (what credential/decision is needed), and `## Next`. This is the primary handoff artifact — write it so that reading it alone tells the user everything that happened.
+- **Maintain `PROGRESS.md`** at the repo root as a concise rolling handoff (< 120 lines / ~4KB), updated after every completed unit of work with sections `## Done`, `## Verified` (with the actual `npm run verify` result), `## Blocked` (what and why), `## Needs Human` (what credential/decision is needed), and `## Next`. This is the primary handoff artifact — write it so that reading it alone tells the user current status without bloating LLM context. When milestones complete, archive superseded retrospective details to `ARCHIVES/progress-history.md` rather than accumulating infinite log lines in `PROGRESS.md`.
 - **Resuming after an interruption**: if `PROGRESS.md` already exists with completed items, read it first and continue from the first incomplete item. Do not redo completed, verified work.
 - **Content stays in `Draft` status** per `skills/content-authoring/SKILL.md` during autonomous runs. This is not a stopping point — it's just the correct default status. Continue past it without waiting for review; the human reviews and publishes on their own schedule, separately from the build run.
 - **Database migrations** may be generated and applied automatically against local/dev databases during autonomous runs without asking. Never apply a migration to an environment you have reason to believe is production.
