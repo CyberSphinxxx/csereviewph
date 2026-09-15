@@ -20,14 +20,14 @@ export default function HomePage() {
   const [selectedLevel, setSelectedLevel] = useState<"professional" | "subprofessional">("professional");
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative selection:bg-brand-100 selection:text-brand-900">
+    <div className="min-h-screen flex flex-col bg-background text-foreground relative selection:bg-[#f8edef] selection:text-[#86152d]">
       <Header />
 
       <main className="flex-1 animate-page-enter">
         {/* ========================================================================= */}
         {/* HERO SECTION: Stable Promise, Exam-Level Selection Card, Focused Action   */}
         {/* ========================================================================= */}
-        <section className="relative overflow-hidden lg:min-h-[calc(100vh-6.5rem)] flex flex-col justify-center pt-8 pb-14 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20 border-b border-slate-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-brand-50/15 to-slate-50 dark:from-slate-900 dark:via-slate-900/60 dark:to-slate-950">
+        <section className="relative overflow-hidden lg:min-h-[calc(100vh-6.5rem)] flex flex-col justify-center pt-8 pb-14 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20 xl:pb-28 border-b border-border bg-gradient-to-b from-white via-brand-50/20 to-background dark:from-[#1E191C] dark:via-[#1E191C]/60 dark:to-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
               {/* Left Column: Product Promise, Two-Sentence Explanation, Outcome Evidence, How It Works Link (7 cols) */}
@@ -179,7 +179,7 @@ export default function HomePage() {
                     <span className="text-2xl font-black text-brand-600 dark:text-brand-400 block">
                       03
                     </span>
-                    <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
+                    <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60">
                       Targeted Practice
                     </span>
                   </div>
@@ -254,10 +254,10 @@ export default function HomePage() {
               </div>
 
               {/* Trust Claim 3 */}
-              <div className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#1E191C] border border-border shadow-xs space-y-3">
+                <div className="flex items-center gap-2 text-brand-700 dark:text-brand-400">
                   <Target className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">Level Coverage</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-brand-800 dark:text-brand-300">Level Coverage</span>
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white">
                   Built for both CSE levels
@@ -380,7 +380,7 @@ export default function HomePage() {
                 <Link
                   href="/exams/subprofessional/quick"
                   prefetch={true}
-                  className="w-full sm:w-auto flex-1 text-center py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-sm shadow-xs transition"
+                  className="w-full sm:w-auto flex-1 text-center py-2.5 px-4 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm shadow-xs transition"
                 >
                   Start Subprofessional Diagnostic &rarr;
                 </Link>
@@ -679,7 +679,7 @@ export default function HomePage() {
               {/* Card 2: 67-Second Rule */}
               <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/60 hover:bg-white dark:hover:bg-slate-900 hover:shadow-md transition flex flex-col justify-between">
                 <div className="space-y-2.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-800">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300 px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 border border-brand-200 dark:border-brand-800">
                     Exam Strategy
                   </span>
                   <h3 className="font-bold text-slate-900 dark:text-white text-base">
