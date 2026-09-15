@@ -4,31 +4,31 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
+    --background: #faf8f7;
+    --foreground: #272126;
     --card: #ffffff;
-    --card-foreground: #0f172a;
+    --card-foreground: #272126;
     --popover: #ffffff;
-    --popover-foreground: #0f172a;
-    --primary: #1e40af;
+    --popover-foreground: #272126;
+    --primary: #86152d;
     --primary-foreground: #ffffff;
-    --secondary: #f1f5f9;
-    --secondary-foreground: #0f172a;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --accent: #fef3c7;
-    --accent-foreground: #78350f;
+    --secondary: #f4ecee;
+    --secondary-foreground: #272126;
+    --muted: #f4ecee;
+    --muted-foreground: #71656b;
+    --accent: #f8edef;
+    --accent-foreground: #86152d;
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #1e40af;
+    --border: #e8dfe1;
+    --input: #d4c5c8;
+    --ring: #86152d;
     --radius: 0.75rem;
 
     /* Semantic active / selection highlight tokens */
-    --highlight: #eff6ff;
-    --highlight-foreground: #1e3a8a;
-    --highlight-border: #93c5fd;
+    --highlight: #f8edef;
+    --highlight-foreground: #86152d;
+    --highlight-border: #86152d;
 
     /* Reading Comfort Tokens */
     --reading-font-size: 1rem;
@@ -37,30 +37,30 @@
   }
 
   .dark {
-    --background: #090d16;
-    --foreground: #f8fafc;
-    --card: #0f172a;
-    --card-foreground: #f8fafc;
-    --popover: #0f172a;
-    --popover-foreground: #f8fafc;
-    --primary: #3b82f6;
+    --background: #161315;
+    --foreground: #f5eff1;
+    --card: #1e191c;
+    --card-foreground: #f5eff1;
+    --popover: #1e191c;
+    --popover-foreground: #f5eff1;
+    --primary: #c53b57;
     --primary-foreground: #ffffff;
-    --secondary: #1e293b;
-    --secondary-foreground: #f8fafc;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --accent: #2e2616;
-    --accent-foreground: #fbbf24;
+    --secondary: #262024;
+    --secondary-foreground: #f5eff1;
+    --muted: #262024;
+    --muted-foreground: #a89ba1;
+    --accent: #351a22;
+    --accent-foreground: #fad1da;
     --destructive: #7f1d1d;
-    --destructive-foreground: #f8fafc;
-    --border: #1e293b;
-    --input: #1e293b;
-    --ring: #3b82f6;
+    --destructive-foreground: #f5eff1;
+    --border: #382f34;
+    --input: #4e4249;
+    --ring: #e57389;
 
     /* Semantic active / selection highlight tokens in dark mode */
-    --highlight: #0d1a38;
-    --highlight-foreground: #ffffff;
-    --highlight-border: #3b82f6;
+    --highlight: #351a22;
+    --highlight-foreground: #fad1da;
+    --highlight-border: #de5572;
   }
 }
 
@@ -120,15 +120,15 @@ body {
 
 /* Glassmorphism subtle accents */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(232, 223, 225, 0.8);
 }
 
 .dark .glass-panel {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(30, 25, 28, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(56, 47, 52, 0.8);
 }
