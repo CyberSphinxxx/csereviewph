@@ -58,13 +58,13 @@ export default function AppearanceSettingsPage() {
     {
       id: "light",
       name: "Light theme",
-      description: "Crisp white panels with deep Philippine navy brand accents and amber details.",
+      description: "Crisp porcelain panels with deep Philippine maroon brand accents and warm details.",
       icon: Sun,
     },
     {
       id: "dark",
       name: "Dark theme",
-      description: "Deep midnight surfaces with high-contrast text and luminous navy and gold accents.",
+      description: "Warm charcoal surfaces with high-contrast text and luminous rose-maroon accents.",
       icon: Moon,
     },
   ] as const;
