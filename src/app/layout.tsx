@@ -44,6 +44,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     type: "website",
     locale: "en_PH",
@@ -100,8 +109,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#faf8f7" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#161315" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <script
@@ -114,7 +123,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-brand-500 selection:text-white flex flex-col transition-colors duration-150">
+      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-[#f8edef] selection:text-[#86152d] flex flex-col transition-colors duration-150">
         <ThemeProvider>
           <NavigationProgress />
           {children}
