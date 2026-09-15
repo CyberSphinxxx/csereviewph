@@ -50,17 +50,17 @@ const config: Config = {
         input: "var(--input)",
         ring: "var(--ring)",
         brand: {
-          50: "#f0f4fc",
-          100: "#dbe4f8",
-          200: "#bccdf2",
-          300: "#8faeeb",
-          400: "#5a88e0",
-          500: "#1e40af", // Official Philippine deep blue
-          600: "#1d4ed8",
-          700: "#1e3a8a",
-          800: "#172554",
-          900: "#0f172a",
-          950: "#080d1a", // Deep midnight navy for high contrast surfaces
+          50: "#f8edef", // Approved selected/active porcelain background
+          100: "#f2dce1", // Soft porcelain rose blush
+          200: "#e5bcc6", // Subtle rose border
+          300: "#d396a6", // Soft rose accent
+          400: "#de5572", // Readable rose-maroon for dark mode text/accents
+          500: "#9c223d", // Medium rich maroon
+          600: "#86152d", // Approved primary brand / actions
+          700: "#86152d", // Unified action color across buttons & links
+          800: "#701126", // Approved primary hover
+          900: "#4d0c1a", // Deep rich burgundy wine
+          950: "#2b060e", // Deepest dark maroon for contrast surfaces
         },
         gold: {
           50: "#fffbeb",
