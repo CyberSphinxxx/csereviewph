@@ -2,22 +2,25 @@
 
 import Link from "next/link";
 import { Award, ShieldCheck, Mail, FileText, BookOpen, HelpCircle } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-sm print:hidden transition-colors">
+    <footer className="border-t border-border bg-white dark:bg-[#1E191C] text-muted-foreground text-sm print:hidden transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           {/* Brand & Mission Column */}
           <div className="space-y-4">
-            <Link href="/" prefetch={true} className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-brand-700 flex items-center justify-center text-white font-bold">
-                <Award className="h-5 w-5 text-gold-400" />
-              </div>
-              <span className="text-lg font-extrabold text-slate-900 tracking-tight">
-                csereview<span className="text-brand-600">ph</span>
-                <span className="text-gold-600 font-semibold ml-0.5 text-sm">.com</span>
-              </span>
+            <Link
+              href="/"
+              prefetch={true}
+              className="inline-block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
+              aria-label="csereviewph home"
+            >
+              <Logo
+                format="horizontal"
+                className="h-8 w-auto text-brand-700 dark:text-white transition-opacity group-hover:opacity-90"
+              />
             </Link>
             <p className="text-xs text-slate-500 leading-relaxed">
               Empowering Filipino civil service examinees with 100% original mock tests, continuous real-time countdowns, and diagnostic performance analytics.
@@ -170,9 +173,9 @@ export function Footer() {
         </div>
 
         {/* Disclaimer & Copyright Bottom Bar */}
-        <div className="pt-6 border-t border-slate-200 text-xs text-slate-500 space-y-2">
+        <div className="pt-6 border-t border-border text-xs text-muted-foreground space-y-2">
           <p className="leading-relaxed">
-            <strong className="text-slate-700">Official Non-Affiliation Disclaimer:</strong> csereviewph.com is an independent educational platform and is not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Philippine Civil Service Commission (CSC), the Civil Service Institute (CSI), or any Philippine government department or agency.
+            <strong className="text-foreground">Official Non-Affiliation Disclaimer:</strong> csereviewph.com is an independent educational platform and is not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Philippine Civil Service Commission (CSC), the Civil Service Institute (CSI), or any Philippine government department or agency.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-slate-400">
             <p>&copy; {new Date().getFullYear()} csereviewph.com. All rights reserved.</p>
