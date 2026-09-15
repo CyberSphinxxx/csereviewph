@@ -880,8 +880,8 @@ export function ExamRunner({
                         choiceBadgeClasses = "bg-rose-600 text-white";
                       }
                     } else if (isSelected) {
-                      choiceCardClasses = "border-slate-900 bg-slate-50 ring-1 ring-slate-900/10 shadow-xs";
-                      choiceBadgeClasses = "bg-slate-900 text-white";
+                      choiceCardClasses = "border-brand-700 dark:border-brand-400 bg-highlight dark:bg-brand-950/40 ring-1 ring-brand-700 dark:ring-brand-400 shadow-xs";
+                      choiceBadgeClasses = "bg-brand-700 dark:bg-brand-600 text-white";
                     }
 
                     if (isEliminated) {
@@ -928,7 +928,7 @@ export function ExamRunner({
                             {choice.text}
                           </span>
                           {isSelected && (
-                            <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900 text-white text-[11px] font-semibold">
+                            <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-700 dark:bg-brand-600 text-white text-[11px] font-semibold">
                               <Check className="w-3 h-3 stroke-[3]" />
                               <span>Selected</span>
                             </span>
@@ -1018,7 +1018,7 @@ export function ExamRunner({
                         setSession((prev) => navigateNext(prev));
                       }
                     }}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-xs transition active:scale-95"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm shadow-xs transition active:scale-95"
                     id="next-question-btn"
                   >
                     <span>{session.currentIndex === session.totalQuestions - 1 ? "Review & Submit" : "Next"}</span>
@@ -1041,7 +1041,7 @@ export function ExamRunner({
             {/* Compact Legend: ● Answered ○ Unanswered ◇ Flagged */}
             <div className="flex items-center justify-between text-[11px] font-medium text-slate-600 pb-2 border-b border-slate-100">
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-slate-900" />
+                <span className="w-2.5 h-2.5 rounded bg-brand-700" />
                 <span>Answered</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -1064,13 +1064,13 @@ export function ExamRunner({
 
                 let btnClasses = "bg-white border-slate-200 text-slate-700 hover:bg-slate-50";
                 if (isAnswered) {
-                  btnClasses = "bg-slate-900 border-slate-900 text-white font-bold";
+                  btnClasses = "bg-brand-700 border-brand-700 text-white font-bold";
                 }
                 if (isFlagged) {
                   btnClasses = "bg-amber-50 border-amber-400 text-amber-900 font-bold";
                 }
                 if (isCurrent) {
-                  btnClasses += " ring-2 ring-slate-900 ring-offset-1";
+                  btnClasses += " ring-2 ring-brand-700 ring-offset-1";
                 }
 
                 return (
@@ -1117,7 +1117,7 @@ export function ExamRunner({
               <button
                 type="button"
                 onClick={summary.answered > 0 ? handleSaveAndExit : handleDiscardAndExit}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-sm transition"
+                className="px-5 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm shadow-sm transition"
               >
                 {summary.answered > 0 ? "Save & Leave" : "Leave Test"}
               </button>
@@ -1253,7 +1253,7 @@ export function ExamRunner({
               {/* Status Legend */}
               <div className="flex items-center justify-between text-xs font-medium text-slate-600 my-4 pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-slate-900" />
+                  <span className="w-3 h-3 rounded bg-brand-700" />
                   <span>Answered</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1276,13 +1276,13 @@ export function ExamRunner({
 
                   let btnClasses = "bg-white border-slate-200 text-slate-700 hover:bg-slate-50";
                   if (isAnswered) {
-                    btnClasses = "bg-slate-900 border-slate-900 text-white font-bold";
+                    btnClasses = "bg-brand-700 border-brand-700 text-white font-bold";
                   }
                   if (isFlagged) {
                     btnClasses = "bg-amber-50 border-amber-400 text-amber-900 font-bold";
                   }
                   if (isCurrent) {
-                    btnClasses += " ring-2 ring-slate-900 ring-offset-2";
+                    btnClasses += " ring-2 ring-brand-700 ring-offset-2";
                   }
 
                   return (
@@ -1378,7 +1378,7 @@ export function ExamRunner({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 font-bold text-white text-sm shadow-md transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 font-bold text-white text-sm shadow-md transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 id="confirm-submit-btn"
               >
                 <Send className="w-4 h-4" />
