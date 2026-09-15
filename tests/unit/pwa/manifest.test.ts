@@ -8,8 +8,8 @@ describe("PWA Web App Manifest (/manifest.webmanifest)", () => {
     expect(data.name).toContain("Civil Service Exam Reviewer PH");
     expect(data.short_name).toBe("CSEReviewerPH");
     expect(data.display).toBe("standalone");
-    expect(data.theme_color).toBe("#0369a1");
-    expect(data.background_color).toBe("#f8fafc");
+    expect(data.theme_color).toBe("#86152D");
+    expect(data.background_color).toBe("#FAF8F7");
 
     expect(data.icons).toBeDefined();
     expect(data.icons?.length).toBeGreaterThanOrEqual(3);
