@@ -105,6 +105,53 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.locator("#how-your-review-works")).toBeVisible();
   });
 
+  test("renders subtle peeking owl on desktop without blocking controls, tracks mouse, and hides on mobile", async ({ page }) => {
+    // 1. Desktop Viewport (1280x800)
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    // Locate the peeking owl decoration
+    const peekingOwlSvg = page.locator("svg").filter({ has: page.locator("[data-owl-part='fixed-head']") });
+    await expect(peekingOwlSvg).toBeVisible();
+    await expect(peekingOwlSvg).toHaveAttribute("aria-hidden", "true");
+
+    // Both pupils exist
+    const leftPupil = peekingOwlSvg.locator("[data-owl-pupil='left']");
+    const rightPupil = peekingOwlSvg.locator("[data-owl-pupil='right']");
+    await expect(leftPupil).toBeAttached();
+    await expect(rightPupil).toBeAttached();
+
+    // Verify radio buttons and Start Free Diagnostic CTA are completely clickable and unobstructed
+    const proRadio = page.getByRole("radio", { name: /^Professional\b/i });
+    const subproRadio = page.getByRole("radio", { name: /^Subprofessional\b/i });
+    const ctaBtn = page.getByRole("link", { name: /Start Free Diagnostic/i });
+
+    await expect(proRadio).toHaveAttribute("aria-checked", "true");
+    await subproRadio.click();
+    await expect(ctaBtn).toHaveAttribute("href", "/exams/subprofessional/quick");
+    await proRadio.click();
+    await expect(ctaBtn).toHaveAttribute("href", "/exams/professional/quick");
+
+    // Move pointer near card and verify pupil movement
+    const cardBox = await page.getByRole("heading", { name: "Choose your exam level" }).boundingBox();
+    if (cardBox) {
+      await page.mouse.move(cardBox.x + cardBox.width / 2, cardBox.y + cardBox.height / 2);
+      await page.waitForTimeout(100);
+      const transform = await leftPupil.getAttribute("transform");
+      expect(transform).toMatch(/translate\(-?\d+/);
+    }
+
+    // 2. Mobile Viewport (375x667)
+    await page.setViewportSize({ width: 375, height: 667 });
+    await expect(peekingOwlSvg).toBeHidden();
+
+    // Check no horizontal scroll on mobile
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 2);
+  });
+
   test("takes Quick Test, flags a question, submits, and views results", async ({ page }) => {
     await page.goto("/exams/professional/quick");
 
@@ -232,7 +279,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     // Press 'A' key to select choice A on Q1
     await page.keyboard.press("KeyA");
     const choiceACard = page.getByTestId("choice-card-A");
-    await expect(choiceACard).toHaveClass(/border-slate-900/);
+    await expect(choiceACard).toHaveClass(/border-brand-700/);
 
     // Press 'F' key to flag question
     await page.keyboard.press("KeyF");
