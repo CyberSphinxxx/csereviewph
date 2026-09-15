@@ -25,3 +25,9 @@ This folder contains superseded design reports, completed task implementation pl
   - *Context*: Captured visual evidence (screenshots of competitor mobile/desktop layouts and legacy dashboard states) and historical verify execution logs (`verify.log`, `settings-guide-verify.log`, `settings-guide-verify-retry.log`).
 - **[`codex/design-arc.yaml`](./codex/design-arc.yaml)**:
   - *Context*: Configuration metadata used during the design audit workflow.
+
+### 3. Historical Progress Logs
+- **[`progress-history.md`](./progress-history.md)**:
+  - *Context*: Complete historical build and handoff log spanning initial MVP bootstrap, Phases 1–5.5, performance overhauls, design reviews, and brand kit explorations.
+  - *Status*: Preserved archive to keep the root `PROGRESS.md` lean and token-efficient for ongoing autonomous runs.
+
