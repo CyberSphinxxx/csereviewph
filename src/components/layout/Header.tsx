@@ -3,10 +3,11 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { useSession } from "@/lib/auth/auth-client";
 import { LocalStorageService } from "@/lib/storage";
 import { UserNav } from "@/components/auth/UserNav";
+import { Logo } from "@/components/ui/Logo";
 
 export function Header() {
   const pathname = usePathname();
@@ -50,21 +51,21 @@ export function Header() {
   const isDashboard = pathname === "/dashboard" || pathname?.startsWith("/dashboard/");
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md print:hidden transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-white/95 dark:bg-[#1E191C]/95 backdrop-blur-md print:hidden transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" prefetch={true} className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-brand-700 flex items-center justify-center text-white font-bold shadow-md shadow-brand-700/20 group-hover:bg-brand-800 transition shrink-0">
-            <Award className="h-5 w-5 sm:h-6 sm:w-6 text-gold-400" />
-          </div>
-          <div className="flex items-center">
-            <span className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              csereview<span className="text-brand-600 dark:text-brand-400">ph</span>
-              <span className="text-gold-600 dark:text-gold-400 font-semibold ml-0.5 text-sm sm:text-base">.com</span>
-            </span>
-            <span className="hidden lg:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 rounded-full border border-brand-200 dark:border-brand-800">
-              Civil Service Exam
-            </span>
-          </div>
+        <Link
+          href="/"
+          prefetch={true}
+          className="flex items-center space-x-2 sm:space-x-2.5 group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
+          aria-label="csereviewph home"
+        >
+          <Logo
+            format="horizontal"
+            className="h-8 sm:h-9 w-auto text-brand-700 dark:text-white transition-opacity group-hover:opacity-90"
+          />
+          <span className="hidden lg:inline-block ml-1 px-2 py-0.5 text-xs font-semibold bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 rounded-full border border-brand-200 dark:border-brand-800">
+            Civil Service Exam
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -132,7 +133,7 @@ export function Header() {
             </button>
 
             {moreMenuOpen && (
-              <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white dark:bg-[#1E191C] border border-border shadow-lg py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                 <Link
                   href="/#how-it-works"
                   onClick={() => setMoreMenuOpen(false)}
@@ -173,7 +174,7 @@ export function Header() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
-            className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -182,7 +183,7 @@ export function Header() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/98 dark:bg-slate-900/98 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in">
+        <div className="md:hidden border-t border-border bg-white/98 dark:bg-[#1E191C]/98 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in">
           {showProgress && (
             <Link
               href="/dashboard"
@@ -223,7 +224,7 @@ export function Header() {
             Exam Info
           </Link>
 
-          <div className="pt-2 mt-2 border-t border-slate-200 dark:border-slate-800 space-y-1">
+          <div className="pt-2 mt-2 border-t border-border space-y-1">
             <Link
               href="/#how-it-works"
               onClick={() => setMobileMenuOpen(false)}
