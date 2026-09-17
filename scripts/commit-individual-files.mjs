@@ -12,7 +12,6 @@
  */
 
 import { execSync } from "node:child_process";
-import fs from "node:fs";
 import path from "node:path";
 
 const isDryRun = process.argv.includes("--dry-run");
@@ -21,7 +20,7 @@ const shouldVerify = process.argv.includes("--verify");
 function run(cmd) {
   try {
     return execSync(cmd, { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -66,7 +65,6 @@ function getDiff(filePath) {
 function generateCommitMessage(file) {
   const filePath = file.path.replace(/\\/g, "/");
   const baseName = path.basename(filePath);
-  const ext = path.extname(filePath);
   const diff = getDiff(file.path);
 
   // 1. Explicit / Known File Handlers with Content Inspection
