@@ -49,7 +49,7 @@ export default function GlobalError({
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200 shadow-sm transition"
         >
           <Home className="w-3.5 h-3.5 text-slate-500" />
-          <span>Return to csereviewph.com</span>
+          <span>Return to ReviewTayo</span>
         </Link>
       </div>
     </div>
