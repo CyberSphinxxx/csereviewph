@@ -11,26 +11,44 @@ export interface GuideSection {
   };
 }
 
+export interface ContentSource {
+  title: string;
+  url?: string;
+  publisher?: string;
+}
+
 export interface StudyGuide {
   slug: string;
   title: string;
+  seoTitle?: string;
   subject: string;
   level: "All" | "Professional" | "Subprofessional";
   description: string;
   readTimeMinutes: number;
   lastUpdated: string;
+  isoUpdatedDate?: string;
+  author?: string;
+  authorRole?: string;
+  reviewedBy?: string;
   tags: string[];
+  sources?: ContentSource[];
   sections: GuideSection[];
 }
 
 export interface Article {
   slug: string;
   title: string;
+  seoTitle?: string;
   category: "Strategy" | "Exam Overview" | "Preparation Tips";
   description: string;
   readTimeMinutes: number;
   publishedDate: string;
+  isoPublishedDate?: string;
+  isoUpdatedDate?: string;
   author: string;
+  authorRole?: string;
+  reviewedBy?: string;
+  sources?: ContentSource[];
   keyHighlights: string[];
   content: string[];
 }
@@ -44,4 +62,5 @@ export interface FAQItem {
     | "Preparation & Review";
   question: string;
   answer: string;
+  relatedLinks?: Array<{ text: string; href: string }>;
 }
