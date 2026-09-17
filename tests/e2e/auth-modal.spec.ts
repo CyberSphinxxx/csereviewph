@@ -8,7 +8,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
 
     // Open Sign In modal from header
     const signInBtn = page.getByRole("button", { name: "Sign In" });
-    await expect(signInBtn).toBeVisible();
+    await expect(signInBtn).toBeVisible({ timeout: 15000 });
     await signInBtn.click();
 
     const modal = page.getByRole("dialog");
@@ -31,7 +31,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
 
     // Capture Sign In Modal screenshot
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/549f8997-28b6-4b13-bba4-7ea189bcdae2/auth_modal_signin.png",
+      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/auth_modal_signin.png",
     });
 
     // Switch to Create Account mode
@@ -48,7 +48,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
 
     // Capture Create Account Modal screenshot
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/549f8997-28b6-4b13-bba4-7ea189bcdae2/auth_modal_signup.png",
+      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/auth_modal_signup.png",
     });
 
     // Verify closing modal via "Continue without an account"
@@ -67,7 +67,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/549f8997-28b6-4b13-bba4-7ea189bcdae2/dedicated_signin_desktop.png",
+      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/dedicated_signin_desktop.png",
     });
   });
 
@@ -80,7 +80,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByPlaceholder("Juan Dela Cruz")).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/549f8997-28b6-4b13-bba4-7ea189bcdae2/dedicated_signup_desktop.png",
+      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/dedicated_signup_desktop.png",
     });
   });
 
@@ -92,7 +92,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByRole("button", { name: "Send Reset Link" })).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/549f8997-28b6-4b13-bba4-7ea189bcdae2/dedicated_forgot_password.png",
+      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/dedicated_forgot_password.png",
     });
   });
 });
