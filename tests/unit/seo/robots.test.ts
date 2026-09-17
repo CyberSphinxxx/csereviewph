@@ -30,9 +30,15 @@ describe("robots.ts — Search Engine & AdSense Crawler Configuration", () => {
     expect(generalRule).toBeDefined();
     expect(generalRule?.allow).toBe("/");
     expect(generalRule?.disallow).toContain("/api/");
+    expect(generalRule?.disallow).toContain("/settings/");
 
     const googlebotRule = rules.find((r) => r.userAgent === "Googlebot");
     expect(googlebotRule).toBeDefined();
     expect(googlebotRule?.allow).toBe("/");
+    expect(googlebotRule?.disallow).toContain("/api/");
+    expect(googlebotRule?.disallow).toContain("/settings/");
+    expect(googlebotRule?.disallow).toContain("/dashboard/");
+    expect(googlebotRule?.disallow).toContain("/exams/");
+    expect(googlebotRule?.disallow).toContain("/results/");
   });
 });
