@@ -29,12 +29,12 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://www.googletagservices.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://fundingchoicesmessages.google.com https://*.google.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https: https://pagead2.googlesyndication.com https://*.googlesyndication.com",
-      "frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://tpc.googlesyndication.com",
+      "connect-src 'self' https: https://pagead2.googlesyndication.com https://*.googlesyndication.com https://fundingchoicesmessages.google.com https://*.google.com",
+      "frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://tpc.googlesyndication.com https://fundingchoicesmessages.google.com https://*.google.com",
       "frame-ancestors 'self'",
     ].join("; "),
   },
@@ -47,6 +47,21 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
   experimental: {
     optimizePackageImports: ["lucide-react"],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "reviewtayo.online",
+          },
+        ],
+        destination: "https://www.reviewtayo.online/:path*",
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [
