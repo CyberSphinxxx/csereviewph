@@ -3,23 +3,53 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
-import { Mail, MessageSquare, CheckCircle2, Clock, ShieldAlert, Send } from "lucide-react";
+import { Mail, MessageSquare, CheckCircle2, Clock, ShieldAlert, Send, AlertCircle, Loader2 } from "lucide-react";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [referenceId, setReferenceId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     category: "correction",
     message: "",
+    botField: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.email || !formData.message) return;
-    // Client-side confirmation state
-    setSubmitted(true);
+    if (!formData.name || !formData.email || !formData.message) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to deliver your message.");
+      }
+
+      setReferenceId(data.referenceId || null);
+      setSubmitted(true);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred while transmitting your message. Please email us directly."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -34,7 +64,7 @@ export default function ContactPage() {
               <span>We Value Your Feedback</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Contact & Editorial Support
+              Contact &amp; Editorial Support
             </h1>
             <p className="text-base text-slate-600 max-w-xl mx-auto">
               Have a question correction, technical bug report, or privacy inquiry? Reach out to our editorial and engineering team.
@@ -52,22 +82,22 @@ export default function ContactPage() {
 
                 <div className="space-y-3 text-xs">
                   <div>
-                    <span className="text-slate-400 block uppercase tracking-wider font-semibold">General & Support</span>
+                    <span className="text-slate-400 block uppercase tracking-wider font-semibold">General &amp; Support</span>
                     <a
-                      href="mailto:support@csereviewph.com"
+                      href="mailto:support@reviewtayo.online?subject=ReviewTayo%20Support%20Inquiry"
                       className="font-medium text-brand-700 hover:underline text-sm"
                     >
-                      support@csereviewph.com
+                      support@reviewtayo.online
                     </a>
                   </div>
 
                   <div>
                     <span className="text-slate-400 block uppercase tracking-wider font-semibold">Data Privacy Officer</span>
                     <a
-                      href="mailto:privacy@csereviewph.com"
+                      href="mailto:privacy@reviewtayo.online?subject=RA%2010173%20Data%20Privacy%20Inquiry"
                       className="font-medium text-brand-700 hover:underline text-sm"
                     >
-                      privacy@csereviewph.com
+                      privacy@reviewtayo.online
                     </a>
                   </div>
                 </div>
@@ -97,6 +127,26 @@ export default function ContactPage() {
                       <MessageSquare className="w-5 h-5 text-brand-700" />
                       <h2 className="text-base font-bold text-slate-900">Send an Inquiry</h2>
                     </div>
+
+                    {errorMessage && (
+                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs space-y-2">
+                        <div className="flex items-center gap-2 font-bold">
+                          <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                          <span>Submission Error</span>
+                        </div>
+                        <p>{errorMessage}</p>
+                        <div className="pt-1">
+                          <a
+                            href={`mailto:support@reviewtayo.online?subject=${encodeURIComponent(
+                              `[${formData.category.toUpperCase()}] Inquiry from ${formData.name || "User"}`
+                            )}&body=${encodeURIComponent(formData.message)}`}
+                            className="inline-flex items-center gap-1 font-bold text-red-700 underline hover:text-red-900"
+                          >
+                            <span>Send directly via email instead &rarr;</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -183,12 +233,38 @@ export default function ContactPage() {
                       />
                     </div>
 
+                    {/* Honeypot spam trap (hidden from real examinees) */}
+                    <div className="opacity-0 absolute -left-[9999px]" aria-hidden="true">
+                      <label htmlFor="contact-botfield">Leave empty</label>
+                      <input
+                        id="contact-botfield"
+                        type="text"
+                        name="botField"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={formData.botField}
+                        onChange={(e) =>
+                          setFormData({ ...formData, botField: e.target.value })
+                        }
+                      />
+                    </div>
+
                     <button
                       type="submit"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-700 text-white text-sm font-bold shadow-md hover:bg-brand-800 transition"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-700 text-white text-sm font-bold shadow-md hover:bg-brand-800 disabled:opacity-50 transition cursor-pointer"
                     >
-                      <Send className="w-4 h-4" />
-                      Submit Message
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Transmitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>Submit Message</span>
+                        </>
+                      )}
                     </button>
                   </form>
                 ) : (
@@ -196,19 +272,28 @@ export default function ContactPage() {
                     <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-7 h-7" />
                     </div>
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-slate-900">Message Received!</h3>
-                      <p className="text-xs sm:text-sm text-slate-600 max-w-sm mx-auto">
-                        Thank you for helping us improve csereviewph.com. Our editorial and support team will review your message promptly.
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-bold text-slate-900">Inquiry Logged &amp; Queued</h3>
+                      {referenceId && (
+                        <div className="inline-block px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono text-slate-700">
+                          Reference: <span className="font-bold">{referenceId}</span>
+                        </div>
+                      )}
+                      <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                        Thank you. Your message has been saved in our editorial queue. Inquiries are retained for up to 90 days in accordance with our privacy policy and RA 10173 principles. For urgent technical or privacy requests, email us directly at{" "}
+                        <a href="mailto:contact@reviewtayo.online" className="text-brand-700 underline font-semibold">
+                          contact@reviewtayo.online
+                        </a>.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
                         setSubmitted(false);
-                        setFormData({ name: "", email: "", category: "correction", message: "" });
+                        setReferenceId(null);
+                        setFormData({ name: "", email: "", category: "correction", message: "", botField: "" });
                       }}
-                      className="inline-block text-xs font-bold text-brand-700 hover:underline pt-2"
+                      className="inline-block text-xs font-bold text-brand-700 hover:underline pt-2 cursor-pointer"
                     >
                       Send another message &rarr;
                     </button>
@@ -217,8 +302,6 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
-
-          <AdSenseBanner slotId="contact-page-bottom" />
         </div>
       </main>
 
