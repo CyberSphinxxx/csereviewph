@@ -11,6 +11,7 @@ import {
 describe("CookieConsentBanner Component — RA 10173 & AdSense Consent", () => {
   beforeEach(() => {
     localStorage.clear();
+    delete (window as unknown as { __tcfapi?: unknown }).__tcfapi;
     vi.restoreAllMocks();
   });
 
@@ -96,5 +97,14 @@ describe("CookieConsentBanner Component — RA 10173 & AdSense Consent", () => {
     expect(
       screen.getByText(/Cookie & Advertising Preferences/i)
     ).toBeInTheDocument();
+  });
+
+  it("defers to a certified TCF CMP without creating blanket local ad consent", () => {
+    (window as unknown as { __tcfapi?: unknown }).__tcfapi = vi.fn();
+
+    render(<CookieConsentBanner />);
+
+    expect(screen.queryByRole("region", { name: /Cookie and Privacy Consent/i })).not.toBeInTheDocument();
+    expect(getStoredConsent()).toBeNull();
   });
 });
