@@ -15,9 +15,12 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Civil Service Exam Guide & Information — csereviewph.com",
+  title: "Civil Service Exam Guide & Information",
   description:
     "Official guide to the Philippine Civil Service Examination (CSE-PPT): schedule, qualifications, application requirements, subtest breakdowns, and exam day protocols.",
+  alternates: {
+    canonical: "/exam-info",
+  },
 };
 
 export default function ExamInfoPage() {
