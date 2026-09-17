@@ -80,4 +80,34 @@ describe("exams.ts — Central Exam Catalog", () => {
       }
     }
   });
+
+  it("ensures honest and supportable roadmap messaging without misleading claims (RT-01)", () => {
+    const cse = getExamBySlug("cse")!;
+    expect(cse.description).toMatch(/Independent preparation/i);
+    expect(cse.description).not.toMatch(/^Official preparation/i);
+
+    const upcoming = getAllExams().filter((e) => e.availability === "coming-soon");
+    for (const exam of upcoming) {
+      expect(exam.actionLabel).toBe("Planned Reviewer");
+    }
+  });
+
+  it("verifies catalog-driven route resolution for available vs coming-soon slugs (RT-02)", () => {
+    const activeRouteSlug = "cse";
+    const resolved = getExamBySlug(activeRouteSlug);
+    expect(resolved).toBeDefined();
+    expect(resolved?.availability).toBe("available");
+    expect(resolved?.href).toBe("/cse");
+
+    // Upcoming exams exist in catalog but must not be marked as available for live test taking
+    const upcomingSlugs = ["let", "nursing", "bfp", "napolcom"];
+    for (const slug of upcomingSlugs) {
+      const exam = getExamBySlug(slug);
+      expect(exam).toBeDefined();
+      expect(exam?.availability).toBe("coming-soon");
+    }
+
+    // Invalid slug triggers undefined
+    expect(getExamBySlug("unknown-exam-slug")).toBeUndefined();
+  });
 });
