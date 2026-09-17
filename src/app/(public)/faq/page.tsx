@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { FAQS } from "@/lib/content";
+import { getFaqSchema } from "@/lib/seo/schema";
 import { ChevronDown, ChevronUp, Search, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function FAQPage() {
@@ -32,18 +33,7 @@ export default function FAQPage() {
   });
 
   // Schema.org FAQPage JSON-LD for rich snippets
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: FAQS.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
-  };
+  const faqSchema = getFaqSchema(FAQS);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -139,6 +129,27 @@ export default function FAQPage() {
                         <div className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                           <p>{faq.answer}</p>
                         </div>
+
+                        {/* Related Guides & Practice Links */}
+                        {faq.relatedLinks && faq.relatedLinks.length > 0 && (
+                          <div className="pt-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+                              Related Guides &amp; Practice
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {faq.relatedLinks.map((link, idx) => (
+                                <Link
+                                  key={idx}
+                                  href={link.href}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-xs font-medium border border-slate-200 hover:border-brand-200 transition"
+                                >
+                                  <span>{link.text}</span>
+                                  <ArrowRight className="w-3 h-3 text-slate-400" />
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Official Verification & Contextual Action Block */}
                         <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
