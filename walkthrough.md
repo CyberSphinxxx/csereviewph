@@ -1,5 +1,15 @@
 # ReviewTayo Multi-Exam Planning Walkthrough
 
+## Remediation Re-Audit — 2026-09-18
+
+The attached claim that all four findings are resolved and fully verified is not yet supported. RT-01, RT-02, and the intended RT-03 navigation split are implemented. RT-04 remains incomplete: Escape does not dismiss the desktop `More` disclosure, and the new focus/zoom/motion/contrast tests do not assert the behaviors claimed by their names. `npm run verify` passes with 54 files and 322 tests, but the complete `npm run test:e2e` run fails with 60 passed and 5 failed stale mobile-navigation expectations. See `.design/review-report.md` for evidence and corrections.
+
+## Post-Implementation Audit — 2026-09-18
+
+The Phase 1 implementation was independently rechecked. The core umbrella-brand experience, catalog, `/reviewers`, `/cse`, legacy-route preservation, SEO entries, and disabled future-exam actions are present. The audit verdict is **Needs changes**, with four medium findings covering roadmap wording, catalog-driven routing, global-versus-CSE navigation, and incomplete evidence for the claimed keyboard/focus/contrast checks. Full details are in `.design/review-report.md`.
+
+Verification rerun: `npm run verify` passed (53 files / 316 tests / 79 routes), and `npm run test:e2e` passed (60 Chromium tests).
+
 ## Result
 
 Prepared a phased product and technical plan that makes ReviewTayo the umbrella platform at `https://www.reviewtayo.online`, keeps CSE as the only launched reviewer, and establishes a safe path for LET, Nursing, BFP, NAPOLCOM, and later Philippine exams.
