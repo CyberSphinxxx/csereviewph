@@ -30,7 +30,8 @@ Full prior status is archived in ARCHIVES/progress-history.md.
   - Architecture check (`node scripts/check-architecture.mjs`): Passed (zero hardcoded exam branching in engine)
   - Unit & Integration tests (`vitest run`): **53 test files passed, 316 passed tests**
   - Production build (`next build`): Compiled successfully; **79 static & dynamic routes generated**
-- Playwright E2E browser verification: **45 passed tests** (31 passed in `seo-browser-verification.spec.ts`, 14 passed in `exam-flow.spec.ts` and `peeking-owl-visual.spec.ts`).
+- Playwright E2E browser verification: **60 passed tests across 7 test suites** (`reviewtayo-multiexam-visual.spec.ts`, `seo-browser-verification.spec.ts`, `exam-flow.spec.ts`, `auth-modal.spec.ts`, `exam-guide.spec.ts`, `adsense-browser-verification.spec.ts`, `peeking-owl-visual.spec.ts`).
+- Visual screenshots captured and verified in artifact directory (`reviewtayo_home_desktop.png`, `reviewtayo_home_mobile.png`, `reviewtayo_reviewers_catalog.png`, `reviewtayo_cse_landing.png`).
 
 ## Blocked
 - Production deployment and Search Console configuration remain blocked pending human action with production credentials.
