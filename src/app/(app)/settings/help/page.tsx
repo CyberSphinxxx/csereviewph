@@ -139,7 +139,7 @@ export default function HelpAboutSettingsPage() {
             <span>Accessibility &amp; Accommodations</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-            csereviewph.com is engineered to conform to WCAG 2.2 AA accessibility guidelines, including 44px touch targets, scalable typography, full keyboard navigation, screen-reader status live regions, and reduced-motion preferences.
+            ReviewTayo is engineered to conform to WCAG 2.2 AA accessibility guidelines, including 44px touch targets, scalable typography, full keyboard navigation, screen-reader status live regions, and reduced-motion preferences.
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export default function HelpAboutSettingsPage() {
         <div>
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Info className="w-4 h-4 text-slate-500" />
-            <span>About csereviewph.com</span>
+            <span>About ReviewTayo</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
             Independent educational preparation platform for Filipino civil service examinees.
@@ -167,7 +167,7 @@ export default function HelpAboutSettingsPage() {
         <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-200 leading-relaxed space-y-1">
           <p className="font-bold">Official Non-Affiliation Disclaimer:</p>
           <p className="text-[11px]">
-            csereviewph.com is an independent educational reviewer and is not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Philippine Civil Service Commission (CSC), the Civil Service Institute (CSI), or any Philippine government department or agency.
+            ReviewTayo is an independent educational reviewer and is not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Philippine Civil Service Commission (CSC), the Civil Service Institute (CSI), or any Philippine government department or agency.
           </p>
         </div>
 
@@ -211,7 +211,7 @@ export default function HelpAboutSettingsPage() {
         </div>
 
         <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-[11px] text-slate-700 dark:text-slate-300 space-y-1 overflow-x-auto">
-          <div>Application: csereviewph.com {diagnostics.appVersion}</div>
+          <div>Application: ReviewTayo {diagnostics.appVersion}</div>
           <div>Architecture: {diagnostics.framework}</div>
           <div>Browser: {diagnostics.userAgent}</div>
           <div>Viewport: {diagnostics.viewport}</div>
