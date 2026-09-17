@@ -56,6 +56,8 @@ export function Header() {
     pathname?.startsWith("/exams") ||
     pathname?.startsWith("/guides") ||
     pathname?.startsWith("/articles") ||
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/results") ||
     pathname === "/exam-info";
 
   return (
@@ -106,39 +108,60 @@ export function Header() {
           >
             Reviewers
           </Link>
-          <Link
-            href="/practice"
-            prefetch={true}
-            className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-              pathname?.startsWith("/practice")
-                ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            Practice
-          </Link>
-          <Link
-            href="/guides"
-            prefetch={true}
-            className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-              pathname?.startsWith("/guides")
-                ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            Study Guides
-          </Link>
-          <Link
-            href="/cse/exam-guide"
-            prefetch={true}
-            className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-              pathname?.startsWith("/cse/exam-guide")
-                ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            Exam Info
-          </Link>
+
+          {!isCseContext ? (
+            <>
+              <Link
+                href="/#how-it-works"
+                className="px-2.5 py-1.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                How It Works
+              </Link>
+              <Link
+                href="/cse"
+                prefetch={true}
+                className="px-2.5 py-1.5 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 hover:text-brand-800 dark:hover:text-white hover:bg-brand-50/70 dark:hover:bg-brand-950/50 transition font-semibold"
+              >
+                CSE Reviewer
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/practice"
+                prefetch={true}
+                className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
+                  pathname?.startsWith("/practice")
+                    ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
+                    : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                Practice
+              </Link>
+              <Link
+                href="/guides"
+                prefetch={true}
+                className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
+                  pathname?.startsWith("/guides")
+                    ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
+                    : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                Study Guides
+              </Link>
+              <Link
+                href="/cse/exam-guide"
+                prefetch={true}
+                className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
+                  pathname?.startsWith("/cse/exam-guide")
+                    ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
+                    : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                Exam Info
+              </Link>
+            </>
+          )}
 
           {/* Desktop More Menu for Utilities */}
           <div className="relative" ref={moreMenuRef}>
@@ -253,41 +276,71 @@ export function Header() {
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
           >
-            Reviewers
-          </Link>
-          <Link
-            href="/practice"
-            prefetch={true}
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-          >
-            Practice
-          </Link>
-          <Link
-            href="/guides"
-            prefetch={true}
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-          >
-            Study Guides
-          </Link>
-          <Link
-            href="/cse/exam-guide"
-            prefetch={true}
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-          >
-            Exam Info
+            All Reviewers
           </Link>
 
+          {!isCseContext ? (
+            <>
+              <Link
+                href="/#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                How It Works
+              </Link>
+              <Link
+                href="/cse"
+                prefetch={true}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-semibold text-brand-700 dark:text-brand-300 hover:bg-brand-50/60 dark:hover:bg-brand-950/40 rounded-lg transition"
+              >
+                Civil Service Exam (Live)
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="pt-1.5 pb-1 px-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                  CSE Reviewer
+                </span>
+              </div>
+              <Link
+                href="/practice"
+                prefetch={true}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                Practice Subtests
+              </Link>
+              <Link
+                href="/guides"
+                prefetch={true}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                Study Guides
+              </Link>
+              <Link
+                href="/cse/exam-guide"
+                prefetch={true}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                Exam Info
+              </Link>
+            </>
+          )}
+
           <div className="pt-2 mt-2 border-t border-border space-y-1">
-            <Link
-              href="/#how-it-works"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-            >
-              How It Works
-            </Link>
+            {isCseContext && (
+              <Link
+                href="/#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                How It Works
+              </Link>
+            )}
             <Link
               href="/faq"
               prefetch={true}
