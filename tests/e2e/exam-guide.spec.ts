@@ -23,7 +23,7 @@ test.describe("CSE Exam Guide & Official CSC Resources E2E", () => {
     await page.goto("/cse/exam-guide");
 
     // Check page title and headings
-    await expect(page).toHaveTitle(/CSE Exam Schedule, Testing Centers and Official CSC Links/i);
+    await expect(page).toHaveTitle(/CSE Exam Schedule, Requirements & Testing Centers/i);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/CSE Exam Guide and Official CSC Links/i);
 
     // Verify prominent independence disclaimer
@@ -114,17 +114,21 @@ test.describe("CSE Exam Guide & Official CSC Resources E2E", () => {
 
   test("opens sources and editorial audit trail panel", async ({ page }) => {
     await page.goto("/cse/exam-guide");
+    await page.waitForLoadState("networkidle");
 
     const sourcesSection = page.locator("#sources");
     await expect(sourcesSection).toBeVisible();
 
-    const expandBtn = page.getByRole("button", { name: /View Sourced Documents/i });
+    const expandBtn = sourcesSection.getByRole("button", { name: /View Sourced Documents/i });
+    await expect(expandBtn).toBeVisible();
     await expandBtn.click();
 
     // Sourced documents list should now be visible
-    await expect(page.getByText(/Calendar of Civil Service Examinations through Pen and Paper Test for CY 2027/i)).toBeVisible();
-    await expect(page.getByText(/Examination Announcement No. 03, s. 2026/i)).toBeVisible();
-    await expect(page.getByText(/Examination Announcement No. 04, s. 2026/i)).toBeVisible();
+    const sourcesList = sourcesSection.locator("#official-sources-list");
+    await expect(sourcesList).toBeVisible();
+    await expect(sourcesList.getByRole("heading", { name: /Calendar of Civil Service Examinations through Pen and Paper Test for CY 2027/i })).toBeVisible();
+    await expect(sourcesList.getByRole("heading", { name: /Examination Announcement No. 03, s. 2026/i })).toBeVisible();
+    await expect(sourcesList.getByRole("heading", { name: /Examination Announcement No. 04, s. 2026/i })).toBeVisible();
   });
 
   test("responsive mobile viewport interactions and anchor navigation", async ({ page }) => {
