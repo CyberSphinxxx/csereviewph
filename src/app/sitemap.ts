@@ -15,6 +15,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: `${baseUrl}/reviewers`,
+      lastModified: platformReleaseDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/cse`,
+      lastModified: platformReleaseDate,
+      changeFrequency: "daily",
+      priority: 1.0,
+    },
+    {
       url: `${baseUrl}/practice`,
       lastModified: platformReleaseDate,
       changeFrequency: "weekly",
