@@ -23,10 +23,10 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
     // Verify simplified hero copy
     await expect(page.getByText("PHILIPPINE CIVIL SERVICE EXAM REVIEWER", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Know what to/i);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/study next\./i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Philippine Civil Service Exam/i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Reviewer & Online Mock Tests/i);
     await expect(
-      page.getByText(/Take a 10-question diagnostic\. See which subjects need attention, then continue with a recommended drill\./i)
+      page.getByText(/Prepare for the CSE-PPT Professional and Subprofessional exams with free subtest drills, full-length continuous-timer mock exams/i)
     ).toBeVisible();
 
     // Verify streamlined header navigation for new visitors (no premature dashboard)
@@ -94,8 +94,8 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.getByRole("heading", { name: "Review your results" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Practice the recommended area" })).toBeVisible();
 
-    // Verify WHY STUDY WITH CSEREVIEWPH.COM section
-    await expect(page.getByText("WHY STUDY WITH CSEREVIEWPH.COM")).toBeVisible();
+    // Verify WHY STUDY WITH REVIEWTAYO section
+    await expect(page.getByText("WHY STUDY WITH REVIEWTAYO")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Original practice questions" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Detailed answer explanations" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Built for both CSE levels" })).toBeVisible();
