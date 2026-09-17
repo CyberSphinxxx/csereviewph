@@ -5,8 +5,8 @@ describe("PWA Web App Manifest (/manifest.webmanifest)", () => {
   it("generates valid PWA manifest with standalone display and Philippine CSE metadata", () => {
     const data = manifest();
 
-    expect(data.name).toContain("Civil Service Exam Reviewer PH");
-    expect(data.short_name).toBe("CSEReviewerPH");
+    expect(data.name).toContain("ReviewTayo");
+    expect(data.short_name).toBe("ReviewTayo");
     expect(data.display).toBe("standalone");
     expect(data.theme_color).toBe("#86152D");
     expect(data.background_color).toBe("#FAF8F7");
