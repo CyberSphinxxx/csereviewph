@@ -4,12 +4,28 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "ra-6713-code-of-conduct",
     title: "Republic Act No. 6713: Code of Conduct & Ethical Standards for Public Officials",
+    seoTitle: "RA 6713 Code of Conduct & Ethics Guide",
     subject: "General Information",
     level: "All",
     description:
       "A complete breakdown of the 8 Norms of Conduct, prohibited transactions, SALN filing deadlines, and penalties for government civil servants.",
     readTimeMinutes: 8,
     lastUpdated: "September 2026",
+    isoUpdatedDate: "2026-09-10T08:00:00+08:00",
+    author: "ReviewTayo Editorial Team",
+    authorRole: "Civil Service Exam Curriculum Researchers",
+    sources: [
+      {
+        title: "Republic Act No. 6713 (Code of Conduct and Ethical Standards for Public Officials and Employees)",
+        url: "https://www.officialgazette.gov.ph/1989/02/20/republic-act-no-6713/",
+        publisher: "Official Gazette of the Republic of the Philippines",
+      },
+      {
+        title: "Civil Service Commission Memorandum Circulars and Advisories",
+        url: "https://csc.gov.ph/phocadownload/userupload/erpo/announcements/2024/ExamAnnouncement06s2024_Conduct%20of%2011%20Aug%202024%20CSE-PPT.pdf",
+        publisher: "Civil Service Commission (CSC)",
+      },
+    ],
     tags: ["RA 6713", "Ethics", "SALN", "General Information", "Public Service"],
     sections: [
       {
@@ -62,12 +78,23 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "philippine-constitution-essentials",
     title: "1987 Philippine Constitution: High-Yield Provisions for Civil Service Examinees",
+    seoTitle: "1987 Philippine Constitution Reviewer",
     subject: "General Information",
     level: "All",
     description:
       "Core constitutional concepts: Article III Bill of Rights, the 3 Independent Constitutional Commissions, and public accountability.",
     readTimeMinutes: 10,
     lastUpdated: "September 2026",
+    isoUpdatedDate: "2026-09-10T08:00:00+08:00",
+    author: "ReviewTayo Editorial Team",
+    authorRole: "Civil Service Exam Curriculum Researchers",
+    sources: [
+      {
+        title: "1987 Constitution of the Republic of the Philippines (Official Text)",
+        url: "https://www.officialgazette.gov.ph/constitutions/1987-constitution/",
+        publisher: "Official Gazette of the Republic of the Philippines",
+      },
+    ],
     tags: ["Constitution", "Bill of Rights", "Civil Service Commission", "Article IX"],
     sections: [
       {
@@ -110,12 +137,23 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "verbal-ability-grammar-paragraph-org",
     title: "Verbal Ability: Grammar Mastery & Paragraph Organization Strategies",
+    seoTitle: "CSE Verbal Ability & Grammar Guide",
     subject: "Verbal Ability",
     level: "All",
     description:
       "Subject-verb agreement essentials, pronoun case rules, common idiom traps, and the chronological clue technique for paragraph organization.",
     readTimeMinutes: 7,
     lastUpdated: "September 2026",
+    isoUpdatedDate: "2026-09-10T08:00:00+08:00",
+    author: "ReviewTayo Editorial Team",
+    authorRole: "Civil Service Exam Curriculum Researchers",
+    sources: [
+      {
+        title: "Civil Service Commission Examination Announcement: Test Scope & Guidelines (Verbal Ability - English & Filipino)",
+        url: "https://csc.gov.ph/phocadownload/userupload/erpo/announcements/2024/ExamAnnouncement06s2024_Conduct%20of%2011%20Aug%202024%20CSE-PPT.pdf",
+        publisher: "Civil Service Commission (CSC)",
+      },
+    ],
     tags: ["Verbal Ability", "Grammar", "Paragraph Organization", "English", "Filipino"],
     sections: [
       {
@@ -157,12 +195,23 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "numerical-ability-word-problems",
     title: "Numerical Ability: Core Formulas, Percentage Shortcuts & Word Problems",
+    seoTitle: "CSE Numerical Ability & Math Guide",
     subject: "Numerical Ability",
     level: "All",
     description:
       "Essential algebraic formulas for ratio and proportion, percentage increases/discounts, work rate equations, and number sequences without a calculator.",
     readTimeMinutes: 9,
     lastUpdated: "September 2026",
+    isoUpdatedDate: "2026-09-10T08:00:00+08:00",
+    author: "ReviewTayo Editorial Team",
+    authorRole: "Civil Service Exam Curriculum Researchers",
+    sources: [
+      {
+        title: "Civil Service Commission Examination Announcement: Test Scope & Guidelines (Numerical Ability)",
+        url: "https://csc.gov.ph/phocadownload/userupload/erpo/announcements/2024/ExamAnnouncement06s2024_Conduct%20of%2011%20Aug%202024%20CSE-PPT.pdf",
+        publisher: "Civil Service Commission (CSC)",
+      },
+    ],
     tags: ["Numerical Ability", "Math Shortcuts", "Word Problems", "Percentages"],
     sections: [
       {
@@ -198,12 +247,23 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "analytical-reasoning-logic",
     title: "Analytical Ability: Syllogisms, Assumptions & Analogy Formulas",
+    seoTitle: "CSE Analytical Ability & Logic Guide",
     subject: "Analytical Ability",
     level: "Professional",
     description:
       "Techniques for identifying valid deductive conclusions, Venn diagram mapping for categorical syllogisms, and single-word analogies.",
     readTimeMinutes: 8,
     lastUpdated: "September 2026",
+    isoUpdatedDate: "2026-09-10T08:00:00+08:00",
+    author: "ReviewTayo Editorial Team",
+    authorRole: "Civil Service Exam Curriculum Researchers",
+    sources: [
+      {
+        title: "Civil Service Commission Examination Announcement: Test Scope & Guidelines (Analytical Ability - Professional Level)",
+        url: "https://csc.gov.ph/phocadownload/userupload/erpo/announcements/2024/ExamAnnouncement06s2024_Conduct%20of%2011%20Aug%202024%20CSE-PPT.pdf",
+        publisher: "Civil Service Commission (CSC)",
+      },
+    ],
     tags: ["Analytical Ability", "Logic", "Syllogisms", "Professional Level"],
     sections: [
       {
@@ -235,12 +295,23 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "clerical-ability-filing-procedures",
     title: "Clerical Ability: Alphabetical Filing Rules & Office Procedures",
+    seoTitle: "CSE Clerical Ability & Filing Guide",
     subject: "Clerical Ability",
     level: "Subprofessional",
     description:
       "Standard filing indexing rules (Names of individuals, business titles, government agencies) and proofreading for Subprofessional examinees.",
     readTimeMinutes: 7,
     lastUpdated: "September 2026",
+    isoUpdatedDate: "2026-09-10T08:00:00+08:00",
+    author: "ReviewTayo Editorial Team",
+    authorRole: "Civil Service Exam Curriculum Researchers",
+    sources: [
+      {
+        title: "Civil Service Commission Examination Announcement: Test Scope & Guidelines (Clerical Ability - Subprofessional Level)",
+        url: "https://csc.gov.ph/phocadownload/userupload/erpo/announcements/2024/ExamAnnouncement06s2024_Conduct%20of%2011%20Aug%202024%20CSE-PPT.pdf",
+        publisher: "Civil Service Commission (CSC)",
+      },
+    ],
     tags: ["Clerical Ability", "Filing Rules", "Office Procedures", "Subprofessional Level"],
     sections: [
       {
