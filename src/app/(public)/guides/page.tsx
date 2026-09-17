@@ -7,9 +7,12 @@ import { getAllStudyGuides } from "@/lib/content";
 import { Clock, Tag, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Civil Service Exam Study Guides — csereviewph.com",
+  title: "Civil Service Exam Study Guides by Subtest",
   description:
     "Structured syllabus study guides for the Philippine Civil Service Exam (CSE-PPT). Detailed coverage of RA 6713, Philippine Constitution, Vocabulary, Paragraph Organization, and Math.",
+  alternates: {
+    canonical: "/guides",
+  },
 };
 
 export default function StudyGuidesCatalogPage() {
