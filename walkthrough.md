@@ -1,25 +1,36 @@
-# AdSense Audit Walkthrough
+# ReviewTayo Multi-Exam Planning Walkthrough
 
-## Outcome
+## Result
 
-The site is **not ready for an AdSense review**. A detailed evidence-based report is available at `.design/review-report.md`. No application code or UI was changed.
+Prepared a phased product and technical plan that makes ReviewTayo the umbrella platform at `https://www.reviewtayo.online`, keeps CSE as the only launched reviewer, and establishes a safe path for LET, Nursing, BFP, NAPOLCOM, and later Philippine exams.
 
-## Verified
+## What was reviewed
 
-- Inspected the current source implementation for metadata, robots, sitemap, ads.txt, ad loading, consent, privacy, contact, content, and ad placements.
-- Rendered representative local public and exam-start routes.
-- Inspected the live homepage plus live robots, sitemap, ads.txt, Privacy, About, Articles, and Guides pages.
-- Confirmed the live deployment still uses old branding and points canonical/sitemap signals to `cse-reviewer-ph.vercel.app`.
-- Confirmed live ads.txt publishes `pub-0000000000000000`.
-- Confirmed the source defaults missing consent to ad permission and uses descriptive labels as AdSense slot IDs.
-- Compared the implementation with current official Google AdSense and Search documentation linked in the report.
+- Product vision, multi-exam expansion model, development phases, MVP discipline, and generic-engine constraints.
+- Existing homepage, global navigation, routes, exam configuration, preferences/storage, metadata, sitemap, and browser tests.
+- Current production-domain configuration and existing CSE SEO footprint.
+
+## Main decisions
+
+- `/` becomes the ReviewTayo platform homepage.
+- `/cse` becomes the focused entry page for the currently available reviewer.
+- `/reviewers` lists CSE and future reviewers with honest availability states.
+- Existing CSE URLs remain stable during the first implementation to reduce SEO and regression risk.
+- Future exams are catalog/configuration entries first; test flows launch only after official-rule research, original content authoring, independent review, and verification.
+- Shared engine code remains exam-neutral.
+
+## Verification status
+
+- This unit of work changes planning documents only; no application behavior was changed.
+- `npm run verify`: passed with exit code 0 (typecheck, lint, architecture check, 50 test files / 303 tests, and production build with 77 routes).
+- Browser/e2e: not applicable until the planned user-facing implementation begins.
 
 ## Definition of Done
 
-- [x] `npm run verify` passes — exit code 0; 45 test files and 252 tests passed, architecture check passed, and 71 routes built
-- [x] New/changed logic has new/updated tests — not applicable; no application logic changed
-- [x] Browser check performed for user-facing changes — no user-facing changes; local and live audit checks were performed
-- [x] No secrets committed; `.env.example` unchanged
-- [x] No exam-question content was copied or paraphrased from an external source
-- [x] Engine code has no exam-specific branching introduced
+- [x] `npm run verify` passes (typecheck, lint, architecture check, unit/integration tests, build)
+- [x] No application logic changed without tests
+- [x] Browser check correctly deferred because this task produced a plan, not UI changes
+- [x] No secrets added or committed
+- [x] No exam-question content copied or paraphrased from an external source
+- [x] No exam-specific branching added to engine code
 - [x] `implementation_plan.md` and `walkthrough.md` exist for this task
