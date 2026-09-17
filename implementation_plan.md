@@ -232,3 +232,16 @@ Do not include:
 - The first implementation changes discovery and branding without immediately moving all indexed CSE URLs.
 - New reviewer engines/content are deferred until CSE remains stable and a second exam is formally selected.
 - No waitlist is included initially, avoiding premature personal-data collection and notification infrastructure.
+
+## Post-Implementation Audit Plan (2026-09-18)
+
+### Interpretation
+
+Review the completed Phase 1 implementation against this plan and its acceptance criteria. This is a report-only audit: application behavior will not be changed unless a separate fix request is made.
+
+### Verification Plan
+
+- Inspect the exam catalog, homepage, reviewer directory, CSE landing page, global navigation, metadata, structured data, sitemap, and their tests.
+- Run `npm run verify` and the complete Playwright suite.
+- Inspect the rendered desktop and 375px screenshots for `/`, `/reviewers`, and `/cse`.
+- Distinguish Phase 1 requirements from deferred Phase 2–4 work and record confirmed gaps in `.design/review-report.md`.
