@@ -1,10 +1,16 @@
 # CSEReviewerPH / ReviewTayo — Current Handoff
 Full prior status is archived in ARCHIVES/progress-history.md.
 
-**Current SEO & AdSense Readiness Status: REMEDIATED, IMPLEMENTED & VERIFIED**
-*All remaining preview-mode robots overwrites, content claim softenings, and title length bounds are fully resolved. `npm run verify` passes with Exit Code 0 across typecheck, lint, architecture check, 50 test files (303 passed tests), and production Next.js build (77 routes).*
+**Current Status: REVIEWTAYO MULTI-EXAM REPOSITIONING PLANNED**
+*The umbrella-platform product, route, SEO, data-context, rollout, and verification plan is documented. No application code changed in this planning unit.*
 
 ## Done
+- **ReviewTayo multi-exam platform plan**:
+  - Defined ReviewTayo as the master brand and CSE as its first live reviewer.
+  - Planned a new root hero, reviewer catalog, `/reviewers`, and `/cse` entry page.
+  - Defined honest `Available`/`Beta`/`Coming soon` states for future exams.
+  - Planned phased route migration that preserves existing CSE SEO URLs initially.
+  - Defined shared exam catalog, explicit `examId` context, launch gates, acceptance criteria, and verification coverage.
 - **CI / GitHub Actions E2E Failures Resolved**:
   - `src/components/layout/Header.tsx`:
     - Fixed mobile navigation drawer accessibility contract: added `aria-controls="mobile-navigation"`, wrapped mobile drawer inside `<nav id="mobile-navigation" aria-label="Mobile navigation">`.
@@ -35,6 +41,7 @@ Full prior status is archived in ARCHIVES/progress-history.md.
   - `src/lib/env.ts`: Centralized canonical generation via `CANONICAL_ORIGIN = "https://www.reviewtayo.online"`.
 
 ## Verified
+- Latest `npm run verify` passed with **Exit Code 0** after the multi-exam planning update: typecheck, lint, architecture check, **50 test files / 303 tests**, and production build (**77 routes**).
 - `npm run verify` passed: **Exit Code 0**
   - Typecheck (`tsc --noEmit`): 0 errors
   - Lint (`eslint .`): 0 errors, 0 warnings
@@ -53,4 +60,5 @@ Full prior status is archived in ARCHIVES/progress-history.md.
 4. Add domain and URL-prefix Search Console properties for `https://www.reviewtayo.online/` and submit `https://www.reviewtayo.online/sitemap.xml`.
 
 ## Next
-- Await human authorization for production deployment and Search Console submission.
+- Implement Phase 1 from `implementation_plan.md`: exam catalog, ReviewTayo homepage, reviewer directory, CSE landing page, navigation, SEO, tests, and browser verification.
+- Production deployment and Search Console work still require the credentials/actions listed above.
