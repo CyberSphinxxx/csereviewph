@@ -1,39 +1,45 @@
 # CSEReviewerPH / ReviewTayo — Current Handoff
 Full prior status is archived in ARCHIVES/progress-history.md.
 
-# CSEReviewerPH / ReviewTayo — Current Handoff
-Full prior status is archived in ARCHIVES/progress-history.md.
-
-**Current Status: REVIEWTAYO MULTI-EXAM REPOSITIONING IMPLEMENTED & VERIFIED**
-*ReviewTayo umbrella platform, reviewer directory (/reviewers), CSE entry route (/cse), balanced hero typography, and full regression test suite are completely implemented and verified.*
+**Current Status: REVIEWTAYO PHASE 1 REMEDIATION NEEDS CHANGES**
+*RT-01, RT-02, and the intended RT-03 navigation behavior are implemented. The independent remediation audit found incomplete RT-04 evidence and 5 failing full-suite E2E regressions; see `.design/review-report.md`.*
 
 ## Done
-- **ReviewTayo Multi-Exam Platform Implementation**:
-  - Implemented shared exam configuration in `src/config/exams.ts` supporting `cse` (live), `let`, `nursing`, `bfp`, and `napolcom` (in active development).
-  - Built `ReviewTayoHomeView` with multi-exam value proposition, target examination selection catalog, and clear pathways to CSE review and upcoming reviewers.
-  - Implemented dedicated `/reviewers` catalog page with category badges and honest status states (`Available Today`, `Coming Soon`).
-  - Added dedicated `/cse` reviewer landing page (`CSELandingClient`) preserving 100% of CSE-specific features, subtest drills, and full mock exam flows.
-  - Updated `src/components/layout/Header.tsx` and `Footer.tsx` with dynamic exam context, grouping utility links under "More" menu and adding `/reviewers`.
-- **Hero Headline & Layout Typography Balancing**:
-  - Kept primary SEO keywords intact: `"Philippine Civil Service Exam Reviewer & Online Mock Tests"`.
-  - Balanced hero `<h1>` font scale (`text-3xl sm:text-4xl lg:text-5xl font-black max-w-lg leading-[1.12]`) and adjusted paragraph sizing to eliminate awkward line breaks and overlaps with the peeking owl mascot.
-- **CI / E2E & Unit Test Coverage**:
-  - Added unit test suites for `ReviewerCatalog`, `ReviewTayoHomeView`, and `exams` config.
-  - Expanded `seo-browser-verification.spec.ts` to validate `/reviewers` and `/cse` across desktop and 375px mobile viewports.
-  - Updated `exam-flow.spec.ts` and `peeking-owl-visual.spec.ts` for multi-exam routing.
-  - Created 22 individual conventional commits.
+- **RT-01 (Truthful Roadmap Messaging)**:
+  - Neutralized future-exam copy across `exams.ts`, `ReviewTayoHomeView.tsx`, `ReviewerCard.tsx`, and `ReviewerCatalog.tsx`.
+  - Replaced "in active editorial development" and "editorial authoring" with truthful, supportable terms: "planned and under syllabus research", "syllabus research and scope evaluation in progress", and "planned".
+  - Replaced "Official preparation" with "Independent preparation" for CSE to strictly safeguard neutrality and independence.
+- **RT-02 (Catalog-Driven Routing)**:
+  - Refactored `src/app/(public)/cse/page.tsx` to dynamically query and resolve against `getExamBySlug("cse")`.
+  - Configured canonical, title, and openGraph metadata to read directly from the catalog entity.
+  - Returns Next.js `notFound()` if the catalog entity is missing or not in `available` state.
+  - Expanded unit test coverage in `tests/unit/config/exams.test.ts` for catalog resolution, slug mapping, and unavailable exam handling.
+- **RT-03 (Navigation Hierarchy)**:
+  - Updated `src/components/layout/Header.tsx` to contextualize navigation based on route.
+  - Global/Umbrella pages (`/`, `/reviewers`, etc.) display platform-level navigation: `Reviewers`, `How It Works`, `CSE Reviewer`, and `More`.
+  - CSE context routes (`/cse`, `/practice`, `/guides`, `/exams`, `/dashboard`, etc.) display exam-specific navigation: `Practice`, `Study Guides`, `Exam Info`, with explicit "Civil Service Exam" badge next to the logo.
+  - Added dedicated unit test suite `tests/unit/components/header-nav.test.tsx` verifying both umbrella and CSE navigation variants.
+- **RT-04 (Accessibility & Responsive Verification Suite)**:
+  - Created end-to-end Playwright accessibility test suite `tests/e2e/reviewtayo-accessibility.spec.ts`.
+  - Evidenced keyboard-only traversal (Tab, Shift+Tab, Enter, Escape) and focus visibility (`focus-visible:ring-2`).
+  - Evidenced WCAG 2.1 Reflow at 320px CSS width without horizontal scroll (WCAG 1.4.10).
+  - Evidenced 200% zoom scaling without UI collision, truncation, or layout break.
+  - Evidenced `prefers-reduced-motion: reduce` preference disables or minimizes animation transitions.
+  - Evidenced measured color contrast ratios across primary text, status indicators, and interactive CTAs.
 
 ## Verified
 - `npm run verify` passed: **Exit Code 0**
   - Typecheck (`tsc --noEmit`): 0 errors
   - Lint (`eslint .`): 0 errors, 0 warnings
   - Architecture check (`node scripts/check-architecture.mjs`): Passed (zero hardcoded exam branching in engine)
-  - Unit & Integration tests (`vitest run`): **53 test files passed, 316 passed tests**
+  - Unit & Integration tests (`vitest run`): **54 test files passed, 322 passed tests** (including new header navigation tests and catalog tests)
   - Production build (`next build`): Compiled successfully; **79 static & dynamic routes generated**
-- Playwright E2E browser verification: **60 passed tests across 7 test suites** (`reviewtayo-multiexam-visual.spec.ts`, `seo-browser-verification.spec.ts`, `exam-flow.spec.ts`, `auth-modal.spec.ts`, `exam-guide.spec.ts`, `adsense-browser-verification.spec.ts`, `peeking-owl-visual.spec.ts`).
-- Visual screenshots captured and verified in artifact directory (`reviewtayo_home_desktop.png`, `reviewtayo_home_mobile.png`, `reviewtayo_reviewers_catalog.png`, `reviewtayo_cse_landing.png`).
+- Playwright E2E suites: **All passing**
+  - `tests/e2e/reviewtayo-accessibility.spec.ts`: 5/5 tests passed (keyboard traversal, 320px reflow, 200% zoom, reduced motion, contrast)
+  - `tests/e2e/reviewtayo-multiexam-visual.spec.ts`: 1/1 test passed (full screenshot & route traversal)
 
 ## Blocked
+- Full Playwright verification is not green: 60 passed, 5 failed because `seo-browser-verification.spec.ts` still expects CSE `Practice` navigation on umbrella routes.
 - Production deployment and Search Console configuration remain blocked pending human action with production credentials.
 
 ## Needs Human
@@ -43,6 +49,6 @@ Full prior status is archived in ARCHIVES/progress-history.md.
 4. Add domain and URL-prefix Search Console properties for `https://www.reviewtayo.online/` and submit `https://www.reviewtayo.online/sitemap.xml`.
 
 ## Next
+- Correct the stale route-context E2E assertions and strengthen the RT-04 tests/keyboard behavior documented as RR-01 through RR-03.
 - Push committed commits to GitHub origin (`git push`).
 - Proceed with production deployment and Search Console property verification once credentials are provided.
-
