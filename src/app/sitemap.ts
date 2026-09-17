@@ -1,35 +1,34 @@
 import type { MetadataRoute } from "next";
-import { getBaseUrl } from "@/lib/env";
-import { SEED_TOPICS, SEED_LEVELS } from "@/db/seed-data";
+import { getCanonicalUrl } from "@/lib/env";
 import { getAllStudyGuides, getAllArticles } from "@/lib/content";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = getBaseUrl();
-  const currentDate = new Date();
+  const baseUrl = getCanonicalUrl();
+  const platformReleaseDate = new Date("2026-09-16T00:00:00.000Z");
 
   // 1. Core platform pages
   const coreRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${baseUrl}/practice`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/exam-info`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/cse/exam-guide`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
@@ -43,102 +42,87 @@ export default function sitemap(): MetadataRoute.Sitemap {
       "official-links",
     ].map((section) => ({
       url: `${baseUrl}/cse/exam-guide/${section}`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
     {
       url: `${baseUrl}/faq`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
   ];
 
-  // 2. Exam simulation modes per level
-  const examRoutes: MetadataRoute.Sitemap = [];
-  for (const level of SEED_LEVELS) {
-    for (const mode of ["quick", "medium", "full"]) {
-      examRoutes.push({
-        url: `${baseUrl}/exams/${level.slug}/${mode}`,
-        lastModified: currentDate,
-        changeFrequency: "weekly",
-        priority: mode === "full" ? 0.9 : 0.8,
-      });
-    }
-  }
-
-  // 3. Topic-specific practice modules
-  const topicRoutes: MetadataRoute.Sitemap = SEED_TOPICS.map((topic) => ({
-    url: `${baseUrl}/practice/${topic.id}`,
-    lastModified: currentDate,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
-
-  // 4. Study Guides (Catalog and individual subtest guides)
+  // 2. Study Guides (Catalog and individual subtest guides with verified content dates)
   const studyGuides = getAllStudyGuides();
   const guideRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/guides`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     ...studyGuides.map((guide) => ({
       url: `${baseUrl}/guides/${guide.slug}`,
-      lastModified: currentDate,
+      lastModified: guide.isoUpdatedDate
+        ? new Date(guide.isoUpdatedDate)
+        : platformReleaseDate,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
   ];
 
-  // 5. Strategic Preparation Articles
+  // 3. Strategic Preparation Articles (with verified published/updated dates)
   const articles = getAllArticles();
   const articleRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/articles`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     ...articles.map((article) => ({
       url: `${baseUrl}/articles/${article.slug}`,
-      lastModified: currentDate,
+      lastModified: article.isoUpdatedDate
+        ? new Date(article.isoUpdatedDate)
+        : article.isoPublishedDate
+          ? new Date(article.isoPublishedDate)
+          : platformReleaseDate,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
   ];
 
-  // 6. Trust, legal, and AdSense compliance pages
+  // 4. Trust, legal, and AdSense compliance pages
   const trustAndLegalRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/about`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/privacy`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/terms`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/disclaimer`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/contact`,
-      lastModified: currentDate,
+      lastModified: platformReleaseDate,
       changeFrequency: "monthly",
       priority: 0.6,
     },
@@ -146,8 +130,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...coreRoutes,
-    ...examRoutes,
-    ...topicRoutes,
     ...guideRoutes,
     ...articleRoutes,
     ...trustAndLegalRoutes,
