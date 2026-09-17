@@ -19,9 +19,22 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
   const publicRoutes = [
     {
       path: "/",
-      expectedH1: "Philippine Civil Service Exam",
-      expectedTitle: "Free Philippine Civil Service Exam Reviewer & Mock Tests",
+      expectedH1: "Choose your exam.",
+      expectedTitle: "Philippine Exam Reviewer & Mock Tests",
       canonical: "https://www.reviewtayo.online",
+    },
+    {
+      path: "/reviewers",
+      expectedH1: "Philippine Examination Reviewers",
+      expectedTitle: "Philippine Exam Reviewers Directory | ReviewTayo",
+      canonical: "https://www.reviewtayo.online/reviewers",
+      hasBreadcrumbs: true,
+    },
+    {
+      path: "/cse",
+      expectedH1: "Philippine Civil Service Exam",
+      expectedTitle: "Civil Service Exam Reviewer & Online Mock Tests | ReviewTayo",
+      canonical: "https://www.reviewtayo.online/cse",
     },
     {
       path: "/practice",
