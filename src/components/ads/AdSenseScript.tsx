@@ -1,26 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Script from "next/script";
 import { getStoredConsent, type CookieConsentState } from "@/components/privacy/CookieConsentBanner";
+import { isValidPublisherId } from "@/lib/ads";
+
+/**
+ * Route prefixes where advertisements are strictly prohibited.
+ * Prevents Google Auto Ads from executing in active examination rooms,
+ * test runners, results screens, user accounts, and utility/legal pages.
+ */
+export const RESTRICTED_AD_ROUTES = [
+  "/exams",
+  "/practice",
+  "/results",
+  "/dashboard",
+  "/settings",
+  "/sign-in",
+  "/create-account",
+  "/forgot-password",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/disclaimer",
+];
 
 interface AdSenseScriptProps {
   clientId?: string;
 }
 
 export function AdSenseScript({ clientId }: AdSenseScriptProps) {
+  const pathname = usePathname();
   const effectiveClientId =
     clientId || process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "";
 
+  // Strictly opt-in: default to false until affirmative consent is confirmed (ADS-04, RA 10173)
   const [canLoadAds, setCanLoadAds] = useState(false);
 
   useEffect(() => {
-    // Determine whether user has consented to advertising cookies
+    // Determine whether user has affirmatively consented to advertising cookies
     const checkConsent = () => {
+      const win = window as unknown as { __tcfapi?: unknown };
+      if (typeof win.__tcfapi === "function") {
+        // The certified CMP's TCF signal is authoritative. Loading the publisher
+        // tag lets Google read that signal; this does not grant local ad consent.
+        setCanLoadAds(true);
+        return;
+      }
       const consent = getStoredConsent();
-      // If user hasn't chosen yet, or has chosen and allowed ads
-      // In accordance with Google EU/PH consent guidelines, we only load ads if not explicitly declined
-      if (!consent || consent.ads) {
+      if (consent && consent.hasChosen && consent.ads === true) {
         setCanLoadAds(true);
       } else {
         setCanLoadAds(false);
@@ -32,7 +61,7 @@ export function AdSenseScript({ clientId }: AdSenseScriptProps) {
     const handleConsentUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<CookieConsentState>;
       if (customEvent.detail) {
-        setCanLoadAds(customEvent.detail.ads);
+        setCanLoadAds(Boolean(customEvent.detail.hasChosen && customEvent.detail.ads));
       }
     };
 
@@ -42,7 +71,15 @@ export function AdSenseScript({ clientId }: AdSenseScriptProps) {
     };
   }, []);
 
-  if (!effectiveClientId || !canLoadAds) {
+  // Prohibit AdSense script execution on protected/private/examination routes
+  const isRestricted = Boolean(
+    pathname &&
+      RESTRICTED_AD_ROUTES.some(
+        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+      )
+  );
+
+  if (isRestricted || !isValidPublisherId(effectiveClientId) || !canLoadAds) {
     return null;
   }
 
