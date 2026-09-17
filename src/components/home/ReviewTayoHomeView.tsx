@@ -45,7 +45,7 @@ export function ReviewTayoHomeView() {
 
               {/* Supporting Copy */}
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                ReviewTayo is the modern Philippine examination preparation platform. Our <strong>Civil Service Exam (CSE-PPT)</strong> reviewer is live today with timed mock exams and topic drills—with LET, Nursing, BFP, and NAPOLCOM reviewers in active editorial development.
+                ReviewTayo is the modern Philippine examination preparation platform. Our <strong>Civil Service Exam (CSE-PPT)</strong> reviewer is live today with timed mock exams and topic drills—with LET, Nursing, BFP, and NAPOLCOM reviewers planned and under syllabus research.
               </p>
 
               {/* Action CTAs */}
