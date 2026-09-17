@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { FileText, ShieldAlert, Scale, CheckCircle2, Ban } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — csereviewph.com",
+  title: "Terms of Service",
   description:
-    "Terms of Service governing the use of csereviewph.com educational Civil Service Exam reviewer platform.",
+    "Terms of Service governing the use of ReviewTayo educational Civil Service Exam reviewer platform.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {
@@ -39,7 +41,7 @@ export default function TermsPage() {
                 1. Acceptance of Terms
               </h2>
               <p>
-                By accessing, browsing, or utilizing <strong>csereviewph.com</strong> (&ldquo;the Platform&rdquo;), you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use our services.
+                By accessing, browsing, or utilizing <strong>ReviewTayo</strong> (&ldquo;the Platform&rdquo;), you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use our services.
               </p>
             </section>
 
@@ -49,7 +51,7 @@ export default function TermsPage() {
                 2. Permitted Educational Use
               </h2>
               <p>
-                csereviewph.com is provided free of charge strictly for personal, non-commercial review and preparation for the Philippine Career Service Examination. You are granted a personal, revocable, non-exclusive license to practice questions, review educational explanations, and monitor your personal readiness.
+                ReviewTayo is provided free of charge strictly for personal, non-commercial review and preparation for the Philippine Career Service Examination. You are granted a personal, revocable, non-exclusive license to practice questions, review educational explanations, and monitor your personal readiness.
               </p>
             </section>
 
@@ -78,7 +80,7 @@ export default function TermsPage() {
                 4. Intellectual Property
               </h2>
               <p>
-                All original questions, choices, rationales, software code, graphic designs, algorithms, and documentation on csereviewph.com are the proprietary intellectual property of csereviewph.com and its educational contributors. All rights are reserved under the Intellectual Property Code of the Philippines (Republic Act No. 8293).
+                All original questions, choices, rationales, software code, graphic designs, algorithms, and documentation on ReviewTayo are the proprietary intellectual property of ReviewTayo and its educational contributors. All rights are reserved under the Intellectual Property Code of the Philippines (Republic Act No. 8293).
               </p>
             </section>
 
@@ -88,7 +90,7 @@ export default function TermsPage() {
                 5. Disclaimer of Warranties & Limitation of Liability
               </h2>
               <p>
-                The Platform is provided on an &ldquo;AS IS&rdquo; and &ldquo;AS AVAILABLE&rdquo; basis. While we strive for absolute factual accuracy and curriculum fidelity, csereviewph.com makes no guarantees that using this platform guarantees passing the official Civil Service Commission examination. In no event shall csereviewph.com or its maintainers be liable for any direct, indirect, or consequential damages resulting from your use of the platform.
+                The Platform is provided on an &ldquo;AS IS&rdquo; and &ldquo;AS AVAILABLE&rdquo; basis. While we strive for absolute factual accuracy and curriculum fidelity, ReviewTayo makes no guarantees that using this platform guarantees passing the official Civil Service Commission examination. In no event shall ReviewTayo or its maintainers be liable for any direct, indirect, or consequential damages resulting from your use of the platform.
               </p>
             </section>
 
@@ -101,8 +103,6 @@ export default function TermsPage() {
               </p>
             </section>
           </div>
-
-          <AdSenseBanner slotId="terms-page-bottom" />
         </div>
       </main>
 
