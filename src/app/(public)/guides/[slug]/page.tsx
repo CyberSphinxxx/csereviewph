@@ -5,15 +5,17 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { getAllStudyGuides, getStudyGuideBySlug } from "@/lib/content";
+import { getStudyGuideSchema, getBreadcrumbSchema } from "@/lib/seo/schema";
+import { getCanonicalUrl } from "@/lib/env";
 import {
   BookOpen,
   Clock,
   Calendar,
   CheckCircle2,
   HelpCircle,
-  ArrowLeft,
   ArrowRight,
   Sparkles,
+  User,
 } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -37,10 +39,22 @@ export async function generateMetadata({
     };
   }
 
+  const metaTitle = guide.seoTitle || `${guide.title} Study Guide`;
+
   return {
-    title: `${guide.title} — CSE Study Guide`,
+    title: metaTitle,
     description: guide.description,
-    keywords: [...guide.tags, "Civil Service Exam", "CSE Reviewer", "Study Guide"],
+    alternates: {
+      canonical: `/guides/${guide.slug}`,
+    },
+    openGraph: {
+      title: metaTitle,
+      description: guide.description,
+      type: "article",
+      url: `/guides/${guide.slug}`,
+      ...(guide.isoUpdatedDate ? { modifiedTime: guide.isoUpdatedDate } : {}),
+      authors: guide.author ? [guide.author] : ["ReviewTayo Editorial Team"],
+    },
   };
 }
 
@@ -56,22 +70,51 @@ export default async function StudyGuideDetailPage({
     notFound();
   }
 
+  const guideJsonLd = getStudyGuideSchema(guide);
+
+  const breadcrumbJsonLd = getBreadcrumbSchema([
+    {
+      name: "Home",
+      url: getCanonicalUrl(),
+    },
+    {
+      name: "Study Guides",
+      url: getCanonicalUrl("/guides"),
+    },
+    {
+      name: guide.title,
+      url: getCanonicalUrl(`/guides/${guide.slug}`),
+    },
+  ]);
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(guideJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header />
 
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Breadcrumb / Back Link */}
-          <div>
-            <Link
-              href="/guides"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand-700 transition"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Study Guides</span>
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs text-slate-500">
+            <Link href="/" className="hover:text-brand-700 transition">
+              Home
             </Link>
-          </div>
+            <span>/</span>
+            <Link href="/guides" className="hover:text-brand-700 transition">
+              Study Guides
+            </Link>
+            <span>/</span>
+            <span className="text-slate-900 font-medium truncate max-w-[200px] sm:max-w-md">
+              {guide.title}
+            </span>
+          </nav>
 
           {/* Guide Header */}
           <header className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
@@ -96,9 +139,25 @@ export default async function StudyGuideDetailPage({
               {guide.description}
             </p>
 
-            <div className="pt-2 flex items-center gap-2 text-xs text-slate-400">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Last updated: {guide.lastUpdated}</span>
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="font-semibold text-slate-800">{guide.author}</span>
+                  {guide.authorRole && (
+                    <span className="text-slate-400">({guide.authorRole})</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Last updated: {guide.lastUpdated}</span>
+                </div>
+                {guide.reviewedBy && (
+                  <div className="text-slate-500 italic">
+                    Reviewed by <span className="font-medium text-slate-700">{guide.reviewedBy}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 
@@ -124,7 +183,7 @@ export default async function StudyGuideDetailPage({
 
           {/* Guide Sections */}
           <div className="space-y-8">
-            {guide.sections.map((section, index) => (
+            {guide.sections.map((section) => (
               <section
                 key={section.id}
                 id={section.id}
@@ -190,15 +249,44 @@ export default async function StudyGuideDetailPage({
                     </div>
                   </div>
                 )}
-
-                {/* In-article AdSense Banner halfway through */}
-                {index === 0 && <AdSenseBanner slotId="guide-in-article" />}
               </section>
             ))}
           </div>
 
+          {/* Guide Sources and Official Basis */}
+          {guide.sources && guide.sources.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-3">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Official Syllabus References & Legal Authorities
+              </h3>
+              <ul className="list-disc list-inside space-y-1.5 text-xs text-slate-600">
+                {guide.sources.map((src, i) => (
+                  <li key={i}>
+                    {src.url ? (
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline text-brand-700"
+                      >
+                        {src.title}
+                      </a>
+                    ) : (
+                      <span>{src.title}</span>
+                    )}
+                    {src.publisher && (
+                      <span className="text-slate-400 ml-1">({src.publisher})</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* AdSense Placement Bottom */}
-          <AdSenseBanner slotId="guide-page-bottom" />
+          <div className="py-2">
+            <AdSenseBanner slotId="guide-page-bottom" />
+          </div>
 
           {/* Next Steps CTA */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-brand-700 to-brand-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
