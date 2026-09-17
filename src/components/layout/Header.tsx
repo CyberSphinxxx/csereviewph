@@ -57,7 +57,7 @@ export function Header() {
           href="/"
           prefetch={true}
           className="flex items-center space-x-2 sm:space-x-2.5 group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
-          aria-label="csereviewph home"
+          aria-label="ReviewTayo home"
         >
           <Logo
             format="horizontal"
