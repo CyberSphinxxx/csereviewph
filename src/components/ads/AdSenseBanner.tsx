@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getStoredConsent, type CookieConsentState } from "@/components/privacy/CookieConsentBanner";
+import { isValidPublisherId, resolveAdSlotId } from "@/lib/ads";
 
 declare global {
   interface Window {
@@ -26,24 +27,26 @@ export function AdSenseBanner({
 }: AdSenseBannerProps) {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
-  const [adsAllowed, setAdsAllowed] = useState(true);
+  // Default to false: strictly opt-in under RA 10173 and Google Publisher Policies (ADS-04)
+  const [adsAllowed, setAdsAllowed] = useState(false);
 
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "";
-  const isConfigured = Boolean(clientId && slotId);
+  const numericSlotId = resolveAdSlotId(slotId);
+  const isConfigured = Boolean(isValidPublisherId(clientId) && numericSlotId);
 
   useEffect(() => {
-    // Check initial cookie consent
+    // Check initial cookie consent: only allow ads if affirmatively consented
     const consent = getStoredConsent();
-    if (consent && !consent.ads) {
-      setAdsAllowed(false);
-    } else {
+    if (consent && consent.hasChosen && consent.ads === true) {
       setAdsAllowed(true);
+    } else {
+      setAdsAllowed(false);
     }
 
     const handleConsentUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<CookieConsentState>;
       if (customEvent.detail) {
-        setAdsAllowed(customEvent.detail.ads);
+        setAdsAllowed(Boolean(customEvent.detail.hasChosen && customEvent.detail.ads));
       }
     };
 
@@ -58,7 +61,6 @@ export function AdSenseBanner({
 
     try {
       if (typeof window !== "undefined" && adRef.current) {
-        // Push ad call to AdSense queue if not already initialized
         if (!adLoaded) {
           (window.adsbygoogle = window.adsbygoogle || []).push({});
           setAdLoaded(true);
@@ -69,34 +71,9 @@ export function AdSenseBanner({
     }
   }, [isConfigured, adsAllowed, adLoaded]);
 
-  // If user declined advertising cookies, hide ad container completely
-  if (!adsAllowed) {
+  // If user has not consented or if unit is not configured with genuine credentials, render nothing (ADS-04, ADS-06)
+  if (!adsAllowed || !isConfigured || !numericSlotId) {
     return null;
-  }
-
-  // If Google AdSense is not configured with client ID and slot ID, show clean development/preview placeholder
-  if (!isConfigured) {
-    return (
-      <aside
-        aria-label="Advertisement Placeholder"
-        className={`my-6 mx-auto w-full max-w-4xl px-4 ${className}`}
-      >
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4 text-center transition">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-            <span>Advertisement</span>
-            <span>AdSense Ready Slot</span>
-          </div>
-          <div className="py-4 flex flex-col items-center justify-center space-y-1">
-            <p className="text-xs font-semibold text-slate-600">
-              Google AdSense Placement
-            </p>
-            <p className="text-[11px] text-slate-400 max-w-md">
-              Configure <code className="bg-slate-200/70 px-1 py-0.5 rounded text-slate-700">NEXT_PUBLIC_ADSENSE_CLIENT_ID</code> and slot ID to serve verified responsive ad units.
-            </p>
-          </div>
-        </div>
-      </aside>
-    );
   }
 
   // Active production AdSense unit
@@ -114,7 +91,7 @@ export function AdSenseBanner({
           className="adsbygoogle"
           style={{ display: "block", ...style }}
           data-ad-client={clientId}
-          data-ad-slot={slotId}
+          data-ad-slot={numericSlotId}
           data-ad-format={format}
           data-full-width-responsive={responsive ? "true" : "false"}
         />
