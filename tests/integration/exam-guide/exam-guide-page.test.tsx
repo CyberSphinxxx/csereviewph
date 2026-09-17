@@ -8,7 +8,7 @@ describe("CSE Exam Guide Page Integration", () => {
     render(<ExamGuidePage />);
 
     // Header brand and exam guide active/present
-    expect(screen.getByText(/csereview/i)).toBeInTheDocument();
+    expect(screen.getByText(/reviewtayo/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Exam Guide/i).length).toBeGreaterThanOrEqual(1);
 
     // Independence disclaimer
