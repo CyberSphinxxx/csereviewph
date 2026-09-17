@@ -50,7 +50,7 @@ export function getRootWebSiteSchema() {
     name: "ReviewTayo",
     url: CANONICAL_ORIGIN,
     description:
-      "Free Philippine Civil Service Examination (CSE-PPT) reviewer and mock exam platform.",
+      "Free Philippine Civil Service and licensure exam preparation platform with online mock tests and subtest drills.",
   };
 }
 
