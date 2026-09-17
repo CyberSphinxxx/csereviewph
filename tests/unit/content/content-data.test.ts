@@ -36,6 +36,18 @@ describe("Content Platform — Study Guides, Articles & FAQ Data Integrity", () 
           expect(sec.heading.length).toBeGreaterThan(5);
           expect(sec.content.length).toBeGreaterThan(50);
         }
+
+        // Authenticity checks (ADS-09, ADS-10)
+        expect(guide.author).toBe("ReviewTayo Editorial Team");
+        expect(guide.reviewedBy).toBeUndefined();
+        expect(guide.sources).toBeDefined();
+        expect(guide.sources!.length).toBeGreaterThan(0);
+        for (const source of guide.sources!) {
+          expect(source.title.length).toBeGreaterThan(10);
+          expect(source.url).toMatch(
+            /^https:\/\/(www\.)?(officialgazette\.gov\.ph|csc\.gov\.ph)\//
+          );
+        }
       }
     });
 
@@ -70,9 +82,20 @@ describe("Content Platform — Study Guides, Articles & FAQ Data Integrity", () 
         expect(article.slug).toMatch(/^[a-z0-9-]+$/);
         expect(article.title.length).toBeGreaterThan(10);
         expect(article.description.length).toBeGreaterThan(20);
-        expect(article.author).toBeDefined();
+        expect(article.author).toBe("ReviewTayo Editorial Team");
+        expect(article.reviewedBy).toBeUndefined();
         expect(article.keyHighlights.length).toBeGreaterThan(0);
         expect(article.content.length).toBeGreaterThan(3);
+
+        // Authenticity & Verifiable Citations (ADS-09, ADS-10)
+        expect(article.sources).toBeDefined();
+        expect(article.sources!.length).toBeGreaterThan(0);
+        for (const source of article.sources!) {
+          expect(source.title.length).toBeGreaterThan(10);
+          expect(source.url).toMatch(
+            /^https:\/\/(www\.)?(officialgazette\.gov\.ph|csc\.gov\.ph)\//
+          );
+        }
       }
     });
 
