@@ -1,48 +1,34 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { getBaseUrl } from "@/lib/env";
+import { getCanonicalUrl } from "@/lib/env";
 import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
-
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { isValidPublisherId } from "@/lib/ads";
+import { getRootOrganizationSchema, getRootWebSiteSchema, getRootRobots } from "@/lib/seo/schema";
 
-const baseUrl = getBaseUrl();
+const isPreview = process.env.VERCEL_ENV === "preview";
+const baseUrl = getCanonicalUrl();
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
+  metadataBase: new URL(getCanonicalUrl()),
   title: {
-    default: "csereviewph.com — Philippine Civil Service Exam Reviewer",
-    template: "%s | csereviewph.com",
+    default: "ReviewTayo — Philippine Civil Service Exam Reviewer",
+    template: "%s | ReviewTayo",
   },
+  robots: getRootRobots(isPreview),
   description:
     "Comprehensive, 100% original Philippine Civil Service Examination (CSE-PPT) preparation platform. Practice Professional & Subprofessional mock tests with real continuous timers, detailed concept rationales, and mistake analytics.",
-  keywords: [
-    "csereviewph.com",
-    "Civil Service Exam",
-    "CSE Reviewer",
-    "CSE Professional",
-    "CSE Subprofessional",
-    "Philippine Civil Service Commission",
-    "Civil Service Mock Exam",
-    "CSE Reviewer 2026",
-    "Civil Service Reviewer Philippines",
-    "CSC PPT reviewer",
-    "RA 6713 reviewer",
-    "Philippine Constitution reviewer",
-  ],
-  authors: [{ name: "csereviewph.com Editorial Team" }],
-  creator: "csereviewph.com",
-  publisher: "csereviewph.com",
+  authors: [{ name: "ReviewTayo Editorial Team" }],
+  creator: "ReviewTayo",
+  publisher: "ReviewTayo",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
-  },
-  alternates: {
-    canonical: "/",
   },
   icons: {
     icon: [
@@ -57,31 +43,29 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_PH",
     url: baseUrl,
-    siteName: "csereviewph.com",
-    title: "csereviewph.com — Free Civil Service Exam Mock Tests & Practice",
+    siteName: "ReviewTayo",
+    title: "ReviewTayo — Free Civil Service Exam Mock Tests & Practice",
     description:
       "Pass the Philippine Civil Service Examination with confidence. Full 170-item mock tests, continuous timers, and detailed explanations for Filipino civil service examinees.",
+    images: [
+      {
+        url: `${baseUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "ReviewTayo — Philippine Civil Service Exam Reviewer",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "csereviewph.com — Civil Service Exam Reviewer",
+    title: "ReviewTayo — Civil Service Exam Reviewer",
     description:
       "Pass the Philippine Civil Service Examination with confidence. Free, 100% original, and syllabus-aligned mock tests.",
+    images: [`${baseUrl}/og-image.png`],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  other: adsenseClientId
+  other: isValidPublisherId(adsenseClientId)
     ? {
-        "google-adsense-account": adsenseClientId,
+        "google-adsense-account": adsenseClientId!.trim(),
       }
     : {},
 };
@@ -93,16 +77,10 @@ export default function RootLayout({
 }) {
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "csereviewph.com",
-    url: baseUrl,
-    description:
-      "Comprehensive, 100% original Philippine Civil Service Examination (CSE-PPT) preparation platform.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${baseUrl}/practice?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
+    "@graph": [
+      getRootOrganizationSchema(),
+      getRootWebSiteSchema(),
+    ],
   };
 
   return (
@@ -113,6 +91,12 @@ export default function RootLayout({
         <meta name="theme-color" content="#161315" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        {/* Google Consent Mode v2 default initialization (ADS-04, ADS-05) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied','wait_for_update':500});try{var c=localStorage.getItem('csereviewer_cookie_consent');if(c){var p=JSON.parse(c);if(p&&p.hasChosen){gtag('consent','update',{'ad_storage':p.ads?'granted':'denied','ad_user_data':p.ads?'granted':'denied','ad_personalization':p.ads?'granted':'denied','analytics_storage':p.analytics?'granted':'denied'});}}}catch(e){}`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
