@@ -344,7 +344,7 @@ describe("PostgreSQL Integration — Real Database Engine (PGlite)", () => {
     expect(scoreResult.isPassed).toBe(true);
   });
 
-  it("verifies critical foreign key indexes exist in PostgreSQL catalog", async () => {
+  it("verifies critical foreign key and contact indexes exist in PostgreSQL catalog", async () => {
     const res = await client.query<{ indexname: string; tablename: string }>(
       "SELECT tablename, indexname FROM pg_indexes WHERE schemaname = 'public'"
     );
@@ -357,5 +357,64 @@ describe("PostgreSQL Integration — Real Database Engine (PGlite)", () => {
     expect(indexNames.has("idx_user_answers_attempt_id")).toBe(true);
     expect(indexNames.has("idx_bookmarks_user_id")).toBe(true);
     expect(indexNames.has("idx_sessions_user_id")).toBe(true);
+
+    // Finding 1 & 3: Contact inquiries indexes
+    expect(indexNames.has("idx_contact_inquiries_expires_at")).toBe(true);
+    expect(indexNames.has("idx_contact_inquiries_ip_created")).toBe(true);
+    expect(indexNames.has("idx_contact_inquiries_status")).toBe(true);
+  });
+
+  it("stores contact inquiries and enforces 90-day retention cleanup against PostgreSQL", async () => {
+    const now = new Date();
+    const expiredDate = new Date(now.getTime() - 1000); // 1 second in past
+    const futureDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 days in future
+
+    // Insert an expired inquiry
+    await db.insert(schema.contactInquiries).values({
+      id: "inq-expired",
+      name: "Expired Inquiry",
+      email: "expired@example.com",
+      category: "other",
+      message: "This inquiry has passed its 90-day retention period.",
+      status: "unread",
+      ipHash: "hash-123",
+      createdAt: new Date(now.getTime() - 91 * 24 * 60 * 60 * 1000),
+      expiresAt: expiredDate,
+    });
+
+    // Insert an active inquiry
+    await db.insert(schema.contactInquiries).values({
+      id: "inq-active",
+      name: "Active Inquiry",
+      email: "active@example.com",
+      category: "correction",
+      message: "This inquiry is well within its 90-day retention window.",
+      status: "unread",
+      ipHash: "hash-456",
+      createdAt: now,
+      expiresAt: futureDate,
+    });
+
+    // Verify both rows exist in PostgreSQL
+    const beforeCount = await client.query<{ count: string }>(
+      "SELECT count(*) FROM contact_inquiries"
+    );
+    expect(parseInt(beforeCount.rows[0].count, 10)).toBe(2);
+
+    // Execute retention deletion (Finding 3)
+    const { lte } = await import("drizzle-orm");
+    const deleted = await db
+      .delete(schema.contactInquiries)
+      .where(lte(schema.contactInquiries.expiresAt, now))
+      .returning({ id: schema.contactInquiries.id });
+
+    expect(deleted.length).toBe(1);
+    expect(deleted[0].id).toBe("inq-expired");
+
+    // Verify only the active inquiry remains in PostgreSQL
+    const remaining = await db.select().from(schema.contactInquiries);
+    expect(remaining.length).toBe(1);
+    expect(remaining[0].id).toBe("inq-active");
   });
 });
+
