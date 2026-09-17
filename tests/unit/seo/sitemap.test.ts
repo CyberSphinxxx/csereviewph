@@ -19,26 +19,36 @@ describe("sitemap.ts — Dynamic XML Sitemap Generation", () => {
     expect(home?.changeFrequency).toBe("daily");
   });
 
-  it("includes all exam simulation modes for all levels", () => {
+  it("excludes interactive session routes and topic runners to preserve crawl budget", () => {
     const map = sitemap();
 
     for (const level of SEED_LEVELS) {
       for (const mode of ["quick", "medium", "full"]) {
         const expectedPath = `/exams/${level.slug}/${mode}`;
         const entry = map.find((e) => e.url.endsWith(expectedPath));
-        expect(entry, `Missing sitemap entry for ${expectedPath}`).toBeDefined();
+        expect(entry, `Sitemap should not include interactive session route ${expectedPath}`).toBeUndefined();
       }
     }
-  });
-
-  it("includes all seed practice topics", () => {
-    const map = sitemap();
 
     for (const topic of SEED_TOPICS) {
       const expectedPath = `/practice/${topic.id}`;
       const entry = map.find((e) => e.url.endsWith(expectedPath));
-      expect(entry, `Missing sitemap entry for topic ${topic.id}`).toBeDefined();
+      expect(entry, `Sitemap should not include topic runner ${expectedPath}`).toBeUndefined();
     }
+  });
+
+  it("assigns verified content update dates instead of generic new Date() to articles and guides", () => {
+    const map = sitemap();
+    const guideEntry = map.find((e) => e.url.endsWith("/guides/ra-6713-code-of-conduct"));
+    const articleEntry = map.find((e) => e.url.endsWith("/articles/why-examinees-fail-civil-service-exam"));
+
+    expect(guideEntry).toBeDefined();
+    expect(articleEntry).toBeDefined();
+
+    expect(guideEntry?.lastModified).toBeInstanceOf(Date);
+    expect(articleEntry?.lastModified).toBeInstanceOf(Date);
+    // Verified date should match the content date (2026-09-10)
+    expect(new Date(guideEntry!.lastModified!).toISOString()).toContain("2026-09-10");
   });
 
   it("includes mandatory trust, legal, and AdSense compliance pages", () => {
