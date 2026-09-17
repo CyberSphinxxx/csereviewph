@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { ShieldCheck, BookOpen, Clock, Target, Award, Sparkles, CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Us — csereviewph.com",
+  title: "About Our Mission & Platform",
   description:
-    "Learn about csereviewph.com, our mission to democratize Civil Service Exam preparation for all Filipinos, and our commitment to 100% original, leak-free educational content.",
+    "Learn about ReviewTayo, our mission to democratize Civil Service Exam preparation for all Filipinos, and our commitment to 100% original, leak-free educational content.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {
@@ -25,7 +27,7 @@ export default function AboutPage() {
               <span>Independent Civil Service Examination Reviewer</span>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-              About csereview<span className="text-brand-600">ph</span><span className="text-gold-600 font-extrabold ml-1">.com</span>
+              About Review<span className="text-brand-600">Tayo</span>
             </h1>
             <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
               We are dedicated to helping aspiring Filipino civil servants pass the Career Service Examination through accessible, high-fidelity practice and concept-driven instruction.
@@ -45,10 +47,10 @@ export default function AboutPage() {
             </div>
 
             <p className="text-sm text-slate-700 leading-relaxed">
-              Every year, hundreds of thousands of Filipinos take the Philippine Civil Service Examination (CSE-PPT) seeking job security, merit-based advancement, and the honor of serving the nation. Yet historically, over 80% of test-takers do not meet the 80.00% benchmark score—not for lack of intellect, but due to unfamiliarity with the continuous pacing, lack of diagnostic feedback, and reliance on disorganized review materials.
+              Every year, hundreds of thousands of Filipinos register for the Career Service Examination Pen and Paper Test (CSE-PPT). According to historical examination statistics released by the Civil Service Commission (CSC), nationwide passing rates consistently hover between 14% and 21%—meaning the majority of test-takers do not meet the 80.00% benchmark score. This is frequently driven by unfamiliarity with the continuous pacing, lack of diagnostic feedback, and reliance on disorganized review materials.
             </p>
             <p className="text-sm text-slate-700 leading-relaxed">
-              <strong>csereviewph.com</strong> was created to bridge this gap. We provide a modern, free, and distraction-free platform that accurately emulates the real exam experience, pinpoints individual weaknesses, and provides in-depth concept explanations.
+              <strong>ReviewTayo</strong> was created to bridge this gap. We provide a modern, free, and distraction-free platform that accurately emulates the real exam experience, pinpoints individual weaknesses, and provides in-depth concept explanations.
             </p>
           </div>
 
@@ -115,13 +117,10 @@ export default function AboutPage() {
               </div>
               <h3 className="font-bold text-slate-900 text-base">Free & Open</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Supported by non-intrusive advertising so that quality prep is accessible to every Filipino regardless of financial background.
+                Supported by ethical advertising on informational pages so that quality prep is accessible to every Filipino regardless of financial background.
               </p>
             </div>
           </div>
-
-          {/* AdSense Placement */}
-          <AdSenseBanner slotId="about-page-bottom" />
 
           {/* Next Action Callout */}
           <div className="text-center pt-4">
