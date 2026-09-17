@@ -5,6 +5,18 @@ Full prior status is archived in ARCHIVES/progress-history.md.
 *All remaining preview-mode robots overwrites, content claim softenings, and title length bounds are fully resolved. `npm run verify` passes with Exit Code 0 across typecheck, lint, architecture check, 50 test files (303 passed tests), and production Next.js build (77 routes).*
 
 ## Done
+- **CI / GitHub Actions E2E Failures Resolved**:
+  - `src/components/layout/Header.tsx`:
+    - Fixed mobile navigation drawer accessibility contract: added `aria-controls="mobile-navigation"`, wrapped mobile drawer inside `<nav id="mobile-navigation" aria-label="Mobile navigation">`.
+    - Added dedicated `<button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation menu">` inside the mobile drawer.
+    - Preserved constant `aria-label="Open navigation menu"` with dynamic `aria-expanded` on the hamburger toggle button.
+  - `tests/e2e/seo-browser-verification.spec.ts`:
+    - Seeded `csereviewer_cookie_consent` in `test.beforeEach` to eliminate overlay interference.
+    - Updated mobile navigation test to use accessible role locators: `page.getByRole("button", { name: "Open navigation menu" })`, `page.getByRole("navigation", { name: "Mobile navigation" })`, and `mobileNav.getByRole("button", { name: "Close navigation menu" })`.
+    - Added `page.waitForLoadState("networkidle")` to ensure client-side React hydration finishes before user interactions.
+  - `tests/e2e/exam-guide.spec.ts`:
+    - Aligned page title regex with canonical title: `/CSE Exam Schedule, Requirements & Testing Centers/i`.
+    - Resolved heading query ambiguity by scoping to `sourcesSection.locator("#official-sources-list")` and awaiting `networkidle` before clicking `expandBtn`.
 - **Preview Deployments Noindex Shielding**:
   - `src/lib/seo/schema.ts`: Added typed `getRootRobots(previewMode: boolean)` builder.
   - In preview mode (`VERCEL_ENV === "preview"`), explicitly sets `index: false, follow: false` on both root `robots` and `googleBot`.
@@ -29,8 +41,7 @@ Full prior status is archived in ARCHIVES/progress-history.md.
   - Architecture check (`node scripts/check-architecture.mjs`): Passed (zero hardcoded exam branching in engine)
   - Unit & Integration tests (`vitest run`): **50 test files passed, 303 passed tests**
   - Production build (`next build`): Compiled successfully; **77 static & dynamic routes generated**
-- Unit SEO test suite (`tests/unit/seo/`): **5 test files, 37 passed tests**
-- Playwright E2E browser verification: **27 passed tests** (exact H1 checks, mobile navigation drawer interactivity, canonicals, schema markup, robots/sitemap/ads.txt).
+- Playwright E2E browser verification: **32 passed tests** across `tests/e2e/seo-browser-verification.spec.ts` (27 passed) and `tests/e2e/exam-guide.spec.ts` (5 passed). Mobile navigation drawer, accessibility contracts, titles, and sources audit panels all pass cleanly with Exit Code 0.
 
 ## Blocked
 - Production deployment and Search Console configuration remain blocked pending human action with production credentials.
