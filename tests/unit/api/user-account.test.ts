@@ -10,6 +10,22 @@ vi.mock("@/lib/auth", () => ({
   },
 }));
 
+vi.mock("@/db", () => {
+  const chain = {
+    from: vi.fn().mockReturnThis(),
+    where: vi.fn().mockResolvedValue([]),
+  };
+  const delChain = {
+    where: vi.fn().mockResolvedValue([]),
+  };
+  return {
+    db: {
+      select: vi.fn().mockReturnValue(chain),
+      delete: vi.fn().mockReturnValue(delChain),
+    },
+  };
+});
+
 type SessionData = Awaited<ReturnType<typeof auth.api.getSession>>;
 
 describe("User Account API Endpoint — RA 10173 Portability & Erasure (/api/user/account)", () => {
