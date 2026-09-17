@@ -4,6 +4,8 @@ import { metadata as homeMetadata } from "@/app/page";
 import { metadata as rootMetadata } from "@/app/layout";
 import { getRootRobots } from "@/lib/seo/schema";
 import { metadata as examInfoMetadata } from "@/app/(public)/exam-info/page";
+import { metadata as cseMetadata } from "@/app/(public)/cse/page";
+import { metadata as reviewersMetadata } from "@/app/(public)/reviewers/page";
 import { metadata as cseExamGuideMetadata } from "@/app/(public)/cse/exam-guide/page";
 import { generateMetadata as generateExamGuideSectionMetadata } from "@/app/(public)/cse/exam-guide/[section]/page";
 import { metadata as guidesMetadata } from "@/app/(public)/guides/page";
@@ -51,6 +53,8 @@ describe("SEO Metadata & Canonical Architecture", () => {
       { name: "articles", meta: articlesMetadata, canonical: "/articles" },
       { name: "faq", meta: faqMetadata, canonical: "/faq" },
       { name: "practice", meta: practiceMetadata, canonical: "/practice" },
+      { name: "reviewers", meta: reviewersMetadata, canonical: "/reviewers" },
+      { name: "cse", meta: cseMetadata, canonical: "/cse" },
     ];
 
     const titles = new Set<string>();
