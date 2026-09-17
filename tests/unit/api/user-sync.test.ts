@@ -11,6 +11,18 @@ vi.mock("@/lib/auth", () => ({
   },
 }));
 
+vi.mock("@/db", () => {
+  const insertChain = {
+    values: vi.fn().mockReturnThis(),
+    onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+  };
+  return {
+    db: {
+      insert: vi.fn().mockReturnValue(insertChain),
+    },
+  };
+});
+
 type SessionData = Awaited<ReturnType<typeof auth.api.getSession>>;
 
 describe("User Sync API Endpoint (/api/user/sync)", () => {
