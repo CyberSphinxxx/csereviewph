@@ -19,6 +19,20 @@ describe("sitemap.ts — Dynamic XML Sitemap Generation", () => {
     expect(home?.changeFrequency).toBe("daily");
   });
 
+  it("includes /reviewers directory and /cse reviewer landing in sitemap", () => {
+    const map = sitemap();
+    const reviewers = map.find((e) => e.url.endsWith("/reviewers"));
+    const cse = map.find((e) => e.url.endsWith("/cse"));
+
+    expect(reviewers).toBeDefined();
+    expect(reviewers?.priority).toBe(0.9);
+    expect(reviewers?.changeFrequency).toBe("weekly");
+
+    expect(cse).toBeDefined();
+    expect(cse?.priority).toBe(1.0);
+    expect(cse?.changeFrequency).toBe("daily");
+  });
+
   it("excludes interactive session routes and topic runners to preserve crawl budget", () => {
     const map = sitemap();
 
