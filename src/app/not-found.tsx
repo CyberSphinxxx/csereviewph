@@ -34,7 +34,7 @@ export default function NotFound() {
           >
             <Home className="w-5 h-5 text-brand-600 mb-2 group-hover:scale-110 transition-transform" />
             <span className="text-xs font-bold text-slate-800">Return Home</span>
-            <span className="text-[11px] text-slate-500">csereviewph.com</span>
+            <span className="text-[11px] text-slate-500">reviewtayo.online</span>
           </Link>
 
           <Link
