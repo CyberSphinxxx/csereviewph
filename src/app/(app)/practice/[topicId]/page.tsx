@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SEED_TOPICS, SEED_SUBJECTS } from "@/db/seed-data";
 import { prepareExamSession } from "@/features/practice/practice-service";
 import { ExamRunner } from "@/features/practice/ExamRunner";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export function generateStaticParams() {
   return SEED_TOPICS.map((t) => ({
