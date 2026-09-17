@@ -23,7 +23,6 @@ import {
   Printer,
   AlertCircle,
 } from "lucide-react";
-import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { QuestionReportModal } from "@/features/practice/QuestionReportModal";
 
 export interface AttemptData {
@@ -514,15 +513,11 @@ export function ResultsView({ attemptData }: ResultsViewProps) {
           </div>
         </div>
 
-        <div className="print:hidden">
-          <AdSenseBanner slotId="results-review-bottom" />
-        </div>
-
         {/* Print Footer Disclaimer (CSC Rule Addendum §50) */}
         <div className="hidden print:block pt-6 border-t border-slate-300 text-[10px] text-slate-500 leading-relaxed space-y-1">
           <p className="font-bold text-slate-700">Official Civil Service Commission (CSC) Advisory Disclaimer:</p>
           <p>
-            This diagnostic scorecard is provided as an independent preparation and diagnostic study aid by CSEReviewPH.com and does not constitute an official Civil Service rating released by the Civil Service Commission. In actual Civil Service Examination (CSE-PPT) administrations, final ratings are calculated through CSC statistical item-response equating.
+            This diagnostic scorecard is provided as an independent preparation and diagnostic study aid by ReviewTayo (reviewtayo.online) and does not constitute an official Civil Service rating released by the Civil Service Commission. In actual Civil Service Examination (CSE-PPT) administrations, final ratings are calculated through CSC statistical item-response equating.
           </p>
         </div>
 
