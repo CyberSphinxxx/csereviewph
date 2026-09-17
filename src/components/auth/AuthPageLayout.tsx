@@ -46,7 +46,7 @@ export function AuthPageLayout({ mode }: AuthPageLayoutProps) {
         <Link
           href="/"
           className="inline-block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
-          aria-label="csereviewph home"
+          aria-label="ReviewTayo home"
         >
           <Logo
             format="horizontal"
