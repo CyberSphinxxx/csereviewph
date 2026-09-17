@@ -17,8 +17,29 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     });
   });
 
-  test("loads landing page with exam preparation options", async ({ page }) => {
+  test("loads ReviewTayo umbrella homepage with reviewer catalog and navigates to CSE", async ({ page }) => {
     await page.goto("/");
+    await expect(page).toHaveTitle(/Philippine Exam Reviewer & Mock Tests/i);
+
+    // Verify umbrella proposition and heading
+    await expect(page.getByText(/Philippine exam preparation, all in one place/i)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Choose your exam/i);
+
+    // Verify Reviewers catalog section
+    await expect(page.getByRole("heading", { name: /Select Your Target Examination/i })).toBeVisible();
+    await expect(page.getByText("Available Today")).toBeVisible();
+    await expect(page.getByText("Coming Soon").first()).toBeVisible();
+
+    // Click primary CTA to enter CSE reviewer
+    const startCseBtn = page.getByRole("link", { name: /Start CSE review/i });
+    await expect(startCseBtn).toBeVisible();
+    await startCseBtn.click();
+    await expect(page).toHaveURL(/\/cse$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Philippine Civil Service Exam/i);
+  });
+
+  test("loads landing page with exam preparation options", async ({ page }) => {
+    await page.goto("/cse");
     await expect(page).toHaveTitle(/Civil Service Exam Reviewer/i);
 
     // Verify simplified hero copy
@@ -42,7 +63,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
   });
 
   test("renders simplified hero with outcome study plan preview and navigates to how-it-works", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/cse");
 
     // Verify quiet exam schedule line aligned above the selector card
     await expect(page.getByText("Exam schedule")).toBeVisible();
@@ -108,7 +129,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
   test("renders subtle peeking owl on desktop without blocking controls, tracks mouse, and hides on mobile", async ({ page }) => {
     // 1. Desktop Viewport (1280x800)
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto("/");
+    await page.goto("/cse");
     await page.waitForLoadState("networkidle");
 
     // Locate the peeking owl decoration
