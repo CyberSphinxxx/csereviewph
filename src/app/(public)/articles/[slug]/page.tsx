@@ -5,11 +5,12 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { getAllArticles, getArticleBySlug } from "@/lib/content";
+import { getArticleSchema, getBreadcrumbSchema } from "@/lib/seo/schema";
+import { getCanonicalUrl } from "@/lib/env";
 import {
   Clock,
   Calendar,
   User,
-  ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Sparkles,
@@ -37,10 +38,26 @@ export async function generateMetadata({
     };
   }
 
+  const metaTitle = article.seoTitle || article.title;
+
   return {
-    title: `${article.title} — csereviewph.com`,
+    title: metaTitle,
     description: article.description,
     authors: [{ name: article.author }],
+    alternates: {
+      canonical: `/articles/${article.slug}`,
+    },
+    openGraph: {
+      title: metaTitle,
+      description: article.description,
+      type: "article",
+      url: `/articles/${article.slug}`,
+      ...(article.isoPublishedDate ? { publishedTime: article.isoPublishedDate } : {}),
+      ...(article.isoUpdatedDate || article.isoPublishedDate
+        ? { modifiedTime: article.isoUpdatedDate || article.isoPublishedDate }
+        : {}),
+      authors: [article.author],
+    },
   };
 }
 
@@ -56,22 +73,51 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
+  const articleJsonLd = getArticleSchema(article);
+
+  const breadcrumbJsonLd = getBreadcrumbSchema([
+    {
+      name: "Home",
+      url: getCanonicalUrl(),
+    },
+    {
+      name: "Articles",
+      url: getCanonicalUrl("/articles"),
+    },
+    {
+      name: article.title,
+      url: getCanonicalUrl(`/articles/${article.slug}`),
+    },
+  ]);
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header />
 
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto space-y-8">
-          {/* Back Navigation */}
-          <div>
-            <Link
-              href="/articles"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand-700 transition"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Articles</span>
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs text-slate-500">
+            <Link href="/" className="hover:text-brand-700 transition">
+              Home
             </Link>
-          </div>
+            <span>/</span>
+            <Link href="/articles" className="hover:text-brand-700 transition">
+              Articles
+            </Link>
+            <span>/</span>
+            <span className="text-slate-900 font-medium truncate max-w-[200px] sm:max-w-md">
+              {article.title}
+            </span>
+          </nav>
 
           {/* Article Header Card */}
           <header className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-5">
@@ -93,16 +139,24 @@ export default async function ArticleDetailPage({
               {article.description}
             </p>
 
-            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-              <div className="flex items-center gap-4">
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-slate-500" />
-                  <span className="font-medium text-slate-700">{article.author}</span>
+                  <span className="font-semibold text-slate-800">{article.author}</span>
+                  {article.authorRole && (
+                    <span className="text-slate-400">({article.authorRole})</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{article.publishedDate}</span>
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Published: {article.publishedDate}</span>
                 </div>
+                {article.reviewedBy && (
+                  <div className="text-slate-500 italic">
+                    Reviewed by <span className="font-medium text-slate-700">{article.reviewedBy}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-1 text-slate-400">
@@ -133,18 +187,46 @@ export default async function ArticleDetailPage({
           {/* Article Main Content Body */}
           <article className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-6 text-slate-800 text-sm sm:text-base leading-relaxed">
             {article.content.map((paragraph, index) => (
-              <div key={index} className="space-y-6">
-                <p className="text-slate-700 leading-relaxed">{paragraph}</p>
-                {/* Insert an AdSense placement halfway through the article */}
-                {index === Math.floor(article.content.length / 2) && (
-                  <AdSenseBanner slotId="article-in-article" />
-                )}
-              </div>
+              <p key={index} className="text-slate-700 leading-relaxed">
+                {paragraph}
+              </p>
             ))}
+
+            {/* Official Sources and Citations */}
+            {article.sources && article.sources.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-slate-200 space-y-2">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Official Sources & References
+                </h3>
+                <ul className="list-disc list-inside space-y-1.5 text-xs text-slate-600">
+                  {article.sources.map((src, i) => (
+                    <li key={i}>
+                      {src.url ? (
+                        <a
+                          href={src.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline text-brand-700"
+                        >
+                          {src.title}
+                        </a>
+                      ) : (
+                        <span>{src.title}</span>
+                      )}
+                      {src.publisher && (
+                        <span className="text-slate-400 ml-1">({src.publisher})</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </article>
 
           {/* AdSense Placement Bottom */}
-          <AdSenseBanner slotId="article-page-bottom" />
+          <div className="py-2">
+            <AdSenseBanner slotId="article-page-bottom" />
+          </div>
 
           {/* Action Footer Callout */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-brand-700 to-brand-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
