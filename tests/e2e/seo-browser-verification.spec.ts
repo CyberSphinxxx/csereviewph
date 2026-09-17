@@ -1,6 +1,21 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
+  test.beforeEach(async ({ context }) => {
+    await context.addInitScript(() => {
+      window.localStorage.setItem(
+        "csereviewer_cookie_consent",
+        JSON.stringify({
+          essential: true,
+          analytics: false,
+          ads: false,
+          hasChosen: true,
+          updatedAt: Date.now(),
+        })
+      );
+    });
+  });
+
   const publicRoutes = [
     {
       path: "/",
@@ -132,7 +147,8 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
 
     test(`Mobile (375px): ${route.path} renders cleanly without horizontal scroll or blocked navigation`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto(`http://localhost:3000${route.path}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`http://localhost:3000${route.path}`, { waitUntil: "load" });
+      await page.waitForLoadState("networkidle");
 
       // Ensure no horizontal body overflow
       const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -145,14 +161,14 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
       await expect(h1).toContainText(route.expectedH1);
 
       // Test mobile navigation drawer interactivity
-      const openMenuBtn = page.locator('button[aria-label="Open navigation menu"]');
+      const openMenuBtn = page.getByRole("button", { name: "Open navigation menu" });
       if (await openMenuBtn.isVisible()) {
         await openMenuBtn.click();
-        const closeMenuBtn = page.locator('button[aria-label="Close navigation menu"]');
-        await expect(closeMenuBtn).toBeVisible();
-        const practiceLink = page.locator('.md\\:hidden a[href="/practice"]');
-        await expect(practiceLink).toBeVisible();
-        await closeMenuBtn.click();
+        const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
+        await expect(mobileNav).toBeVisible();
+        await expect(mobileNav.getByRole("link", { name: /practice/i })).toBeVisible();
+        await mobileNav.getByRole("button", { name: "Close navigation menu" }).click();
+        await expect(mobileNav).toBeHidden();
         await expect(openMenuBtn).toBeVisible();
       }
     });
