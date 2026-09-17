@@ -23,20 +23,25 @@ describe("Environment & URL Resolution Helpers", () => {
     expect(getBaseUrl()).toBe("http://localhost:3000");
   });
 
+  it("returns fallback https://www.reviewtayo.online in production when no domain env is provided", () => {
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+    expect(getBaseUrl()).toBe("https://www.reviewtayo.online");
+  });
+
   it("prioritizes NEXT_PUBLIC_APP_URL when present", () => {
-    process.env.NEXT_PUBLIC_APP_URL = "https://csereviewph.com/";
+    process.env.NEXT_PUBLIC_APP_URL = "https://www.reviewtayo.online/";
     process.env.VERCEL_URL = "preview-abc.vercel.app";
-    expect(getBaseUrl()).toBe("https://csereviewph.com");
+    expect(getBaseUrl()).toBe("https://www.reviewtayo.online");
   });
 
   it("resolves BETTER_AUTH_URL if NEXT_PUBLIC_APP_URL is not set", () => {
-    process.env.BETTER_AUTH_URL = "https://auth.csereviewph.com/";
-    expect(getBaseUrl()).toBe("https://auth.csereviewph.com");
+    process.env.BETTER_AUTH_URL = "https://auth.reviewtayo.online/";
+    expect(getBaseUrl()).toBe("https://auth.reviewtayo.online");
   });
 
-  it("resolves VERCEL_PROJECT_PRODUCTION_URL when present", () => {
-    process.env.VERCEL_PROJECT_PRODUCTION_URL = "cse-reviewer.vercel.app/";
-    expect(getBaseUrl()).toBe("https://cse-reviewer.vercel.app");
+  it("resolves VERCEL_PROJECT_PRODUCTION_URL when custom non-vercel domain is present", () => {
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "custom-review.online/";
+    expect(getBaseUrl()).toBe("https://custom-review.online");
   });
 
   it("resolves VERCEL_URL preview deployment properly with https prefix", () => {
