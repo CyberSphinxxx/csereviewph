@@ -56,7 +56,7 @@ describe("ServiceWorkerRegister Component — PWA & Offline Support", () => {
       window.dispatchEvent(beforeInstallEvent);
     });
 
-    expect(screen.getByText("Install CSEReviewer App")).toBeInTheDocument();
+    expect(screen.getByText("Install ReviewTayo App")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Install$/i })).toBeInTheDocument();
   });
 });
