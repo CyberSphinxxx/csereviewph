@@ -1,4 +1,4 @@
-// Service Worker for CSEReviewerPH (csereviewph.com)
+// Service Worker for ReviewTayo (reviewtayo.online)
 // Provides full offline study support for drills, guides, and mistake reviews.
 
 const CACHE_NAME = "csereviewph-v2";
