@@ -7,9 +7,12 @@ import { getAllArticles } from "@/lib/content";
 import { Clock, ArrowRight, Calendar } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Civil Service Exam Strategy & Articles — csereviewph.com",
+  title: "Civil Service Exam Strategy & Preparation Articles",
   description:
     "Expert tips, timing strategies, and educational insights to help Filipino examinees pass the Philippine Civil Service Examination.",
+  alternates: {
+    canonical: "/articles",
+  },
 };
 
 export default function ArticlesCatalogPage() {
