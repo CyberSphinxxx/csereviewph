@@ -84,7 +84,7 @@ export function ReviewerCatalog({
               </h3>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                We are actively evaluating candidate examinations based on syllabus clarity, official regulatory guidelines, and examinee demand.
+                We are researching candidate examinations based on syllabus clarity, official regulatory guidelines, and examinee demand.
               </p>
 
               <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
