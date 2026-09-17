@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { AlertTriangle, ShieldCheck, Scale, ExternalLink } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Official Disclaimer — csereviewph.com",
+  title: "Official Disclaimer",
   description:
-    "Official Non-Affiliation and CSC Score Interpretation Notice for csereviewph.com examinees.",
+    "Official Non-Affiliation and CSC Score Interpretation Notice for ReviewTayo examinees.",
+  alternates: {
+    canonical: "/disclaimer",
+  },
 };
 
 export default function DisclaimerPage() {
@@ -43,11 +45,11 @@ export default function DisclaimerPage() {
                 </h2>
               </div>
               <p>
-                <strong>csereviewph.com</strong> is an independent educational web platform developed solely for academic review and examination preparation.
+                <strong>ReviewTayo</strong> is an independent educational web platform developed solely for academic review and examination preparation.
               </p>
               <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-950 text-xs sm:text-sm space-y-2">
                 <p className="font-semibold">
-                  csereviewph.com is NOT affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with:
+                  ReviewTayo is NOT affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with:
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-xs">
                   <li>The Philippine Civil Service Commission (CSC)</li>
@@ -104,8 +106,6 @@ export default function DisclaimerPage() {
               </p>
             </section>
           </div>
-
-          <AdSenseBanner slotId="disclaimer-page-bottom" />
 
           <div className="text-center pt-2">
             <Link
