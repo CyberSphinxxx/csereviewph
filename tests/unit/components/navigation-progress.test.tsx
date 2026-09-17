@@ -22,10 +22,10 @@ describe("Navigation & Optimization Components", () => {
     expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
-  it("renders NotFound 404 page with navigation links to csereviewph.com", () => {
+  it("renders NotFound 404 page with navigation links to reviewtayo.online", () => {
     render(<NotFound />);
     expect(screen.getByText(/Error 404/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/csereviewph\.com/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/reviewtayo\.online/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Return Home/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Topic Practice/i).length).toBeGreaterThanOrEqual(1);
   });
