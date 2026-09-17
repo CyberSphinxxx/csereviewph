@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Civil Service Exam Reviewer PH — csereviewph.com",
-    short_name: "CSEReviewerPH",
+    name: "ReviewTayo — Philippine Civil Service Exam Reviewer",
+    short_name: "ReviewTayo",
     description:
       "Comprehensive, 100% original Philippine Civil Service Examination (CSE-PPT) reviewer and offline practice platform.",
     start_url: "/",
