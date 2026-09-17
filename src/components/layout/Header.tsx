@@ -171,19 +171,38 @@ export function Header() {
           <UserNav />
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            aria-label="Open navigation menu"
             aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
             className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-white/98 dark:bg-[#1E191C]/98 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in">
+        <nav
+          id="mobile-navigation"
+          aria-label="Mobile navigation"
+          className="md:hidden border-t border-border bg-white/98 dark:bg-[#1E191C]/98 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in"
+        >
+          <div className="flex items-center justify-between pb-2 mb-1 border-b border-border/60">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Navigation Menu
+            </span>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close navigation menu"
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600"
+            >
+              <X className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </div>
+
           {showProgress && (
             <Link
               href="/dashboard"
@@ -249,7 +268,7 @@ export function Header() {
               Settings
             </Link>
           </div>
-        </div>
+        </nav>
       )}
     </header>
   );
