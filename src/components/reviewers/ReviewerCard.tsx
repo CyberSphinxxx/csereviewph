@@ -118,10 +118,10 @@ export function ReviewerCard({ exam, featured = false }: ReviewerCardProps) {
               aria-disabled="true"
               className="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 font-semibold text-xs border border-slate-200/80 dark:border-slate-800 cursor-not-allowed text-center"
             >
-              {exam.actionLabel} &bull; In Active Development
+              {exam.actionLabel} &bull; Planned
             </button>
             <p className="text-[11px] text-center text-slate-400 dark:text-slate-500">
-              Content undergoing syllabus research &amp; editorial authoring.
+              Syllabus research and scope evaluation in progress.
             </p>
           </div>
         )}
