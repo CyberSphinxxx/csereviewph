@@ -15,7 +15,7 @@ export function Footer() {
               href="/"
               prefetch={true}
               className="inline-block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
-              aria-label="csereviewph home"
+              aria-label="ReviewTayo home"
             >
               <Logo
                 format="horizontal"
@@ -27,7 +27,7 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 w-fit">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>RA 10173 Data Privacy Compliant</span>
+              <span>Privacy-First &bull; RA 10173 Principles</span>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export function Footer() {
             <ul className="space-y-2 text-xs">
               <li>
                 <Link href="/about" prefetch={true} className="hover:text-brand-700 transition">
-                  About csereviewph.com
+                  About ReviewTayo
                 </Link>
               </li>
               <li>
@@ -175,11 +175,11 @@ export function Footer() {
         {/* Disclaimer & Copyright Bottom Bar */}
         <div className="pt-6 border-t border-border text-xs text-muted-foreground space-y-2">
           <p className="leading-relaxed">
-            <strong className="text-foreground">Official Non-Affiliation Disclaimer:</strong> csereviewph.com is an independent educational platform and is not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Philippine Civil Service Commission (CSC), the Civil Service Institute (CSI), or any Philippine government department or agency.
+            <strong className="text-foreground">Official Non-Affiliation Disclaimer:</strong> ReviewTayo is an independent educational platform and is not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Philippine Civil Service Commission (CSC), the Civil Service Institute (CSI), or any Philippine government department or agency.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-slate-400">
-            <p>&copy; {new Date().getFullYear()} csereviewph.com. All rights reserved.</p>
-            <p>Authorized Digital Sellers compliant &bull; Google AdSense Ready</p>
+            <p>&copy; {new Date().getFullYear()} ReviewTayo. All rights reserved.</p>
+            <p>Independent Exam Preparation &bull; Dedicated to Filipino Civil Servants</p>
           </div>
         </div>
       </div>
