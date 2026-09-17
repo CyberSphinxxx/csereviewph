@@ -7,7 +7,7 @@ test.describe("Peeking Owl Full-Body Visual Verification & Screenshot Captures",
   test("captures desktop 1920, 1440, 1280, 1024 hidden, and mobile 390 hidden states", async ({ page }) => {
     // 1. Desktop 1920x1080 Light Theme
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("/cse");
     await page.waitForLoadState("networkidle");
 
     const peekingOwlSvg = page.locator("svg").filter({ has: page.locator("[data-owl-part='fixed-body']") });
@@ -138,7 +138,7 @@ test.describe("Peeking Owl Full-Body Visual Verification & Screenshot Captures",
 
   test("tracks cursor when hovering over main headline copy on the left without disconnecting", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
+    await page.goto("/cse");
     await page.waitForLoadState("networkidle");
 
     const headline = page.getByRole("heading", { level: 1 });
