@@ -40,13 +40,13 @@ export function HomePageClient() {
                 </div>
 
                 {/* Main Headline with brand highlight */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15]">
-                  Philippine Civil Service Exam<br />
-                  <span className="text-brand-600 dark:text-brand-400">Reviewer &amp; Online Mock Tests</span>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.12] max-w-lg">
+                  Philippine Civil Service Exam
+                  <span className="block text-brand-600 dark:text-brand-400 mt-1">Reviewer &amp; Online Mock Tests</span>
                 </h1>
 
                 {/* Two-Sentence Explanation */}
-                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-lg leading-relaxed">
+                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-md leading-relaxed">
                   Prepare for the CSE-PPT Professional and Subprofessional exams with free subtest drills, full-length continuous-timer mock exams, and clear explanations.
                 </p>
 
