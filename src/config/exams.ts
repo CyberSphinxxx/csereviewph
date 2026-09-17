@@ -34,7 +34,7 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
     shortName: "CSE",
     fullName: "Civil Service Examination (CSE-PPT)",
     description:
-      "Official preparation for Career Service Professional and Subprofessional examinations with full-length continuous timers and detailed subject breakdowns.",
+      "Independent preparation for Career Service Professional and Subprofessional examinations with full-length continuous timers and detailed subject breakdowns.",
     agency: "Civil Service Commission (CSC)",
     availability: "available",
     category: "civil-service",
