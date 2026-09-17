@@ -40,7 +40,7 @@ export function HeroExamLevelSelector({
         {/* Subtle Full-Body Peeking Owl Mascot (hidden below 1280px, peeking sideways with playful tilt) */}
         <PeekingOwl
           cardRef={cardRef}
-          className="hidden xl:block absolute -left-[98px] bottom-1 z-0 w-[170px] h-[354px] -rotate-[13deg] origin-[80%_95%] pointer-events-none select-none"
+          className="hidden xl:block absolute -left-[76px] bottom-1 z-0 w-[160px] h-[334px] -rotate-[11deg] origin-[80%_95%] pointer-events-none select-none"
         />
 
         {/* Selection Card: Clean white card, thin border, gentle shadow */}
