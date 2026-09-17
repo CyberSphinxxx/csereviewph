@@ -32,6 +32,18 @@ export function saveStoredConsent(state: CookieConsentState) {
     window.dispatchEvent(
       new CustomEvent("cookie-consent-updated", { detail: state })
     );
+
+    // Google Consent Mode v2 integration (ADS-04, ADS-05)
+    type GtagFn = (...args: unknown[]) => void;
+    const win = window as unknown as { gtag?: GtagFn };
+    if (typeof win.gtag === "function") {
+      win.gtag("consent", "update", {
+        ad_storage: state.ads ? "granted" : "denied",
+        ad_user_data: state.ads ? "granted" : "denied",
+        ad_personalization: state.ads ? "granted" : "denied",
+        analytics_storage: state.analytics ? "granted" : "denied",
+      });
+    }
   } catch {
     // ignore storage quota issues
   }
@@ -52,6 +64,17 @@ export function CookieConsentBanner() {
 
   useEffect(() => {
     setMounted(true);
+    // Certified CMP Detection (IAB TCF v2.3 / Google Privacy & Messaging)
+    // When a certified CMP is present, it is the sole authority for advertising consent.
+    const win = window as unknown as { __tcfapi?: unknown };
+
+    if (typeof win.__tcfapi === "function") {
+      // A certified CMP owns the complete TCF decision (purposes, special features,
+      // and vendor consent). Do not reduce that decision to a single local boolean.
+      setShowBanner(false);
+      return;
+    }
+
     const existing = getStoredConsent();
     if (!existing || !existing.hasChosen) {
       setShowBanner(true);
@@ -120,6 +143,7 @@ export function CookieConsentBanner() {
 
   return (
     <div
+      id="cookie-consent-banner"
       role="region"
       aria-label="Cookie and Privacy Consent"
       className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-4 bg-transparent pointer-events-none"
@@ -219,7 +243,9 @@ export function CookieConsentBanner() {
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Anonymous Analytics</span>
+                      <label htmlFor="cookie-analytics-toggle" className="font-bold text-slate-900 cursor-pointer">
+                        Anonymous Analytics
+                      </label>
                       <input
                         type="checkbox"
                         id="cookie-analytics-toggle"
@@ -238,7 +264,9 @@ export function CookieConsentBanner() {
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Advertising & Ads</span>
+                      <label htmlFor="cookie-ads-toggle" className="font-bold text-slate-900 cursor-pointer">
+                        Advertising &amp; Ads
+                      </label>
                       <input
                         type="checkbox"
                         id="cookie-ads-toggle"
