@@ -126,7 +126,7 @@ export function ServiceWorkerRegister() {
             <Download className="w-4 h-4 text-gold-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-slate-900">Install CSEReviewer App</div>
+            <div className="text-xs font-bold text-slate-900">Install ReviewTayo App</div>
             <div className="text-[11px] text-slate-500 leading-tight">
               Study anywhere on your device, even without internet.
             </div>
