@@ -17,6 +17,20 @@ vi.mock("@/lib/auth/auth-client", () => ({
   signUp: { email: vi.fn() },
 }));
 
+vi.mock("next/navigation", async () => {
+  const actual = await vi.importActual("next/navigation");
+  return {
+    ...actual,
+    usePathname: () => "/dashboard",
+    useRouter: () => ({
+      push: vi.fn(),
+      replace: vi.fn(),
+      prefetch: vi.fn(),
+      back: vi.fn(),
+    }),
+  };
+});
+
 describe("DashboardView Component", () => {
   it("renders truthful unmeasured baseline for new guests without invented numbers (D01)", () => {
     LocalStorageService.clearAllGuestData();
