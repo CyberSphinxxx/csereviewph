@@ -11,6 +11,8 @@ import type {
   SubjectReadinessMetric,
   TargetExamConfig,
 } from "./types";
+import { WORKSPACE_STORAGE_KEYS, type ExamWorkspace } from "@/lib/workspace/types";
+import { getExamSubjects } from "@/config/exams";
 
 // Storage Key Constants
 export const STORAGE_KEYS = {
@@ -100,11 +102,11 @@ export function getYesterdayString(): string {
 }
 
 const DEFAULT_FALLBACK_SUBJECTS = [
-  { id: "sub-pro-verbal", name: "Verbal Ability", slug: "verbal-ability" },
-  { id: "sub-pro-numerical", name: "Numerical Ability", slug: "numerical-ability" },
-  { id: "sub-pro-analytical", name: "Analytical Ability", slug: "analytical-ability" },
-  { id: "sub-pro-geninfo", name: "General Information", slug: "general-information" },
-  { id: "sub-subpro-clerical", name: "Clerical Operations", slug: "clerical-operations" },
+  { id: "sub-pro-verbal", name: "Verbal Ability", slug: "verbal-ability", order: 1 },
+  { id: "sub-pro-numerical", name: "Numerical Ability", slug: "numerical-ability", order: 2 },
+  { id: "sub-pro-analytical", name: "Analytical Ability", slug: "analytical-ability", order: 3 },
+  { id: "sub-pro-geninfo", name: "General Information", slug: "general-information", order: 4 },
+  { id: "sub-subpro-clerical", name: "Clerical Operations", slug: "clerical-operations", order: 5 },
 ];
 
 export class LocalStorageService {
@@ -116,7 +118,8 @@ export class LocalStorageService {
 
   /**
    * Automatically migrates legacy keys created in earlier iterations
-   * into the modern, typed cse_guest_* namespace.
+   * into the modern, typed cse_guest_* namespace, and provisions the default
+   * CSE workspace if existing user data is present.
    */
   public static runMigration(): void {
     if (!isBrowser() || this.migrated) return;
@@ -198,6 +201,67 @@ export class LocalStorageService {
         }
       }
 
+      // 4. Migrate or initialize user workspaces (idempotent)
+      const workspacesRaw = window.localStorage.getItem(WORKSPACE_STORAGE_KEYS.WORKSPACES);
+      if (!workspacesRaw) {
+        const hasHistory = Boolean(window.localStorage.getItem(STORAGE_KEYS.HISTORY));
+        const hasMistakes = Boolean(window.localStorage.getItem(STORAGE_KEYS.MISTAKES));
+        const hasBookmarks = Boolean(window.localStorage.getItem(STORAGE_KEYS.BOOKMARKS));
+        const hasTarget = Boolean(window.localStorage.getItem(STORAGE_KEYS.TARGET_EXAM));
+        const hasStreak = Boolean(window.localStorage.getItem(STORAGE_KEYS.STREAK));
+        const hasPrefs = Boolean(window.localStorage.getItem("csereviewph_user_preferences_v1"));
+
+        if (hasHistory || hasMistakes || hasBookmarks || hasTarget || hasStreak || hasPrefs) {
+          let targetDate = "2027-03-14";
+          let examName = "March 2027 CSE-PPT";
+          let dailyGoal = 25;
+          let levelId = "professional";
+          let trackName = "Professional";
+
+          if (hasTarget) {
+            try {
+              const parsedTarget = JSON.parse(window.localStorage.getItem(STORAGE_KEYS.TARGET_EXAM)!);
+              if (parsedTarget?.targetDate) targetDate = parsedTarget.targetDate;
+              if (parsedTarget?.examName) examName = parsedTarget.examName;
+              if (parsedTarget?.dailyGoal) dailyGoal = parsedTarget.dailyGoal;
+            } catch {
+              // Ignore target parse error
+            }
+          }
+
+          if (hasPrefs) {
+            try {
+              const parsedPrefs = JSON.parse(window.localStorage.getItem("csereviewph_user_preferences_v1")!);
+              if (parsedPrefs?.study?.levelId === "cse-subprofessional") {
+                levelId = "subprofessional";
+                trackName = "Subprofessional";
+              }
+            } catch {
+              // Ignore prefs parse error
+            }
+          }
+
+          const cseWorkspace: ExamWorkspace = {
+            id: "workspace_cse",
+            examId: "cse",
+            levelId,
+            trackName,
+            targetExamDate: targetDate,
+            targetExamName: examName,
+            dailyGoal,
+            createdAt: new Date().toISOString(),
+            lastAccessedAt: new Date().toISOString(),
+          };
+
+          window.localStorage.setItem(WORKSPACE_STORAGE_KEYS.WORKSPACES, JSON.stringify([cseWorkspace]));
+          window.localStorage.setItem(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, "workspace_cse");
+        } else {
+          // Brand new visitor with no prior data
+          window.localStorage.setItem(WORKSPACE_STORAGE_KEYS.WORKSPACES, JSON.stringify([]));
+          window.localStorage.removeItem(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID);
+        }
+      }
+
       this.migrated = true;
     } catch (e) {
       console.warn("[LocalStorageService] Migration skipped or failed:", e);
@@ -205,18 +269,69 @@ export class LocalStorageService {
   }
 
   /* -------------------------------------------------------------------------- */
+  /* Multi-Workspace Storage Keys & Resolution                                  */
+  /* -------------------------------------------------------------------------- */
+
+  public static resolveWorkspaceId(workspaceId?: string): string {
+    if (workspaceId) return workspaceId;
+    const currentId = safeGetItem<string | null>(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, null);
+    if (currentId) return currentId;
+    const workspaces = safeGetItem<ExamWorkspace[]>(WORKSPACE_STORAGE_KEYS.WORKSPACES, []);
+    return workspaces[0]?.id || "workspace_cse";
+  }
+
+  public static getWorkspaceStorageKey(
+    category: "history" | "mistakes" | "bookmarks" | "target_exam" | "attempt_prefix" | "draft_prefix",
+    workspaceId?: string
+  ): string {
+    const wsId = this.resolveWorkspaceId(workspaceId);
+    if (wsId === "workspace_cse") {
+      switch (category) {
+        case "history":
+          return STORAGE_KEYS.HISTORY;
+        case "mistakes":
+          return STORAGE_KEYS.MISTAKES;
+        case "bookmarks":
+          return STORAGE_KEYS.BOOKMARKS;
+        case "target_exam":
+          return STORAGE_KEYS.TARGET_EXAM;
+        case "attempt_prefix":
+          return STORAGE_KEYS.ATTEMPT_PREFIX;
+        case "draft_prefix":
+          return STORAGE_KEYS.DRAFT_PREFIX;
+      }
+    }
+    switch (category) {
+      case "history":
+        return `rt_ws_${wsId}_history`;
+      case "mistakes":
+        return `rt_ws_${wsId}_mistakes`;
+      case "bookmarks":
+        return `rt_ws_${wsId}_bookmarks`;
+      case "target_exam":
+        return `rt_ws_${wsId}_target_exam`;
+      case "attempt_prefix":
+        return `rt_ws_${wsId}_attempt_`;
+      case "draft_prefix":
+        return `rt_ws_${wsId}_draft_`;
+    }
+  }
+
+  /* -------------------------------------------------------------------------- */
   /* Active Exam Session Drafts (Auto-Save & Resumption)                        */
   /* -------------------------------------------------------------------------- */
 
-  public static getDraftKey(levelSlug: string, mode: string, topicId?: string): string {
-    return `${STORAGE_KEYS.DRAFT_PREFIX}${levelSlug}_${mode}${topicId ? `_${topicId}` : ""}`;
+  public static getDraftKey(levelSlug: string, mode: string, topicId?: string, workspaceId?: string): string {
+    const prefix = this.getWorkspaceStorageKey("draft_prefix", workspaceId);
+    return `${prefix}${levelSlug}_${mode}${topicId ? `_${topicId}` : ""}`;
   }
 
-  public static saveActiveDraft(draft: ActiveExamSessionDraft): boolean {
+  public static saveActiveDraft(draft: ActiveExamSessionDraft, workspaceId?: string): boolean {
     const key = this.getDraftKey(
       draft.levelSlug,
       draft.mode,
-      draft.questions[0]?.topicId && draft.mode === "practice" ? draft.questions[0].topicId : undefined
+      draft.questions[0]?.topicId && draft.mode === "practice" ? draft.questions[0].topicId : undefined,
+      workspaceId
     );
     return safeSetItem(key, {
       ...draft,
@@ -227,14 +342,15 @@ export class LocalStorageService {
   public static getActiveDraft(
     levelSlug: string,
     mode: string,
-    topicId?: string
+    topicId?: string,
+    workspaceId?: string
   ): ActiveExamSessionDraft | null {
-    const key = this.getDraftKey(levelSlug, mode, topicId);
+    const key = this.getDraftKey(levelSlug, mode, topicId, workspaceId);
     return safeGetItem<ActiveExamSessionDraft | null>(key, null);
   }
 
-  public static clearActiveDraft(levelSlug: string, mode: string, topicId?: string): void {
-    const key = this.getDraftKey(levelSlug, mode, topicId);
+  public static clearActiveDraft(levelSlug: string, mode: string, topicId?: string, workspaceId?: string): void {
+    const key = this.getDraftKey(levelSlug, mode, topicId, workspaceId);
     safeRemoveItem(key);
   }
 
@@ -242,34 +358,39 @@ export class LocalStorageService {
   /* Completed Attempts & History                                               */
   /* -------------------------------------------------------------------------- */
 
-  public static getAttemptHistory(): AttemptSummary[] {
+  public static getAttemptHistory(workspaceId?: string): AttemptSummary[] {
     this.runMigration();
-    return safeGetItem<AttemptSummary[]>(STORAGE_KEYS.HISTORY, []);
+    const key = this.getWorkspaceStorageKey("history", workspaceId);
+    return safeGetItem<AttemptSummary[]>(key, []);
   }
 
-  public static getAttemptDetails(attemptId: string): StoredAttemptDetails | null {
+  public static getAttemptDetails(attemptId: string, workspaceId?: string): StoredAttemptDetails | null {
     this.runMigration();
-    const modern = safeGetItem<StoredAttemptDetails | null>(
-      `${STORAGE_KEYS.ATTEMPT_PREFIX}${attemptId}`,
-      null
-    );
+    const prefix = this.getWorkspaceStorageKey("attempt_prefix", workspaceId);
+    const modern = safeGetItem<StoredAttemptDetails | null>(`${prefix}${attemptId}`, null);
     if (modern) return modern;
 
-    // Check legacy key format
-    return safeGetItem<StoredAttemptDetails | null>(
-      `${STORAGE_KEYS.LEGACY_ATTEMPT_PREFIX}${attemptId}`,
-      null
-    );
+    // Check legacy key format for CSE
+    const wsId = this.resolveWorkspaceId(workspaceId);
+    if (wsId === "workspace_cse") {
+      return safeGetItem<StoredAttemptDetails | null>(
+        `${STORAGE_KEYS.LEGACY_ATTEMPT_PREFIX}${attemptId}`,
+        null
+      );
+    }
+    return null;
   }
 
-  public static recordCompletedAttempt(attempt: StoredAttemptDetails): void {
+  public static recordCompletedAttempt(attempt: StoredAttemptDetails, workspaceId?: string): void {
     this.runMigration();
 
     // 1. Save detailed attempt record
-    safeSetItem(`${STORAGE_KEYS.ATTEMPT_PREFIX}${attempt.id}`, attempt);
+    const prefix = this.getWorkspaceStorageKey("attempt_prefix", workspaceId);
+    safeSetItem(`${prefix}${attempt.id}`, attempt);
 
     // 2. Append to history summaries
-    const history = this.getAttemptHistory();
+    const historyKey = this.getWorkspaceStorageKey("history", workspaceId);
+    const history = this.getAttemptHistory(workspaceId);
     const summary: AttemptSummary = {
       id: attempt.id,
       title: attempt.title,
@@ -283,20 +404,23 @@ export class LocalStorageService {
 
     // Prepend to show most recent first
     const updatedHistory = [summary, ...history.filter((h) => h.id !== attempt.id)];
-    safeSetItem(STORAGE_KEYS.HISTORY, updatedHistory);
+    safeSetItem(historyKey, updatedHistory);
 
     // Evict detailed attempt records beyond the 20 most recent to prevent localStorage quota exhaustion
     const MAX_DETAILED_ATTEMPTS = 20;
     if (updatedHistory.length > MAX_DETAILED_ATTEMPTS) {
       const toEvict = updatedHistory.slice(MAX_DETAILED_ATTEMPTS);
       for (const item of toEvict) {
-        safeRemoveItem(`${STORAGE_KEYS.ATTEMPT_PREFIX}${item.id}`);
-        safeRemoveItem(`${STORAGE_KEYS.LEGACY_ATTEMPT_PREFIX}${item.id}`);
+        safeRemoveItem(`${prefix}${item.id}`);
+        if (this.resolveWorkspaceId(workspaceId) === "workspace_cse") {
+          safeRemoveItem(`${STORAGE_KEYS.LEGACY_ATTEMPT_PREFIX}${item.id}`);
+        }
       }
     }
 
-    // 3. Update Mistake Bank with incorrect questions
-    const currentMistakes = this.getMistakeBank();
+    // 3. Update Mistake Bank with incorrect questions for this workspace
+    const mistakesKey = this.getWorkspaceStorageKey("mistakes", workspaceId);
+    const currentMistakes = this.getMistakeBank(workspaceId);
     const mistakeMap = new Map<string, StoredMistakeItem>(currentMistakes.map((m) => [m.id, m]));
 
     const answersMap = new Map(attempt.answers.map((a) => [a.questionId, a]));
@@ -354,9 +478,9 @@ export class LocalStorageService {
       }
     }
 
-    safeSetItem(STORAGE_KEYS.MISTAKES, Array.from(mistakeMap.values()));
+    safeSetItem(mistakesKey, Array.from(mistakeMap.values()));
 
-    // 4. Update Study Streak & Daily Questions Count
+    // 4. Update Study Streak & Daily Questions Count (Platform-wide global streak)
     this.addDailyQuestionsAnswered(attempt.answers.length);
     this.recordDailyActivity();
 
@@ -364,43 +488,52 @@ export class LocalStorageService {
     const levelSlug = attempt.title.toLowerCase().includes("subprof")
       ? "subprofessional"
       : "professional";
-    this.clearActiveDraft(levelSlug, attempt.mode);
+    this.clearActiveDraft(levelSlug, attempt.mode, undefined, workspaceId);
   }
 
-  public static deleteAttempt(attemptId: string): void {
-    const history = this.getAttemptHistory();
+  public static deleteAttempt(attemptId: string, workspaceId?: string): void {
+    const historyKey = this.getWorkspaceStorageKey("history", workspaceId);
+    const prefix = this.getWorkspaceStorageKey("attempt_prefix", workspaceId);
+    const history = this.getAttemptHistory(workspaceId);
     const updated = history.filter((h) => h.id !== attemptId);
-    safeSetItem(STORAGE_KEYS.HISTORY, updated);
-    safeRemoveItem(`${STORAGE_KEYS.ATTEMPT_PREFIX}${attemptId}`);
-    safeRemoveItem(`${STORAGE_KEYS.LEGACY_ATTEMPT_PREFIX}${attemptId}`);
+    safeSetItem(historyKey, updated);
+    safeRemoveItem(`${prefix}${attemptId}`);
+    if (this.resolveWorkspaceId(workspaceId) === "workspace_cse") {
+      safeRemoveItem(`${STORAGE_KEYS.LEGACY_ATTEMPT_PREFIX}${attemptId}`);
+    }
   }
 
   /* -------------------------------------------------------------------------- */
   /* Mistake Bank                                                               */
   /* -------------------------------------------------------------------------- */
 
-  public static getMistakeBank(): StoredMistakeItem[] {
+  public static getMistakeBank(workspaceId?: string): StoredMistakeItem[] {
     this.runMigration();
-    return safeGetItem<StoredMistakeItem[]>(STORAGE_KEYS.MISTAKES, []);
+    const key = this.getWorkspaceStorageKey("mistakes", workspaceId);
+    return safeGetItem<StoredMistakeItem[]>(key, []);
   }
 
-  public static removeMistake(questionId: string): void {
-    const current = this.getMistakeBank();
+  public static removeMistake(questionId: string, workspaceId?: string): void {
+    const key = this.getWorkspaceStorageKey("mistakes", workspaceId);
+    const current = this.getMistakeBank(workspaceId);
     const filtered = current.filter((m) => m.id !== questionId);
-    safeSetItem(STORAGE_KEYS.MISTAKES, filtered);
+    safeSetItem(key, filtered);
   }
 
-  public static clearMistakeBank(): void {
-    safeSetItem(STORAGE_KEYS.MISTAKES, []);
-    safeRemoveItem(STORAGE_KEYS.LEGACY_MISTAKES);
+  public static clearMistakeBank(workspaceId?: string): void {
+    const key = this.getWorkspaceStorageKey("mistakes", workspaceId);
+    safeSetItem(key, []);
+    if (this.resolveWorkspaceId(workspaceId) === "workspace_cse") {
+      safeRemoveItem(STORAGE_KEYS.LEGACY_MISTAKES);
+    }
   }
 
   /**
    * Returns mistake items that are currently due for spaced repetition review
    * (items in Box 1-4 whose nextReviewDue is now or in the past).
    */
-  public static getDueMistakes(): StoredMistakeItem[] {
-    const all = this.getMistakeBank();
+  public static getDueMistakes(workspaceId?: string): StoredMistakeItem[] {
+    const all = this.getMistakeBank(workspaceId);
     const now = Date.now();
     return all.filter((m) => {
       const box = m.box || 1;
@@ -415,9 +548,11 @@ export class LocalStorageService {
    */
   public static updateMistakeSRS(
     questionId: string,
-    isCorrect: boolean
+    isCorrect: boolean,
+    workspaceId?: string
   ): StoredMistakeItem | null {
-    const all = this.getMistakeBank();
+    const key = this.getWorkspaceStorageKey("mistakes", workspaceId);
+    const all = this.getMistakeBank(workspaceId);
     const idx = all.findIndex((m) => m.id === questionId);
     if (idx === -1) return null;
 
@@ -449,15 +584,16 @@ export class LocalStorageService {
     }
 
     all[idx] = updatedItem;
-    safeSetItem(STORAGE_KEYS.MISTAKES, all);
+    safeSetItem(key, all);
     return updatedItem;
   }
 
   /**
    * Directly marks a mistake item as Mastered (Leitner Box 5).
    */
-  public static markMistakeMastered(questionId: string): void {
-    const all = this.getMistakeBank();
+  public static markMistakeMastered(questionId: string, workspaceId?: string): void {
+    const key = this.getWorkspaceStorageKey("mistakes", workspaceId);
+    const all = this.getMistakeBank(workspaceId);
     const idx = all.findIndex((m) => m.id === questionId);
     if (idx === -1) return;
 
@@ -468,19 +604,19 @@ export class LocalStorageService {
       lastReviewedAt: new Date().toISOString(),
       nextReviewDue: calculateNextReviewDate(5, new Date()),
     };
-    safeSetItem(STORAGE_KEYS.MISTAKES, all);
+    safeSetItem(key, all);
   }
 
   /**
    * Retrieves summary counts by Leitner box for visual progress indicators.
    */
-  public static getMistakeStats(): {
+  public static getMistakeStats(workspaceId?: string): {
     total: number;
     dueCount: number;
     masteredCount: number;
     byBox: Record<1 | 2 | 3 | 4 | 5, number>;
   } {
-    const all = this.getMistakeBank();
+    const all = this.getMistakeBank(workspaceId);
     const now = Date.now();
     const byBox: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let dueCount = 0;
@@ -508,24 +644,26 @@ export class LocalStorageService {
   /* Bookmarks                                                                  */
   /* -------------------------------------------------------------------------- */
 
-  public static getBookmarks(): StoredBookmarkItem[] {
+  public static getBookmarks(workspaceId?: string): StoredBookmarkItem[] {
     this.runMigration();
-    return safeGetItem<StoredBookmarkItem[]>(STORAGE_KEYS.BOOKMARKS, []);
+    const key = this.getWorkspaceStorageKey("bookmarks", workspaceId);
+    return safeGetItem<StoredBookmarkItem[]>(key, []);
   }
 
-  public static isBookmarked(questionId: string): boolean {
-    const bookmarks = this.getBookmarks();
+  public static isBookmarked(questionId: string, workspaceId?: string): boolean {
+    const bookmarks = this.getBookmarks(workspaceId);
     return bookmarks.some((b) => b.id === questionId);
   }
 
-  public static toggleBookmark(question: EngineQuestion, notes?: string): boolean {
-    const bookmarks = this.getBookmarks();
+  public static toggleBookmark(question: EngineQuestion, notes?: string, workspaceId?: string): boolean {
+    const key = this.getWorkspaceStorageKey("bookmarks", workspaceId);
+    const bookmarks = this.getBookmarks(workspaceId);
     const existsIndex = bookmarks.findIndex((b) => b.id === question.id);
 
     if (existsIndex >= 0) {
       // Remove
       bookmarks.splice(existsIndex, 1);
-      safeSetItem(STORAGE_KEYS.BOOKMARKS, bookmarks);
+      safeSetItem(key, bookmarks);
       return false;
     } else {
       // Add
@@ -535,19 +673,20 @@ export class LocalStorageService {
         bookmarkedAt: new Date().toISOString(),
         notes,
       });
-      safeSetItem(STORAGE_KEYS.BOOKMARKS, bookmarks);
+      safeSetItem(key, bookmarks);
       return true;
     }
   }
 
-  public static removeBookmark(questionId: string): void {
-    const bookmarks = this.getBookmarks();
+  public static removeBookmark(questionId: string, workspaceId?: string): void {
+    const key = this.getWorkspaceStorageKey("bookmarks", workspaceId);
+    const bookmarks = this.getBookmarks(workspaceId);
     const filtered = bookmarks.filter((b) => b.id !== questionId);
-    safeSetItem(STORAGE_KEYS.BOOKMARKS, filtered);
+    safeSetItem(key, filtered);
   }
 
   /* -------------------------------------------------------------------------- */
-  /* Study Streak & Activity Tracking                                           */
+  /* Study Streak & Activity Tracking (Platform-wide)                           */
   /* -------------------------------------------------------------------------- */
 
   public static getStudyStreak(): StudyStreakData {
@@ -597,10 +736,10 @@ export class LocalStorageService {
    * Generates continuous daily cells for the activity grid across the last N weeks
    * up to today, mapped in Asia/Manila date keys.
    */
-  public static getActivityGridData(weeks = 12): DailyActivityCell[] {
+  public static getActivityGridData(weeks = 12, workspaceId?: string): DailyActivityCell[] {
     const today = getTodayString();
     const streak = this.getStudyStreak();
-    const history = this.getAttemptHistory();
+    const history = this.getAttemptHistory(workspaceId);
     const checkIns = new Set(streak.checkInDates || []);
     const activeDates = new Set(streak.activeDates || []);
 
@@ -689,26 +828,62 @@ export class LocalStorageService {
     return updated;
   }
 
-  public static getTargetExamConfig(): TargetExamConfig {
-    return safeGetItem<TargetExamConfig>(STORAGE_KEYS.TARGET_EXAM, {
-      targetDate: "2027-03-14",
-      examName: "March 2027 CSE-PPT",
-      dailyGoal: 25,
+  public static getTargetExamConfig(workspaceId?: string): TargetExamConfig {
+    this.runMigration();
+    const wsId = this.resolveWorkspaceId(workspaceId);
+    const key = this.getWorkspaceStorageKey("target_exam", wsId);
+    const workspaces = safeGetItem<ExamWorkspace[]>(WORKSPACE_STORAGE_KEYS.WORKSPACES, []);
+    const workspace = workspaces.find((w) => w.id === wsId);
+
+    const defaultDate = workspace?.targetExamDate || "2027-03-14";
+    const defaultName = workspace?.targetExamName || (workspace?.examId === "cse" ? "March 2027 CSE-PPT" : `${workspace?.trackName || "Target"} Exam`);
+    const defaultGoal = workspace?.dailyGoal || 25;
+
+    return safeGetItem<TargetExamConfig>(key, {
+      targetDate: defaultDate,
+      examName: defaultName,
+      dailyGoal: defaultGoal,
     });
   }
 
-  public static saveTargetExamConfig(config: TargetExamConfig): boolean {
-    return safeSetItem(STORAGE_KEYS.TARGET_EXAM, config);
+  public static saveTargetExamConfig(config: TargetExamConfig, workspaceId?: string): boolean {
+    const wsId = this.resolveWorkspaceId(workspaceId);
+    const key = this.getWorkspaceStorageKey("target_exam", wsId);
+    const saved = safeSetItem(key, config);
+
+    // Sync to workspace metadata
+    const workspaces = safeGetItem<ExamWorkspace[]>(WORKSPACE_STORAGE_KEYS.WORKSPACES, []);
+    const idx = workspaces.findIndex((w) => w.id === wsId);
+    if (idx >= 0) {
+      workspaces[idx] = {
+        ...workspaces[idx],
+        targetExamDate: config.targetDate,
+        targetExamName: config.examName,
+        dailyGoal: config.dailyGoal,
+        lastAccessedAt: new Date().toISOString(),
+      };
+      safeSetItem(WORKSPACE_STORAGE_KEYS.WORKSPACES, workspaces);
+    }
+
+    return saved;
   }
 
   /* -------------------------------------------------------------------------- */
   /* Dynamic Diagnostic Metrics (Dynamic Subject Readiness)                     */
   /* -------------------------------------------------------------------------- */
 
-  public static getSubjectReadiness(): SubjectReadinessMetric[] {
-    const history = this.getAttemptHistory();
+  public static getSubjectReadiness(workspaceId?: string): SubjectReadinessMetric[] {
+    const wsId = this.resolveWorkspaceId(workspaceId);
+    const workspaces = safeGetItem<ExamWorkspace[]>(WORKSPACE_STORAGE_KEYS.WORKSPACES, []);
+    const workspace = workspaces.find((w) => w.id === wsId);
+    const examId = workspace?.examId || "cse";
+    const levelId = workspace?.levelId;
 
-    // Default template from SEED_SUBJECTS keyed by slug
+    const subjectsConfig = getExamSubjects(examId, levelId);
+    const fallbackList = subjectsConfig.length > 0 ? subjectsConfig : DEFAULT_FALLBACK_SUBJECTS;
+
+    const history = this.getAttemptHistory(wsId);
+
     const subjectsMap = new Map<
       string,
       {
@@ -720,7 +895,7 @@ export class LocalStorageService {
       }
     >();
 
-    for (const sub of DEFAULT_FALLBACK_SUBJECTS) {
+    for (const sub of fallbackList) {
       if (!subjectsMap.has(sub.slug)) {
         subjectsMap.set(sub.slug, {
           subjectId: sub.id,
@@ -732,9 +907,9 @@ export class LocalStorageService {
       }
     }
 
-    // Inspect recent attempts
+    // Inspect recent attempts for this workspace
     for (const summary of history.slice(0, 15)) {
-      const details = this.getAttemptDetails(summary.id);
+      const details = this.getAttemptDetails(summary.id, wsId);
       if (!details?.scoreResult?.subjectBreakdown) continue;
 
       for (const score of details.scoreResult.subjectBreakdown) {
@@ -774,6 +949,7 @@ export class LocalStorageService {
   /* -------------------------------------------------------------------------- */
 
   public static exportAllGuestData(): GuestBackupPayload {
+    this.runMigration();
     const history = this.getAttemptHistory();
     const attempts: Record<string, StoredAttemptDetails> = {};
 
@@ -784,6 +960,9 @@ export class LocalStorageService {
       }
     }
 
+    const workspaces = safeGetItem<ExamWorkspace[]>(WORKSPACE_STORAGE_KEYS.WORKSPACES, []);
+    const currentWorkspaceId = safeGetItem<string | null>(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, null);
+
     return {
       version: 1,
       exportedAt: new Date().toISOString(),
@@ -793,6 +972,8 @@ export class LocalStorageService {
       bookmarks: this.getBookmarks(),
       streak: this.getStudyStreak(),
       targetExam: this.getTargetExamConfig(),
+      workspaces,
+      currentWorkspaceId,
     };
   }
 
@@ -837,7 +1018,6 @@ export class LocalStorageService {
     }
   }
 
-
   public static importDataFromJson(jsonString: string): { success: boolean; error?: string } {
     try {
       if (typeof jsonString !== "string" || jsonString.length > 2 * 1024 * 1024) {
@@ -848,12 +1028,36 @@ export class LocalStorageService {
         return { success: false, error: "Invalid backup format or unsupported version." };
       }
 
-      // Save imported records
+      // 1. Workspaces
+      if (Array.isArray(parsed.workspaces) && parsed.workspaces.length > 0) {
+        safeSetItem(WORKSPACE_STORAGE_KEYS.WORKSPACES, parsed.workspaces);
+        if (parsed.currentWorkspaceId) {
+          safeSetItem(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, parsed.currentWorkspaceId);
+        } else {
+          safeSetItem(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, parsed.workspaces[0].id);
+        }
+      } else {
+        // Synthesize CSE workspace for Version 1 legacy backups
+        const cseWorkspace: ExamWorkspace = {
+          id: "workspace_cse",
+          examId: "cse",
+          levelId: "professional",
+          trackName: "Professional",
+          targetExamDate: parsed.targetExam?.targetDate || "2027-03-14",
+          targetExamName: parsed.targetExam?.examName || "March 2027 CSE-PPT",
+          dailyGoal: parsed.targetExam?.dailyGoal || 25,
+          createdAt: new Date().toISOString(),
+          lastAccessedAt: new Date().toISOString(),
+        };
+        safeSetItem(WORKSPACE_STORAGE_KEYS.WORKSPACES, [cseWorkspace]);
+        safeSetItem(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, "workspace_cse");
+      }
+
+      // 2. Save imported records
       safeSetItem(STORAGE_KEYS.HISTORY, parsed.history);
 
       if (parsed.attempts && typeof parsed.attempts === "object" && !Array.isArray(parsed.attempts)) {
         for (const [id, detail] of Object.entries(parsed.attempts)) {
-          // Sanitize keys to prevent prototype pollution and arbitrary injection
           if (
             !id ||
             id === "__proto__" ||
@@ -881,6 +1085,10 @@ export class LocalStorageService {
         safeSetItem(STORAGE_KEYS.STREAK, parsed.streak);
       }
 
+      if (parsed.targetExam) {
+        safeSetItem(STORAGE_KEYS.TARGET_EXAM, parsed.targetExam);
+      }
+
       return { success: true };
     } catch (e) {
       return {
@@ -893,7 +1101,6 @@ export class LocalStorageService {
   public static clearAllGuestData(): void {
     if (!isBrowser()) return;
     try {
-      // Find and remove all keys matching cse_guest_* or legacy keys
       const toRemove: string[] = [];
       for (let i = 0; i < window.localStorage.length; i++) {
         const k = window.localStorage.key(i);
@@ -901,9 +1108,13 @@ export class LocalStorageService {
           k &&
           (k.startsWith("cse_guest_") ||
             k.startsWith("attempt_") ||
+            k.startsWith("rt_workspaces") ||
+            k.startsWith("rt_current_workspace") ||
+            k.startsWith("rt_ws_") ||
             k === "attempts_history" ||
             k === "mistake_bank" ||
-            k === "bookmarked_question_ids")
+            k === "bookmarked_question_ids" ||
+            k === "csereviewph_user_preferences_v1")
         ) {
           toRemove.push(k);
         }
