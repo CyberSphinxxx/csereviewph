@@ -1,7 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { ReviewTayoHomeView } from "@/components/home/ReviewTayoHomeView";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
 
 describe("ReviewTayoHomeView Component", () => {
   it("renders platform umbrella editorial hero, masthead, and contextual CSE entry", () => {
