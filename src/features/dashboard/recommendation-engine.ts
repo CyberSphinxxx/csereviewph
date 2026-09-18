@@ -5,6 +5,17 @@ export interface SubtestAccuracySummary {
   accuracy: number;
 }
 
+export interface ExamRecommendationContext {
+  examShortName?: string; // e.g., "Civil Service", "LET", "Nursing"
+  trackName?: string; // e.g., "Professional", "Secondary"
+  quickDrillHref?: string;
+  fullMockHref?: string;
+  practiceHref?: string;
+  fullMockItems?: number;
+  fullMockMinutes?: number;
+  passingTarget?: number;
+}
+
 export interface NextBestStepRecommendation {
   type: "diagnostic" | "srs_review" | "weak_subtest" | "full_mock" | "maintain_streak";
   title: string;
@@ -19,23 +30,37 @@ export interface NextBestStepRecommendation {
 
 /**
  * Computes the examinee's single most impactful next action based on their
- * real learning history, Leitner SRS due items, and subtest practice accuracy.
+ * real learning history, Leitner SRS due items, and subtest practice accuracy,
+ * contextualized to their active examination workspace.
  */
 export function getNextBestStepRecommendation(
   attempts: AttemptSummary[],
   dueMistakes: StoredMistakeItem[],
   allMistakes: StoredMistakeItem[],
-  subtestAccuracies?: SubtestAccuracySummary[]
+  subtestAccuracies?: SubtestAccuracySummary[],
+  context?: ExamRecommendationContext
 ): NextBestStepRecommendation {
+  const examName = context?.examShortName || "Civil Service";
+  const quickHref = context?.quickDrillHref || "/exams/professional/quick";
+  const fullMockHref = context?.fullMockHref || "/exams/professional/full";
+  const practiceHref = context?.practiceHref || "/practice";
+  const mockItems = context?.fullMockItems || 170;
+  const mockMinutes = context?.fullMockMinutes || 190;
+  const passingTarget = context?.passingTarget || 80;
+
+  const mockDurationStr =
+    mockMinutes >= 60
+      ? `${Math.floor(mockMinutes / 60)}h ${mockMinutes % 60 > 0 ? `${mockMinutes % 60}m ` : ""}`
+      : `${mockMinutes}m `;
+
   // 1. First-time examinee: Zero attempts completed
   if (attempts.length === 0) {
     return {
       type: "diagnostic",
       title: "Take a 10-Question Diagnostic Benchmark",
-      description:
-        "Establish your baseline practice accuracy across Civil Service subtests against your 80% study target.",
+      description: `Establish your baseline practice accuracy across ${examName} subtests against your ${passingTarget}% study target.`,
       actionLabel: "Start Diagnostic Drill (10 min)",
-      actionHref: "/exams/professional/quick",
+      actionHref: quickHref,
       tag: "Immediate Priority",
       urgency: "high",
       subtext: "10 mixed questions • Instant concept explanations",
@@ -59,10 +84,10 @@ export function getNextBestStepRecommendation(
     };
   }
 
-  // 3. Weak Subtest Targeting: Any subtest performing below 80% study target
+  // 3. Weak Subtest Targeting: Any subtest performing below benchmark target
   if (subtestAccuracies && subtestAccuracies.length > 0) {
     const subtestsBelowBenchmark = subtestAccuracies
-      .filter((s) => s.accuracy < 80)
+      .filter((s) => s.accuracy < passingTarget)
       .sort((a, b) => a.accuracy - b.accuracy);
 
     if (subtestsBelowBenchmark.length > 0) {
@@ -70,12 +95,12 @@ export function getNextBestStepRecommendation(
       return {
         type: "weak_subtest",
         title: `Strengthen ${weakest.name} (${weakest.accuracy}%)`,
-        description: `Your practice accuracy in ${weakest.name} is currently ${weakest.accuracy}%, below your 80% study target. Focused topic drills will help close this gap.`,
+        description: `Your practice accuracy in ${weakest.name} is currently ${weakest.accuracy}%, below your ${passingTarget}% study target. Focused topic drills will help close this gap.`,
         actionLabel: `Practice ${weakest.name}`,
-        actionHref: "/practice",
+        actionHref: practiceHref,
         tag: "Study Target Gap",
         urgency: "medium",
-        subtext: "Goal: Reach 80%+ practice accuracy",
+        subtext: `Goal: Reach ${passingTarget}%+ practice accuracy`,
       };
     }
   }
@@ -85,17 +110,16 @@ export function getNextBestStepRecommendation(
   const recentAccuracy =
     attempts.reduce((sum, a) => sum + a.percentage, 0) / attempts.length;
 
-  if (attempts.length >= 3 && recentAccuracy >= 80 && totalPassed >= 2) {
+  if (attempts.length >= 3 && recentAccuracy >= passingTarget && totalPassed >= 2) {
     return {
       type: "full_mock",
-      title: "Take a Full 170-Item Mock Exam",
-      description:
-        "Validate your stamina and pacing under official 3h 10m continuous timing.",
+      title: `Take a Full ${mockItems}-Item Mock Exam`,
+      description: `Validate your stamina and pacing under official ${mockDurationStr.trim()} continuous timing.`,
       actionLabel: "Launch Full Mock Exam",
-      actionHref: "/exams/professional/full",
+      actionHref: fullMockHref,
       tag: "Exam Simulation",
       urgency: "milestone",
-      subtext: "170 items • 3h 10m continuous timer • Real exam pacing",
+      subtext: `${mockItems} items • ${mockDurationStr.trim()} continuous timer • Real exam pacing`,
     };
   }
 
@@ -106,7 +130,7 @@ export function getNextBestStepRecommendation(
     description:
       "Sharpen your question pacing and keep your recall active with a short mixed-subject session.",
     actionLabel: "Start Quick Drill (10 min)",
-    actionHref: "/exams/professional/quick",
+    actionHref: quickHref,
     tag: "Daily Pacing",
     urgency: "normal",
     subtext: "10 mixed items • Maintain daily study habit",
