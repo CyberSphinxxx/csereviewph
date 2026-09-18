@@ -101,6 +101,8 @@ export interface SubjectReadinessMetric {
   accuracyPercentage: number;
 }
 
+import type { ExamWorkspace } from "@/lib/workspace/types";
+
 export interface GuestBackupPayload {
   version: 1;
   exportedAt: string;
@@ -110,4 +112,6 @@ export interface GuestBackupPayload {
   bookmarks: StoredBookmarkItem[];
   streak: StudyStreakData;
   targetExam?: TargetExamConfig;
+  workspaces?: ExamWorkspace[];
+  currentWorkspaceId?: string | null;
 }
