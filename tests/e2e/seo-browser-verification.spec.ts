@@ -179,7 +179,7 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
         await openMenuBtn.click();
         const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
         await expect(mobileNav).toBeVisible();
-        await expect(mobileNav.getByRole("link", { name: /practice/i })).toBeVisible();
+        await expect(mobileNav.getByRole("link", { name: /all reviewers|reviewers/i })).toBeVisible();
         await mobileNav.getByRole("button", { name: "Close navigation menu" }).click();
         await expect(mobileNav).toBeHidden();
         await expect(openMenuBtn).toBeVisible();
