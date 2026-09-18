@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   LocalStorageService,
@@ -10,6 +10,7 @@ import {
   type StoredMistakeItem,
 } from "@/lib/storage";
 import { usePreferences } from "@/lib/preferences";
+import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 import { getNextBestStepRecommendation } from "./recommendation-engine";
 import { TodayActionCard } from "./TodayActionCard";
 import { ExamCalendarCard } from "./ExamCalendarCard";
@@ -17,6 +18,7 @@ import { PracticeActivityGrid } from "./PracticeActivityGrid";
 import { SubjectProgressList } from "./SubjectProgressList";
 import { RecentSessionsList } from "./RecentSessionsList";
 import { DataStorageSection } from "./DataStorageSection";
+import { DashboardOnboardingView } from "./DashboardOnboardingView";
 import {
   Target,
   Award,
@@ -25,12 +27,15 @@ import {
   Clock,
   Check,
   SlidersHorizontal,
+  BookOpen,
 } from "lucide-react";
 import { useSession } from "@/lib/auth/auth-client";
 
 export function DashboardView() {
   const { data: session } = useSession();
   const { preferences } = usePreferences();
+  const { currentWorkspace, currentExamConfig, isLoaded } = useExamWorkspace();
+
   const [history, setHistory] = useState<AttemptSummary[]>([]);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [dueMistakes, setDueMistakes] = useState<StoredMistakeItem[]>([]);
@@ -48,42 +53,53 @@ export function DashboardView() {
   });
   const [dailyAnswered, setDailyAnswered] = useState(0);
 
-  const loadDashboardData = () => {
-    const savedHistory = LocalStorageService.getAttemptHistory();
+  const loadDashboardData = useCallback(() => {
+    const wsId = currentWorkspace?.id;
+    const savedHistory = LocalStorageService.getAttemptHistory(wsId);
     setHistory(savedHistory);
 
-    const savedMistakes = LocalStorageService.getMistakeBank();
+    const savedMistakes = LocalStorageService.getMistakeBank(wsId);
     setMistakeCount(savedMistakes.length);
     setAllMistakes(savedMistakes);
-    setDueMistakes(LocalStorageService.getDueMistakes());
+    setDueMistakes(LocalStorageService.getDueMistakes(wsId));
 
-    const savedBookmarks = LocalStorageService.getBookmarks();
+    const savedBookmarks = LocalStorageService.getBookmarks(wsId);
     setBookmarkCount(savedBookmarks.length);
 
     const streak = LocalStorageService.getStudyStreak();
     setStreakDays(streak.currentStreak);
 
-    const readiness = LocalStorageService.getSubjectReadiness();
+    const readiness = LocalStorageService.getSubjectReadiness(wsId);
     setSubjectReadiness(readiness);
 
-    const config = LocalStorageService.getTargetExamConfig();
+    const config = LocalStorageService.getTargetExamConfig(wsId);
     setTargetConfig(config);
     setDailyAnswered(LocalStorageService.getDailyQuestionsAnswered());
-  };
+  }, [currentWorkspace?.id]);
 
   useEffect(() => {
     loadDashboardData();
 
     // Re-sync dashboard state if user completes an exam or modifies data in another tab
     const handleStorageChange = (e: StorageEvent) => {
-      if (!e.key || e.key.startsWith("cse_guest_") || e.key.startsWith("attempt_")) {
+      if (
+        !e.key ||
+        e.key.startsWith("cse_guest_") ||
+        e.key.startsWith("attempt_") ||
+        e.key.startsWith("rt_ws_")
+      ) {
         loadDashboardData();
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  }, [loadDashboardData]);
+
+  // If workspaces are loaded and no active workspace exists, render intentional onboarding state
+  if (isLoaded && !currentWorkspace) {
+    return <DashboardOnboardingView />;
+  }
 
   // Compute aggregate statistics truthfully (D01: No invented numbers!)
   const totalTests = history.length;
@@ -109,7 +125,17 @@ export function DashboardView() {
     history,
     dueMistakes,
     allMistakes,
-    subtestAccuracies
+    subtestAccuracies,
+    {
+      examShortName: currentExamConfig?.shortName || "Civil Service",
+      trackName: currentWorkspace?.trackName || "Standard",
+      quickDrillHref: currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick",
+      fullMockHref: currentExamConfig?.routes?.fullMockUrl || "/exams/professional/full",
+      practiceHref: currentExamConfig?.routes?.practiceUrl || "/practice",
+      fullMockItems: currentExamConfig?.mockSpecs?.itemCount || 170,
+      fullMockMinutes: currentExamConfig?.mockSpecs?.timeLimitMinutes || 190,
+      passingTarget: currentExamConfig?.mockSpecs?.passingScorePercentage || 80,
+    }
   );
 
   const greetingName = session?.user?.name
@@ -124,6 +150,9 @@ export function DashboardView() {
   const allOptionalHidden =
     !showExamCalendar && !showActivityCalendar && !showStreakSummary && !showSubjectProgress && !showRecentSessions;
 
+  const badgeExamTitle = currentExamConfig?.fullName || currentExamConfig?.shortName || currentWorkspace?.examId?.toUpperCase() || "Civil Service Examination";
+  const badgeTrackTitle = currentWorkspace?.trackName || "Standard";
+
   return (
     <div className={`animate-page-enter ${isCompact ? "py-4 px-4 sm:px-6 lg:px-8" : "py-7 px-4 sm:px-6 lg:px-8"}`}>
       <div className={`max-w-7xl mx-auto ${isCompact ? "space-y-4" : "space-y-7"}`}>
@@ -132,7 +161,7 @@ export function DashboardView() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 text-xs font-semibold">
-                Civil Service Exam &bull; Professional &amp; Subprofessional
+                {badgeExamTitle} &bull; {badgeTrackTitle}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -153,14 +182,25 @@ export function DashboardView() {
               <span className="hidden sm:inline">Customize View</span>
             </Link>
 
-            <Link
-              href="/exams/professional/quick"
-              prefetch={true}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-sm transition"
-            >
-              <Clock className="w-4 h-4" />
-              <span>Start Quick Drill</span>
-            </Link>
+            {currentExamConfig?.capabilities?.hasQuickDrill && currentExamConfig.routes?.quickDrillUrl ? (
+              <Link
+                href={currentExamConfig.routes.quickDrillUrl}
+                prefetch={true}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-sm transition"
+              >
+                <Clock className="w-4 h-4" />
+                <span>Start Quick Drill</span>
+              </Link>
+            ) : (
+              <Link
+                href={currentExamConfig?.routes?.practiceUrl || "/practice"}
+                prefetch={true}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-sm transition"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Practice Drills</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -257,7 +297,7 @@ export function DashboardView() {
               {estimatedQuestionsAnswered}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Across all practice sessions
+              Across current exam sessions
             </div>
           </div>
         </div>
@@ -299,6 +339,10 @@ export function DashboardView() {
               <ExamCalendarCard
                 config={targetConfig}
                 dailyAnswered={dailyAnswered}
+                examId={currentWorkspace?.examId}
+                examShortName={currentExamConfig?.shortName}
+                trackName={currentWorkspace?.trackName}
+                workspaceId={currentWorkspace?.id}
                 onConfigChange={(newConfig) => {
                   setTargetConfig(newConfig);
                   setFeedbackMessage("Target exam date & daily pacing goal updated!");
