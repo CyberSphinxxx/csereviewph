@@ -11,6 +11,35 @@ export interface ExamLevel {
   timeLimitMinutes?: number;
 }
 
+export interface ExamSubjectConfig {
+  id: string;
+  slug: string;
+  name: string;
+  order: number;
+  description?: string;
+  levelIds?: string[]; // If restricted to specific levels
+}
+
+export interface ExamCapabilities {
+  hasQuickDrill: boolean;
+  hasMediumAssessment: boolean;
+  hasFullMock: boolean;
+  hasTopicPractice: boolean;
+}
+
+export interface ExamRoutes {
+  infoUrl: string;
+  practiceUrl: string;
+  quickDrillUrl?: string;
+  fullMockUrl?: string;
+}
+
+export interface ExamMockSpecs {
+  itemCount: number;
+  timeLimitMinutes: number;
+  passingScorePercentage: number;
+}
+
 export interface ExamCatalogEntry {
   id: string;
   slug: string;
@@ -25,6 +54,12 @@ export interface ExamCatalogEntry {
   href: string;
   actionLabel: string;
   badgeText: string;
+  subjects?: ExamSubjectConfig[];
+  capabilities?: ExamCapabilities;
+  routes?: ExamRoutes;
+  mockSpecs?: ExamMockSpecs;
+  defaultTargetDate?: string;
+  defaultTargetName?: string;
 }
 
 export const EXAM_CATALOG: ExamCatalogEntry[] = [
@@ -60,6 +95,32 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
     href: "/cse",
     actionLabel: "Open CSE Reviewer",
     badgeText: "Available Today",
+    capabilities: {
+      hasQuickDrill: true,
+      hasMediumAssessment: true,
+      hasFullMock: true,
+      hasTopicPractice: true,
+    },
+    routes: {
+      infoUrl: "/cse/exam-guide",
+      practiceUrl: "/practice",
+      quickDrillUrl: "/exams/professional/quick",
+      fullMockUrl: "/exams/professional/full",
+    },
+    mockSpecs: {
+      itemCount: 170,
+      timeLimitMinutes: 190,
+      passingScorePercentage: 80,
+    },
+    defaultTargetDate: "2027-03-14",
+    defaultTargetName: "March 2027 CSE-PPT",
+    subjects: [
+      { id: "sub-pro-verbal", slug: "verbal-ability", name: "Verbal Ability", order: 1 },
+      { id: "sub-pro-numerical", slug: "numerical-ability", name: "Numerical Ability", order: 2 },
+      { id: "sub-pro-analytical", slug: "analytical-ability", name: "Analytical Ability", order: 3, levelIds: ["professional"] },
+      { id: "sub-pro-geninfo", slug: "general-information", name: "General Information", order: 4 },
+      { id: "sub-subpro-clerical", slug: "clerical-operations", name: "Clerical Operations", order: 5, levelIds: ["subprofessional"] },
+    ],
   },
   {
     id: "let",
@@ -77,18 +138,39 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
         name: "Elementary Teacher Education",
         shortName: "Elementary",
         description: "General Education (40%) and Professional Education (60%).",
+        items: 150,
+        timeLimitMinutes: 180,
       },
       {
         id: "secondary",
         name: "Secondary Teacher Education",
         shortName: "Secondary",
         description: "General Education (20%), Professional Education (40%), and Specialization (40%).",
+        items: 150,
+        timeLimitMinutes: 180,
       },
     ],
     accent: "blue",
     href: "/let",
     actionLabel: "Planned Reviewer",
     badgeText: "Coming Soon",
+    capabilities: {
+      hasQuickDrill: false,
+      hasMediumAssessment: false,
+      hasFullMock: false,
+      hasTopicPractice: false,
+    },
+    routes: {
+      infoUrl: "/reviewers",
+      practiceUrl: "/reviewers",
+    },
+    defaultTargetDate: "2027-09-26",
+    defaultTargetName: "September 2027 LET",
+    subjects: [
+      { id: "sub-let-gened", slug: "general-education", name: "General Education", order: 1 },
+      { id: "sub-let-profed", slug: "professional-education", name: "Professional Education", order: 2 },
+      { id: "sub-let-specialization", slug: "specialization", name: "Major / Specialization", order: 3, levelIds: ["secondary"] },
+    ],
   },
   {
     id: "nursing",
@@ -106,12 +188,33 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
         name: "Nurse Licensure (NLE)",
         shortName: "RN Licensure",
         description: "Comprehensive 5-part nursing practice assessment.",
+        items: 500,
+        timeLimitMinutes: 300,
       },
     ],
     accent: "emerald",
     href: "/nursing",
     actionLabel: "Planned Reviewer",
     badgeText: "Coming Soon",
+    capabilities: {
+      hasQuickDrill: false,
+      hasMediumAssessment: false,
+      hasFullMock: false,
+      hasTopicPractice: false,
+    },
+    routes: {
+      infoUrl: "/reviewers",
+      practiceUrl: "/reviewers",
+    },
+    defaultTargetDate: "2027-11-14",
+    defaultTargetName: "November 2027 NLE",
+    subjects: [
+      { id: "sub-nle-ch", slug: "community-health", name: "Community Health Nursing", order: 1 },
+      { id: "sub-nle-mc", slug: "maternal-child", name: "Maternal and Child Nursing", order: 2 },
+      { id: "sub-nle-ms", slug: "medical-surgical", name: "Medical-Surgical Nursing", order: 3 },
+      { id: "sub-nle-mh", slug: "mental-health", name: "Mental Health & Psychiatric Nursing", order: 4 },
+      { id: "sub-nle-fund", slug: "fundamentals", name: "Fundamentals of Nursing", order: 5 },
+    ],
   },
   {
     id: "bfp",
@@ -129,12 +232,30 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
         name: "Fire Officer Examination (FOE)",
         shortName: "FOE Qualifying",
         description: "Recruitment and entry qualification for fire service personnel.",
+        items: 100,
+        timeLimitMinutes: 120,
       },
     ],
     accent: "amber",
     href: "/bfp",
     actionLabel: "Planned Reviewer",
     badgeText: "Coming Soon",
+    capabilities: {
+      hasQuickDrill: false,
+      hasMediumAssessment: false,
+      hasFullMock: false,
+      hasTopicPractice: false,
+    },
+    routes: {
+      infoUrl: "/reviewers",
+      practiceUrl: "/reviewers",
+    },
+    subjects: [
+      { id: "sub-bfp-fire", slug: "fire-suppression", name: "Fire Suppression & Investigation", order: 1 },
+      { id: "sub-bfp-safety", slug: "fire-safety-code", name: "Fire Safety & RA 9514 Code", order: 2 },
+      { id: "sub-bfp-admin", slug: "administrative-service", name: "Administrative Service Matters", order: 3 },
+      { id: "sub-bfp-general", slug: "general-ability", name: "General Ability", order: 4 },
+    ],
   },
   {
     id: "napolcom",
@@ -152,18 +273,38 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
         name: "PNP Entrance Examination",
         shortName: "PNP Entrance",
         description: "Required for civilian applicants entering the Philippine National Police.",
+        items: 150,
+        timeLimitMinutes: 180,
       },
       {
         id: "promotional",
         name: "Police Promotional Examinations",
         shortName: "Promotional",
         description: "Eligibility assessment for active police personnel advancing in rank.",
+        items: 150,
+        timeLimitMinutes: 180,
       },
     ],
     accent: "indigo",
     href: "/napolcom",
     actionLabel: "Planned Reviewer",
     badgeText: "Coming Soon",
+    capabilities: {
+      hasQuickDrill: false,
+      hasMediumAssessment: false,
+      hasFullMock: false,
+      hasTopicPractice: false,
+    },
+    routes: {
+      infoUrl: "/reviewers",
+      practiceUrl: "/reviewers",
+    },
+    subjects: [
+      { id: "sub-nap-law", slug: "law-enforcement", name: "Law Enforcement & Police Operations", order: 1 },
+      { id: "sub-nap-const", slug: "constitutional-law", name: "Constitutional & Criminal Law", order: 2 },
+      { id: "sub-nap-verbal", slug: "verbal-aptitude", name: "Verbal Aptitude", order: 3 },
+      { id: "sub-nap-quant", slug: "quantitative-reasoning", name: "Quantitative Reasoning", order: 4 },
+    ],
   },
 ];
 
@@ -176,7 +317,25 @@ export function getAvailableExams(): ExamCatalogEntry[] {
 }
 
 export function getExamBySlug(slug: string): ExamCatalogEntry | undefined {
-  return EXAM_CATALOG.find((exam) => exam.slug.toLowerCase() === slug.toLowerCase());
+  return EXAM_CATALOG.find((exam) => exam.slug.toLowerCase() === slug.toLowerCase() || exam.id.toLowerCase() === slug.toLowerCase());
+}
+
+export function getExamConfig(examId: string): ExamCatalogEntry | undefined {
+  return EXAM_CATALOG.find((exam) => exam.id.toLowerCase() === examId.toLowerCase() || exam.slug.toLowerCase() === examId.toLowerCase());
+}
+
+export function getExamSubjects(examId: string, levelId?: string): ExamSubjectConfig[] {
+  const exam = getExamConfig(examId);
+  if (!exam || !exam.subjects) return [];
+  if (!levelId) return exam.subjects;
+  return exam.subjects.filter((s) => !s.levelIds || s.levelIds.includes(levelId));
+}
+
+export function getExamTrack(examId: string, levelId?: string): ExamLevel | undefined {
+  const exam = getExamConfig(examId);
+  if (!exam || !exam.levels) return undefined;
+  if (!levelId) return exam.levels[0];
+  return exam.levels.find((lvl) => lvl.id.toLowerCase() === levelId.toLowerCase());
 }
 
 export function getFeaturedExam(): ExamCatalogEntry {
