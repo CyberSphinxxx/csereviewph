@@ -31,9 +31,29 @@ vi.mock("next/navigation", async () => {
   };
 });
 
+import { WorkspaceService } from "@/lib/workspace/workspace-service";
+
 describe("DashboardView Component", () => {
-  it("renders truthful unmeasured baseline for new guests without invented numbers (D01)", () => {
+  it("renders intentional onboarding state when user has no active workspace", () => {
     LocalStorageService.clearAllGuestData();
+
+    render(<DashboardView />);
+
+    // Greeting & invitation
+    expect(screen.getByText("Your study space")).toBeInTheDocument();
+    expect(screen.getByText(/Choose an examination to begin building your personalized preparation instance/i)).toBeInTheDocument();
+    expect(screen.getByText("Available Reviewers")).toBeInTheDocument();
+    expect(screen.getByText(/Civil Service Examination \(CSE-PPT\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Start preparing/i)).toBeInTheDocument();
+
+    // Must NOT show meaningless empty stat tiles with 0%
+    expect(screen.queryByText("Practice accuracy")).not.toBeInTheDocument();
+    expect(screen.queryByText("Take a 10-Question Diagnostic Benchmark")).not.toBeInTheDocument();
+  });
+
+  it("renders truthful unmeasured baseline for new guests preparing for an exam (D01)", () => {
+    LocalStorageService.clearAllGuestData();
+    WorkspaceService.createWorkspace({ examId: "cse", levelId: "professional" });
 
     render(<DashboardView />);
 
@@ -65,8 +85,8 @@ describe("DashboardView Component", () => {
   });
 
   it("dynamically reflects completed attempts from LocalStorageService", async () => {
-    const { LocalStorageService } = await import("@/lib/storage");
     LocalStorageService.clearAllGuestData();
+    const cseWs = WorkspaceService.createWorkspace({ examId: "cse", levelId: "professional" });
 
     LocalStorageService.recordCompletedAttempt({
       id: "att-dash-test",
@@ -102,7 +122,7 @@ describe("DashboardView Component", () => {
         recommendedTopics: [],
       },
       completedAt: new Date().toISOString(),
-    });
+    }, cseWs.id);
 
     render(<DashboardView />);
 
@@ -113,6 +133,9 @@ describe("DashboardView Component", () => {
   });
 
   it("renders DashboardPage with Header, Footer, and DashboardView", async () => {
+    LocalStorageService.clearAllGuestData();
+    WorkspaceService.createWorkspace({ examId: "cse", levelId: "professional" });
+
     const { default: DashboardPage } = await import("@/app/(app)/dashboard/page");
     render(<DashboardPage />);
 
@@ -130,6 +153,9 @@ describe("DashboardView Component", () => {
   });
 
   it("renders data storage section and shows export/restore buttons", () => {
+    LocalStorageService.clearAllGuestData();
+    WorkspaceService.createWorkspace({ examId: "cse", levelId: "professional" });
+
     render(<DashboardView />);
 
     expect(screen.getByText("Export Backup (JSON)")).toBeInTheDocument();
@@ -137,3 +163,4 @@ describe("DashboardView Component", () => {
     expect(screen.getByText("Reset All Data")).toBeInTheDocument();
   });
 });
+
