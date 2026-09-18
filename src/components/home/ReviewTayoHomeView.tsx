@@ -3,19 +3,18 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpRight,
   Award,
   CheckCircle2,
   Clock,
   FileCheck2,
-  Layers,
   ShieldCheck,
-  Sparkles,
   Target,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
-import { ReviewerCatalog } from "@/components/reviewers/ReviewerCatalog";
+import { ExamIndexTable } from "@/components/home/ExamIndexTable";
 
 export function ReviewTayoHomeView() {
   return (
@@ -24,91 +23,78 @@ export function ReviewTayoHomeView() {
 
       <main className="flex-1 animate-page-enter">
         {/* ========================================================================= */}
-        {/* HERO SECTION: Master Platform Value Proposition                          */}
+        {/* HERO SECTION: The Philippine Examination Index (Editorial Masthead)       */}
         {/* ========================================================================= */}
-        <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 border-b border-border bg-gradient-to-b from-white via-brand-50/20 to-background dark:from-[#1E191C] dark:via-[#1E191C]/60 dark:to-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-              {/* Small Category Eyebrow */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Philippine exam preparation, all in one place</span>
-              </div>
+        <section className="relative overflow-hidden pt-7 pb-14 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20 border-b border-border bg-gradient-to-b from-white via-brand-50/15 to-background dark:from-[#1E191C] dark:via-[#1E191C]/50 dark:to-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 space-y-7 sm:space-y-8">
+            {/* Masthead Label & Metadata Bar */}
+            <div className="flex items-center justify-between gap-4 border-b border-border/80 pb-2.5 text-[11px] font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
+              <span className="font-bold text-brand-700 dark:text-brand-400">
+                Philippine Exam Preparation
+              </span>
+              <span className="hidden sm:inline-block text-slate-400 dark:text-slate-500">
+                ReviewTayo &bull; Examination Index
+              </span>
+            </div>
 
-              {/* Main H1 Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
-                Choose your exam.
-                <span className="block text-brand-600 dark:text-brand-400 mt-1">
-                  Build your confidence.
-                </span>
+            {/* Platform Positioning & H1 Headline */}
+            <div className="max-w-3xl space-y-4 text-left">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.14]">
+                Your review home for
+                <span className="block text-slate-900 dark:text-white">Philippine examinations.</span>
               </h1>
 
-              {/* Supporting Copy */}
-              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                ReviewTayo is the modern Philippine examination preparation platform. Our <strong>Civil Service Exam (CSE-PPT)</strong> reviewer is live today with timed mock exams and topic drills—with LET, Nursing, BFP, and NAPOLCOM reviewers planned and under syllabus research.
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+                A growing review library for Philippine civil service, licensure, professional, and public-safety examinations. Practice with original questions, mock exams, and focused study resources.
               </p>
 
-              {/* Action CTAs */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              {/* Action Affordance: Contextual CSE Link */}
+              <div className="pt-1">
                 <Link
                   href="/cse"
                   prefetch={true}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-base shadow-sm transition transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 hover:underline underline-offset-4 decoration-brand-300 dark:decoration-brand-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded"
                 >
-                  <span>Start CSE review</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Civil Service reviewer is live now</span>
+                  <ArrowUpRight className="w-4 h-4" />
                 </Link>
-
-                <a
-                  href="#reviewers"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-base border border-slate-200 dark:border-slate-800 shadow-2xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
-                >
-                  <span>Explore all reviewers</span>
-                  <Layers className="w-4 h-4 text-slate-400" />
-                </a>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="pt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  100% Free &amp; Open Access
-                </span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1.5">
-                  <FileCheck2 className="w-4 h-4 text-brand-600" />
-                  Original Practice Questions
-                </span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  Privacy-First (RA 10173)
-                </span>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* ========================================================================= */}
-        {/* REVIEWER CATALOG SECTION (#reviewers)                                     */}
-        {/* ========================================================================= */}
-        <section
-          id="reviewers"
-          className="py-16 sm:py-20 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-14"
-        >
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">
-              EXAMINATION DIRECTORY
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-              Select Your Target Examination
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
-              Study with our fully live Civil Service reviewer or preview upcoming Philippine licensure and public safety examinations.
-            </p>
-          </div>
+            {/* The Philippine Examination Index Signature Component */}
+            <div id="exam-index" className="pt-1 scroll-mt-20">
+              <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-brand-600" />
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">
+                    The Philippine Examination Index
+                  </h2>
+                </div>
+              </div>
 
-          <ReviewerCatalog initialCategory="all" showCategoryTabs={true} />
+              <div id="reviewers">
+                <ExamIndexTable />
+              </div>
+            </div>
+
+            {/* Quality & Integrity Indicators */}
+            <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-medium text-slate-500 dark:text-slate-400 border-t border-border/60">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                100% Free &amp; Open Access
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+              <span className="flex items-center gap-1.5">
+                <FileCheck2 className="w-3.5 h-3.5 text-brand-700 dark:text-brand-400" />
+                Original Question Authoring Policy
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                Data Privacy Act Compliant (RA 10173)
+              </span>
+            </div>
+          </div>
         </section>
 
         {/* ========================================================================= */}

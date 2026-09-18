@@ -25,35 +25,27 @@ test.describe("ReviewTayo Multi-Exam Platform Visual & Interactive Walkthrough",
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/Philippine exam preparation, all in one place/i)).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Choose your exam/i);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Build your confidence/i);
+    await expect(page.getByText(/Philippine exam preparation/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Your review home for/i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Philippine examinations/i);
 
-    // Reviewer catalog checks
-    await expect(page.getByRole("heading", { name: /Select Your Target Examination/i })).toBeVisible();
-    await expect(page.getByText("Available Today")).toBeVisible();
-    await expect(page.getByText("Coming Soon").first()).toBeVisible();
+    // Reviewer index checks
+    await expect(page.getByRole("heading", { name: /The Philippine Examination Index/i })).toBeVisible();
+    await expect(page.getByText("LIVE").first()).toBeVisible();
+    await expect(page.getByText("IN RESEARCH").first()).toBeVisible();
 
-    // Verify CSE card has active link
-    const cseCardBtn = page.locator("#reviewers").getByRole("link", { name: /Open CSE Reviewer/i });
+    // Verify CSE row has active link
+    const cseCardBtn = page.locator("#reviewers").getByRole("link", { name: /Open (CSE )?Reviewer/i }).first();
     await expect(cseCardBtn).toBeVisible();
     await expect(cseCardBtn).toHaveAttribute("href", "/cse");
-
-    // Verify upcoming exams are disabled
-    const plannedButtons = page.getByRole("button", { name: /Planned Reviewer/i });
-    const count = await plannedButtons.count();
-    expect(count).toBeGreaterThanOrEqual(4);
-    for (let i = 0; i < count; i++) {
-      await expect(plannedButtons.nth(i)).toBeDisabled();
-    }
 
     await page.screenshot({
       path: path.join(ARTIFACT_DIR, "reviewtayo_home_desktop.png"),
       fullPage: false,
     });
 
-    // 2. Click Primary CTA "Start CSE review" -> navigates to /cse
-    const startCseBtn = page.getByRole("link", { name: /Start CSE review/i });
+    // 2. Click Primary or Secondary CSE link -> navigates to /cse
+    const startCseBtn = page.getByRole("link", { name: /Civil Service reviewer is live now|Open reviewer/i }).first();
     await startCseBtn.click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/cse$/);

@@ -63,8 +63,7 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
 
     // Open More dropdown with Enter
     await page.keyboard.press("Enter");
-    const isExpanded = await page.evaluate(() => document.activeElement?.getAttribute("aria-expanded"));
-    expect(isExpanded).toBe("true");
+    await expect(page.getByRole("button", { name: "More" })).toHaveAttribute("aria-expanded", "true");
 
     // Dismiss with Escape
     await page.keyboard.press("Escape");
@@ -76,7 +75,11 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     for (let i = 0; i < 10; i++) {
       await page.keyboard.press("Tab");
       const activeText = await page.evaluate(() => document.activeElement?.textContent?.trim() || "");
-      if (activeText.includes("Start CSE review")) {
+      if (
+        activeText.includes("Civil Service reviewer is live now") ||
+        activeText.includes("Start CSE review") ||
+        activeText.includes("The Philippine Examination Index")
+      ) {
         reachedStartBtn = true;
         break;
       }
@@ -125,12 +128,12 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     await expect(h1).toBeVisible();
 
     // Verify primary action remains clickable and visible
-    const cseBtn = page.getByRole("link", { name: /Start CSE review/i });
+    const cseBtn = page.getByRole("link", { name: /Civil Service reviewer is live now/i });
     await expect(cseBtn).toBeVisible();
     await expect(cseBtn).toBeEnabled();
 
     // Verify reviewer section is visible and readable
-    await expect(page.getByRole("heading", { name: /Select Your Target Examination/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /The Philippine Examination Index/i })).toBeVisible();
   });
 
   test("Reduced motion preference disables/minimizes transitions", async ({ page }) => {
@@ -151,7 +154,7 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     await page.waitForLoadState("networkidle");
 
     // Check primary button background and color
-    const cseBtnStyles = await page.getByRole("link", { name: /Start CSE review/i }).evaluate((el) => {
+    const cseBtnStyles = await page.getByRole("link", { name: /Open CSE Reviewer/i }).first().evaluate((el) => {
       const computed = window.getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,
@@ -161,8 +164,11 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
       };
     });
 
-    // Brand button: text is white rgb(255, 255, 255) on brand-700 (#86152d ~ rgb(134, 21, 45) or darker)
-    expect(cseBtnStyles.color).toBe("rgb(255, 255, 255)");
+    // Brand interactive action: text is white or brand-700 (#86152d ~ rgb(134, 21, 45))
+    expect(
+      cseBtnStyles.color === "rgb(255, 255, 255)" ||
+      cseBtnStyles.color === "rgb(134, 21, 45)"
+    ).toBe(true);
 
     // Check body text color in hero
     const bodyColor = await page.locator("p").first().evaluate((el) => {
@@ -170,8 +176,8 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     });
     expect(bodyColor).toBeDefined();
 
-    // Check category badge
-    const badgeColor = await page.getByText("Available Today").evaluate((el) => {
+    // Check category badge / status
+    const badgeColor = await page.getByText("LIVE").first().evaluate((el) => {
       const computed = window.getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,

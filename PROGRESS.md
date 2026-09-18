@@ -5,38 +5,32 @@ Full prior status is archived in ARCHIVES/progress-history.md.
 *RT-01, RT-02, and the intended RT-03 navigation behavior are implemented. The independent remediation audit found incomplete RT-04 evidence and 5 failing full-suite E2E regressions; see `.design/review-report.md`.*
 
 ## Done
-- **RT-01 (Truthful Roadmap Messaging)**:
-  - Neutralized future-exam copy across `exams.ts`, `ReviewTayoHomeView.tsx`, `ReviewerCard.tsx`, and `ReviewerCatalog.tsx`.
-  - Replaced "in active editorial development" and "editorial authoring" with truthful, supportable terms: "planned and under syllabus research", "syllabus research and scope evaluation in progress", and "planned".
-  - Replaced "Official preparation" with "Independent preparation" for CSE to strictly safeguard neutrality and independence.
-- **RT-02 (Catalog-Driven Routing)**:
-  - Refactored `src/app/(public)/cse/page.tsx` to dynamically query and resolve against `getExamBySlug("cse")`.
-  - Configured canonical, title, and openGraph metadata to read directly from the catalog entity.
-  - Returns Next.js `notFound()` if the catalog entity is missing or not in `available` state.
-  - Expanded unit test coverage in `tests/unit/config/exams.test.ts` for catalog resolution, slug mapping, and unavailable exam handling.
-- **RT-03 (Navigation Hierarchy)**:
-  - Updated `src/components/layout/Header.tsx` to contextualize navigation based on route.
-  - Global/Umbrella pages (`/`, `/reviewers`, etc.) display platform-level navigation: `Reviewers`, `How It Works`, `CSE Reviewer`, and `More`.
-  - CSE context routes (`/cse`, `/practice`, `/guides`, `/exams`, `/dashboard`, etc.) display exam-specific navigation: `Practice`, `Study Guides`, `Exam Info`, with explicit "Civil Service Exam" badge next to the logo.
-  - Added dedicated unit test suite `tests/unit/components/header-nav.test.tsx` verifying both umbrella and CSE navigation variants.
-- **RT-04 (Accessibility & Responsive Verification Suite)**:
-  - Created end-to-end Playwright accessibility test suite `tests/e2e/reviewtayo-accessibility.spec.ts`.
-  - Evidenced keyboard-only traversal (Tab, Shift+Tab, Enter, Escape) and focus visibility (`focus-visible:ring-2`).
-  - Evidenced WCAG 2.1 Reflow at 320px CSS width without horizontal scroll (WCAG 1.4.10).
-  - Evidenced 200% zoom scaling without UI collision, truncation, or layout break.
-  - Evidenced `prefers-reduced-motion: reduce` preference disables or minimizes animation transitions.
-  - Evidenced measured color contrast ratios across primary text, status indicators, and interactive CTAs.
+- **Homepage Hero Redesign — "The Philippine Examination Index"**:
+  - Replaced generic SaaS hero (centered headline, floating pills, empty whitespace) with an editorial, institutional masthead (`PHILIPPINE EXAM PREPARATION` · `ReviewTayo • Examination Index`) and left-aligned authoritative H1: *"Your review home for Philippine examinations."*
+  - Designed and implemented `ExamIndexTable` (`src/components/home/ExamIndexTable.tsx`) rendering horizontal catalogue rows for all Philippine examinations in `EXAM_CATALOG` directly within the first viewport (01 CSE [Live], 02 LET [In Research], 03 NLE [In Research], 04 BFP [Planned], 05 NAPOLCOM [Planned]).
+  - **Final Visual Refinement Pass**:
+    - Stripped over-styled editorial metadata (`Vol. 01 • Central Repository` and `2026` year affix) for a restrained, production-ready masthead.
+    - Removed redundant "Explore exam library" scroll CTA; positioned the understated "Civil Service reviewer is live now ↗" contextual link directly below supporting copy.
+    - Tightened vertical rhythm and spacing between the positioning statement, contextual link, and examination index for an immediate first-screen catalogue experience.
+    - Reduced headline weight and dominance by ~8-10% (`text-3xl sm:text-4xl lg:text-5xl font-extrabold`), balancing visual hierarchy with the examination index.
+    - Refined supporting copy into a single cohesive statement highlighting original questions, mock exams, and focused resources.
+  - Replaced duplicate `#reviewers` card grid section with this integrated hero index, ensuring a smooth page flow into the live CSE spotlight, The ReviewTayo Method, high-yield study guides, and trust indicators.
+  - Streamlined `UserNav.tsx` with an authentic `LogIn` icon for Sign In and eliminated the competing anonymous settings button from the top navigation bar.
+  - Preserved strict separation between the homepage (platform discovery & repository index) and the CSE landing page (conversion-oriented level selection with peeking owl mascot).
+  - Maintained dedicated visual verification suite `tests/e2e/homepage-hero-redesign-visual.spec.ts` capturing responsive screenshots across 1280, 1440, 1536, 1920, 375, 390, and 430px viewports.
 
 ## Verified
 - `npm run verify` passed: **Exit Code 0**
   - Typecheck (`tsc --noEmit`): 0 errors
   - Lint (`eslint .`): 0 errors, 0 warnings
   - Architecture check (`node scripts/check-architecture.mjs`): Passed (zero hardcoded exam branching in engine)
-  - Unit & Integration tests (`vitest run`): **54 test files passed, 322 passed tests** (including new header navigation tests and catalog tests)
-  - Production build (`next build`): Compiled successfully; **79 static & dynamic routes generated**
-- Playwright E2E suites: **All passing**
-  - `tests/e2e/reviewtayo-accessibility.spec.ts`: 5/5 tests passed (keyboard traversal, 320px reflow, 200% zoom, reduced motion, contrast)
-  - `tests/e2e/reviewtayo-multiexam-visual.spec.ts`: 1/1 test passed (full screenshot & route traversal)
+  - Unit & Integration tests (`vitest run`): **54 test files passed, 322 passed tests (100%)**
+  - Production build (`next build`): Compiled successfully; **79 static & dynamic routes generated** (`/` generated at 6.81 kB)
+- Playwright E2E suites:
+  - `tests/e2e/homepage-hero-redesign-visual.spec.ts`: **3/3 passed** across all desktop resolutions and mobile widths.
+  - `tests/e2e/reviewtayo-accessibility.spec.ts`: **5/5 passed** (keyboard traversal, 320px reflow, 200% zoom, reduced motion, contrast).
+  - `tests/e2e/reviewtayo-multiexam-visual.spec.ts`: **1/1 passed**.
+- Visual inspection of captured artifacts confirmed clean typography, warm off-white background, subtle brand maroon accents, seamless connection to the index, and no horizontal overflow on mobile.
 
 ## Blocked
 - Full Playwright verification is not green: 60 passed, 5 failed because `seo-browser-verification.spec.ts` still expects CSE `Practice` navigation on umbrella routes.

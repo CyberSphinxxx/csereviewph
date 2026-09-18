@@ -6,7 +6,7 @@ import { AuthModal } from "./AuthModal";
 import { LocalStorageService } from "@/lib/storage";
 import Link from "next/link";
 import {
-  Cloud,
+  LogIn,
   CloudUpload,
   Download,
   Trash2,
@@ -110,21 +110,12 @@ export function UserNav() {
   if (!session?.user) {
     return (
       <div className="flex items-center gap-1 sm:gap-1.5">
-        <Link
-          href="/settings"
-          className="hidden sm:inline-flex p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-          title="Settings"
-          aria-label="Settings"
-        >
-          <SettingsIcon className="w-4 h-4" />
-        </Link>
-
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200 dark:border-slate-800 shadow-sm whitespace-nowrap shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200 dark:border-slate-800 shadow-2xs whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
           title="Sign in to sync your exam history across devices"
         >
-          <Cloud className="h-4 w-4 text-slate-400 shrink-0" />
+          <LogIn className="h-3.5 w-3.5 text-slate-400 shrink-0" />
           <span className="whitespace-nowrap">Sign In</span>
         </button>
 
