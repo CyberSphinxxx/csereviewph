@@ -8,10 +8,13 @@ import { useSession } from "@/lib/auth/auth-client";
 import { LocalStorageService } from "@/lib/storage";
 import { UserNav } from "@/components/auth/UserNav";
 import { Logo } from "@/components/ui/Logo";
+import { HeaderExamSwitcher } from "./HeaderExamSwitcher";
+import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 
 export function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { currentWorkspace, currentExamConfig } = useExamWorkspace();
   const [hasProgress, setHasProgress] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -47,7 +50,7 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const showProgress = Boolean(session?.user || hasProgress);
+  const showProgress = Boolean(session?.user || hasProgress || currentWorkspace);
   const isDashboard = pathname === "/dashboard" || pathname?.startsWith("/dashboard/");
   const isCseContext =
     pathname === "/cse" ||
@@ -58,27 +61,30 @@ export function Header() {
     pathname?.startsWith("/articles") ||
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/results") ||
-    pathname === "/exam-info";
+    pathname === "/exam-info" ||
+    Boolean(currentWorkspace);
+
+  const examInfoHref =
+    currentExamConfig?.routes?.infoUrl ||
+    (currentWorkspace?.examId === "cse" ? "/cse/exam-guide" : "/exam-info");
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-white/95 dark:bg-[#1E191C]/95 backdrop-blur-md print:hidden transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link
-          href="/"
-          prefetch={true}
-          className="flex items-center space-x-2 sm:space-x-2.5 group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
-          aria-label="ReviewTayo home"
-        >
-          <Logo
-            format="horizontal"
-            className="h-8 sm:h-9 w-auto text-brand-700 dark:text-white transition-opacity group-hover:opacity-90"
-          />
-          {isCseContext && (
-            <span className="hidden lg:inline-block ml-1 px-2 py-0.5 text-xs font-semibold bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 rounded-full border border-brand-200 dark:border-brand-800">
-              Civil Service Exam
-            </span>
-          )}
-        </Link>
+        <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+          <Link
+            href="/"
+            prefetch={true}
+            className="flex items-center group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
+            aria-label="ReviewTayo home"
+          >
+            <Logo
+              format="horizontal"
+              className="h-8 sm:h-9 w-auto text-brand-700 dark:text-white transition-opacity group-hover:opacity-90"
+            />
+          </Link>
+          <HeaderExamSwitcher />
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-1 sm:space-x-2">
@@ -150,10 +156,10 @@ export function Header() {
                 Study Guides
               </Link>
               <Link
-                href="/cse/exam-guide"
+                href={examInfoHref}
                 prefetch={true}
                 className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-                  pathname?.startsWith("/cse/exam-guide")
+                  pathname === examInfoHref || pathname?.startsWith(examInfoHref)
                     ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
                     : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
@@ -301,7 +307,7 @@ export function Header() {
             <>
               <div className="pt-1.5 pb-1 px-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
-                  CSE Reviewer
+                  {currentExamConfig?.shortName || "Current"} Reviewer
                 </span>
               </div>
               <Link
@@ -321,7 +327,7 @@ export function Header() {
                 Study Guides
               </Link>
               <Link
-                href="/cse/exam-guide"
+                href={examInfoHref}
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
