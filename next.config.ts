@@ -45,9 +45,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
-  experimental: {
-    optimizePackageImports: ["lucide-react"],
-  },
   async redirects() {
     return [
       {
