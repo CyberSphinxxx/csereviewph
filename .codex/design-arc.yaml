@@ -1,0 +1,10 @@
+evidence_mode: benchmarks
+benchmark_provider: mobbin
+approval_mode: fully-automatic
+design_arc_home:
+  project_id: 8d4ecea9-afe8-4c8f-8992-887d0af51c30
+  project_name: csereviewph
+  title: Design Arc — csereviewph
+  state: pending
+  pending_since: 2026-09-19T16:58:52.9680432Z
+  recovery_marker: design-arc-home:8d4ecea9-afe8-4c8f-8992-887d0af51c30
