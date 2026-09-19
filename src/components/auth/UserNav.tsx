@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export function UserNav() {
-  const { data: session, isPending, refetch } = useSession();
+  const { data: session, refetch } = useSession();
   const [modalOpen, setModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -101,11 +101,6 @@ export function UserNav() {
     }
   };
 
-  if (isPending) {
-    return (
-      <div className="h-8 w-8 rounded-lg bg-slate-100 animate-pulse hidden sm:inline-block" />
-    );
-  }
 
   if (!session?.user) {
     return (
