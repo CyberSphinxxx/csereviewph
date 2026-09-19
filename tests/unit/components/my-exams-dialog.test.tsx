@@ -28,7 +28,7 @@ describe("MyExamsDialog Component", () => {
 
     // Title and active workspace details
     expect(screen.getByText("My Exam Workspaces")).toBeInTheDocument();
-    expect(screen.getByText(/Civil Service Examination \(CSE-PPT\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Civil Service Exam \(CSE\)/i)).toBeInTheDocument();
     expect(screen.getByText("Current")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
   });
