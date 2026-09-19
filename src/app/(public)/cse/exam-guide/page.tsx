@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/layout/Header";
+import { ExamSubNav } from "@/components/layout/ExamSubNav";
 import { Footer } from "@/components/layout/Footer";
 import { ExamGuideView } from "@/components/exam-guide/ExamGuideView";
 
@@ -23,6 +24,7 @@ export default function ExamGuidePage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
+      <ExamSubNav examId="cse" />
 
       <main className="flex-1 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <ExamGuideView />
