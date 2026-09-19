@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getAllExamLevels } from "@/features/practice/practice-service";
 import { ArrowRight, Filter, BookOpen, Clock } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { ExamSubNav } from "@/components/layout/ExamSubNav";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { useExamWorkspace } from "@/lib/workspace";
@@ -59,6 +60,7 @@ export default function PracticeTopicsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
+      <ExamSubNav examId="cse" />
       <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 animate-page-enter">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
