@@ -22,7 +22,7 @@ export function ReviewerCatalog({
   );
 
   const categories: Array<{ id: ExamCategory | "all"; label: string }> = [
-    { id: "all", label: "All Reviewers" },
+    { id: "all", label: "All Exams" },
     { id: "civil-service", label: "Civil Service" },
     { id: "licensure", label: "Professional Licensure" },
     { id: "public-safety", label: "Public Safety" },
