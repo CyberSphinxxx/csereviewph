@@ -10,11 +10,11 @@ describe("ReviewerCatalog & ReviewerCard Components", () => {
     const cse = getFeaturedExam();
     render(<ReviewerCard exam={cse} featured={true} />);
 
-    expect(screen.getByRole("heading", { name: /Civil Service Examination/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Civil Service Exam/i })).toBeInTheDocument();
     expect(screen.getByText("Available Today")).toBeInTheDocument();
     expect(screen.getByText("Civil Service Commission (CSC)")).toBeInTheDocument();
 
-    const startBtn = screen.getByRole("link", { name: /Open CSE Reviewer/i });
+    const startBtn = screen.getByRole("link", { name: /Open exam/i });
     expect(startBtn).toHaveAttribute("href", "/cse");
   });
 
@@ -38,7 +38,7 @@ describe("ReviewerCatalog & ReviewerCard Components", () => {
   it("renders all catalog entries including the research card in full catalog mode", () => {
     render(<ReviewerCatalog initialCategory="all" showCategoryTabs={true} />);
 
-    expect(screen.getByRole("heading", { name: /Civil Service Examination/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Civil Service Exam/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Licensure Examination for Teachers/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Philippine Nursing Licensure Examination/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Bureau of Fire Protection Examinations/i })).toBeInTheDocument();
