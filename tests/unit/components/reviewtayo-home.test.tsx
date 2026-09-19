@@ -13,58 +13,65 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("ReviewTayoHomeView Component", () => {
-  it("renders a library-first hero and exam exploration action", () => {
+  it("renders the benefit-led hero with trust line and exam picker card", () => {
     render(<ReviewTayoHomeView />);
 
-    // Masthead check
-    expect(screen.getByText("Philippine Exam Preparation")).toBeInTheDocument();
-    expect(screen.getByText(/ReviewTayo • Examination Index/i)).toBeInTheDocument();
-
-    // Single H1 headline check
+    // Eyebrow and Benefit Headline
+    expect(screen.getByText("PHILIPPINE EXAM PREPARATION")).toBeInTheDocument();
     const h1 = screen.getByRole("heading", { level: 1 });
-    expect(h1).toHaveTextContent(/Choose the exam you’re/i);
-    expect(h1).toHaveTextContent(/preparing for/i);
+    expect(h1).toHaveTextContent(/Free practice exams for Philippine government and licensure tests/i);
 
-    // Contextual action -> /cse
-    const exploreLink = screen.getByRole("link", { name: /Explore Philippine exams/i });
-    expect(exploreLink).toHaveAttribute("href", "#exam-library");
-    expect(screen.getByText(/No account needed to begin/i)).toBeInTheDocument();
+    // Trust line
+    expect(screen.getAllByText(/No account/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Free diagnostic/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Explanations included/i)).toBeInTheDocument();
+
+    // Right Exam Picker card
+    expect(screen.getByText(/Choose the exam you.*re preparing for/i)).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /^Professional\b/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /^Subprofessional\b/i })).toBeInTheDocument();
+
+    // Direct 2-click path to free diagnostic
+    const diagnosticBtn = screen.getByRole("link", { name: /Start free diagnostic/i });
+    expect(diagnosticBtn).toHaveAttribute("href", "/exams/professional/quick");
+    expect(screen.getByRole("link", { name: /View exam overview/i })).toHaveAttribute(
+      "href",
+      "/cse?level=professional"
+    );
   });
 
-  it("renders the Philippine Examination Index with CSE live and upcoming exams in research", () => {
+  it("renders Available now section with Live CSE card and Open exam action", () => {
     render(<ReviewTayoHomeView />);
 
-    expect(
-      screen.getByRole("heading", { name: /Philippine exam library/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Available now/i })).toBeInTheDocument();
     expect(screen.getByText("Live")).toBeInTheDocument();
-    expect(screen.getAllByText("Planned").length).toBeGreaterThanOrEqual(4);
+    expect(screen.getAllByText("Civil Service Exam (CSE)").length).toBeGreaterThanOrEqual(1);
 
-    const cseReviewerLinks = screen.getAllByRole("link", { name: /Open reviewer/i });
-    expect(cseReviewerLinks.length).toBeGreaterThanOrEqual(1);
-    expect(cseReviewerLinks[0]).toHaveAttribute("href", "/cse");
+    const openExamLinks = screen.getAllByRole("link", { name: /Open exam/i });
+    expect(openExamLinks.length).toBeGreaterThanOrEqual(1);
+    expect(openExamLinks[0]).toHaveAttribute("href", "/cse");
   });
 
-  it("renders live CSE spotlight section and How ReviewTayo Works method", () => {
+  it("renders Coming soon section with category chips and Notify me triggers", () => {
     render(<ReviewTayoHomeView />);
 
-    expect(
-      screen.getByRole("heading", { name: /Civil Service Exam \(CSE-PPT\) Reviewer/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /How ReviewTayo Works/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 3, name: /^Choose Your Exam$/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 3, name: /^Practice & Simulate$/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 3, name: /^Review Rationales$/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 3, name: /^Track Readiness$/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Coming soon/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /All Categories/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Civil Service" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Licensure" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Public Safety" })).toBeInTheDocument();
+
+    // Notify me action buttons
+    const notifyBtns = screen.getAllByRole("button", { name: /Notify me/i });
+    expect(notifyBtns.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("renders 3-step How it works section", () => {
+    render(<ReviewTayoHomeView />);
+
+    expect(screen.getByRole("heading", { name: /How ReviewTayo Works/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Pick an exam/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Take a free diagnostic/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Follow recommended practice/i })).toBeInTheDocument();
   });
 });
