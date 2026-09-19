@@ -54,7 +54,7 @@ export default function CSEPage() {
         {
           "@type": "ListItem",
           position: 2,
-          name: "Reviewers",
+          name: "Exams",
           item: `${CANONICAL_ORIGIN}/reviewers`,
         },
         {
