@@ -1,0 +1,10 @@
+{
+  "review_id": "reviewtayo-library-journey-2026-09-20",
+  "project_id": "8d4ecea9-afe8-4c8f-8992-887d0af51c30",
+  "runtime": "codex",
+  "workflow_version": "0.3.0",
+  "graph_assistance": {
+    "active": true,
+    "provenance": "0.3.0 default"
+  }
+}
