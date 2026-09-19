@@ -31,10 +31,10 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Reviewers Directory Column */}
+          {/* Exams Directory Column */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Exam Reviewers
+              Exams
             </h3>
             <ul className="space-y-2 text-xs">
               <li>
@@ -65,7 +65,7 @@ export function Footer() {
               <li className="pt-1">
                 <Link href="/reviewers" prefetch={true} className="font-semibold text-slate-700 dark:text-slate-300 hover:text-brand-700 transition flex items-center gap-1">
                   <Layers className="w-3 h-3 text-brand-600" />
-                  <span>All Philippine Reviewers &rarr;</span>
+                  <span>Browse all Philippine exams &rarr;</span>
                 </Link>
               </li>
             </ul>
