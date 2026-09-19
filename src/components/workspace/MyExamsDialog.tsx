@@ -156,7 +156,7 @@ export function MyExamsDialog({ isOpen, onClose }: MyExamsDialogProps) {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand-700 hover:bg-brand-800 text-white transition"
               >
                 <Plus className="w-4 h-4" />
-                <span>Explore Exam Reviewers</span>
+                <span>Browse Philippine Exams</span>
               </button>
             </div>
           ) : (
