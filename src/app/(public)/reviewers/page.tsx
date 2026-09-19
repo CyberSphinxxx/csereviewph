@@ -47,7 +47,7 @@ export default function ReviewersPage() {
         {
           "@type": "ListItem",
           position: 2,
-          name: "Reviewers",
+          name: "Exams",
           item: `${CANONICAL_ORIGIN}/reviewers`,
         },
       ],
@@ -74,7 +74,7 @@ export default function ReviewersPage() {
             </Link>
             <ChevronRight className="w-3 h-3 text-slate-400" />
             <span className="font-semibold text-slate-900 dark:text-white">
-              Reviewer Directory
+              Exams
             </span>
           </div>
         </nav>
@@ -88,7 +88,7 @@ export default function ReviewersPage() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-              Philippine Examination Reviewers
+              Philippine Exams Directory
             </h1>
 
             <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
