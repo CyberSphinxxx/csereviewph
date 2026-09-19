@@ -22,16 +22,16 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page).toHaveTitle(/Philippine Exam Reviewer & Mock Tests/i);
 
     // Verify umbrella proposition and heading
-    await expect(page.getByText(/Philippine exam preparation, all in one place/i)).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Choose your exam/i);
+    await expect(page.getByText(/Philippine exam preparation/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Choose the exam/i);
 
     // Verify Reviewers catalog section
-    await expect(page.getByRole("heading", { name: /Select Your Target Examination/i })).toBeVisible();
-    await expect(page.getByText("Available Today")).toBeVisible();
-    await expect(page.getByText("Coming Soon").first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Philippine exam library/i })).toBeVisible();
+    await expect(page.getByText("Live").first()).toBeVisible();
+    await expect(page.getByText("Planned").first()).toBeVisible();
 
     // Click primary CTA to enter CSE reviewer
-    const startCseBtn = page.getByRole("link", { name: /Start CSE review/i });
+    const startCseBtn = page.getByRole("link", { name: /Open reviewer/i });
     await expect(startCseBtn).toBeVisible();
     await startCseBtn.click();
     await expect(page).toHaveURL(/\/cse$/);
@@ -52,8 +52,8 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
     // Verify streamlined header navigation for new visitors (no premature dashboard)
     await expect(page.getByRole("link", { name: "Practice", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Study Guides", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Exam Info", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Guides", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Exam info", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /Sign In/i })).toBeVisible({ timeout: 15000 });
 
     // Verify presence of preparation mode cards below the fold
@@ -280,6 +280,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
     // Navigate to dashboard
     await page.goto("/dashboard");
+    await page.getByRole("button", { name: /Start preparing/i }).click();
     await expect(page.getByText("Your Progress is Saved Locally")).toBeVisible();
     await expect(page.getByText("Export Backup (JSON)")).toBeVisible();
 
@@ -338,12 +339,15 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
   });
 
   test("displays target exam countdown on dashboard and supports Leitner SRS filters in mistake bank", async ({ page }) => {
-    // 1. Check Dashboard Header, Footer & Target Exam Countdown
+    // 1. Choose an exam workspace, then check Dashboard Header, Footer & Target Exam Countdown
     await page.goto("/dashboard");
     await expect(page.getByRole("banner")).toBeVisible();
     await expect(page.getByRole("link", { name: "Practice", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toBeVisible();
+
+    await expect(page.getByRole("heading", { name: /Choose one exam to build your workspace/i })).toBeVisible();
+    await page.getByRole("button", { name: /Start preparing/i }).click();
 
     await expect(page.getByText("Target Exam Pacing")).toBeVisible();
     await expect(page.getByText(/Remaining/i)).toBeVisible();

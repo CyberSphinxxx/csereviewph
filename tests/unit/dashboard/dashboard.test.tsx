@@ -40,9 +40,9 @@ describe("DashboardView Component", () => {
     render(<DashboardView />);
 
     // Greeting & invitation
-    expect(screen.getByText("Your study space")).toBeInTheDocument();
-    expect(screen.getByText(/Choose an examination to begin building your personalized preparation instance/i)).toBeInTheDocument();
-    expect(screen.getByText("Available Reviewers")).toBeInTheDocument();
+    expect(screen.getByText("Choose one exam to build your workspace")).toBeInTheDocument();
+    expect(screen.getByText(/Your selected track, target date, practice history, and recommendations/i)).toBeInTheDocument();
+    expect(screen.getByText("Available now")).toBeInTheDocument();
     expect(screen.getByText(/Civil Service Examination \(CSE-PPT\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Start preparing/i)).toBeInTheDocument();
 
@@ -58,7 +58,7 @@ describe("DashboardView Component", () => {
     render(<DashboardView />);
 
     // Greeting: guest neutral greeting
-    expect(screen.getByText("Your study space")).toBeInTheDocument();
+    expect(screen.getByText("What will you improve today?")).toBeInTheDocument();
 
     // Truthful empty metric: Not measured yet (D01)
     expect(screen.getAllByText("Not measured yet").length).toBeGreaterThanOrEqual(1);
@@ -142,14 +142,14 @@ describe("DashboardView Component", () => {
     // Header brand and navigation should be present
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getAllByText("Practice").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Study Guides").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Guides").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Sign In").length).toBeGreaterThanOrEqual(1);
 
     // Footer should be present
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
 
     // DashboardView content should be present
-    expect(screen.getByText("Your study space")).toBeInTheDocument();
+    expect(screen.getByText("What will you improve today?")).toBeInTheDocument();
   });
 
   it("renders data storage section and shows export/restore buttons", () => {

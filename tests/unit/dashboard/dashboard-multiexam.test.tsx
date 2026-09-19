@@ -84,7 +84,7 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
 
     // Verification: CSE Title Badge
     expect(screen.getByText(/Civil Service Examination.*Professional/i)).toBeInTheDocument();
-    expect(screen.getByText("Your study space")).toBeInTheDocument();
+    expect(screen.getByText("What will you improve today?")).toBeInTheDocument();
 
     // Verification: CSE Subjects
     expect(screen.getByText("Verbal Ability")).toBeInTheDocument();

@@ -147,11 +147,11 @@ test.describe("CSE Exam Guide & Official CSC Resources E2E", () => {
     // Verify we scrolled to testing center finder
     await expect(page.getByRole("heading", { name: "Testing-Center Finder" })).toBeVisible();
 
-    // Verify mobile header menu contains Exam Info
+    // Verify mobile header menu contains the exam-information destination
     const mobileMenuBtn = page.getByRole("button", { name: /Open navigation menu/i });
     await mobileMenuBtn.click();
 
-    const mobileExamGuideLink = page.getByRole("link", { name: "Exam Info", exact: true });
+    const mobileExamGuideLink = page.getByRole("link", { name: "Exam info", exact: true });
     await expect(mobileExamGuideLink).toBeVisible();
   });
 });

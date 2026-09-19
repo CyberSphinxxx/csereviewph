@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("ReviewTayoHomeView Component", () => {
-  it("renders platform umbrella editorial hero, masthead, and contextual CSE entry", () => {
+  it("renders a library-first hero and exam exploration action", () => {
     render(<ReviewTayoHomeView />);
 
     // Masthead check
@@ -22,25 +22,25 @@ describe("ReviewTayoHomeView Component", () => {
 
     // Single H1 headline check
     const h1 = screen.getByRole("heading", { level: 1 });
-    expect(h1).toHaveTextContent(/Your review home for/i);
-    expect(h1).toHaveTextContent(/Philippine examinations/i);
+    expect(h1).toHaveTextContent(/Choose the exam you’re/i);
+    expect(h1).toHaveTextContent(/preparing for/i);
 
     // Contextual action -> /cse
-    const cseLink = screen.getByRole("link", { name: /^Civil Service reviewer is live now/i });
-    expect(cseLink).toBeInTheDocument();
-    expect(cseLink).toHaveAttribute("href", "/cse");
+    const exploreLink = screen.getByRole("link", { name: /Explore Philippine exams/i });
+    expect(exploreLink).toHaveAttribute("href", "#exam-library");
+    expect(screen.getByText(/No account needed to begin/i)).toBeInTheDocument();
   });
 
   it("renders the Philippine Examination Index with CSE live and upcoming exams in research", () => {
     render(<ReviewTayoHomeView />);
 
     expect(
-      screen.getByRole("heading", { name: /The Philippine Examination Index/i })
+      screen.getByRole("heading", { name: /Philippine exam library/i })
     ).toBeInTheDocument();
-    expect(screen.getAllByText("LIVE").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("IN RESEARCH").length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getAllByText("Planned").length).toBeGreaterThanOrEqual(4);
 
-    const cseReviewerLinks = screen.getAllByRole("link", { name: /Open (CSE )?reviewer/i });
+    const cseReviewerLinks = screen.getAllByRole("link", { name: /Open reviewer/i });
     expect(cseReviewerLinks.length).toBeGreaterThanOrEqual(1);
     expect(cseReviewerLinks[0]).toHaveAttribute("href", "/cse");
   });

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  ArrowUpRight,
   Award,
   CheckCircle2,
   Clock,
@@ -21,7 +20,7 @@ export function ReviewTayoHomeView() {
     <div className="min-h-screen flex flex-col bg-background text-foreground relative selection:bg-[#f8edef] selection:text-[#86152d]">
       <Header />
 
-      <main className="flex-1 animate-page-enter">
+      <main id="main-content" className="flex-1 animate-page-enter">
         {/* ========================================================================= */}
         {/* HERO SECTION: The Philippine Examination Index (Editorial Masthead)       */}
         {/* ========================================================================= */}
@@ -40,34 +39,35 @@ export function ReviewTayoHomeView() {
             {/* Platform Positioning & H1 Headline */}
             <div className="max-w-3xl space-y-4 text-left">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.14]">
-                Your review home for
-                <span className="block text-slate-900 dark:text-white">Philippine examinations.</span>
+                Choose the exam you’re{" "}
+                <span className="block text-slate-900 dark:text-white">preparing for.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-                A growing review library for Philippine civil service, licensure, professional, and public-safety examinations. Practice with original questions, mock exams, and focused study resources.
+                ReviewTayo is a growing library for Philippine civil service, licensure, professional, and public-safety exams. Pick one exam, then study inside a focused workspace built around its tracks and coverage.
               </p>
 
               {/* Action Affordance: Contextual CSE Link */}
               <div className="pt-1">
                 <Link
-                  href="/cse"
+                  href="#exam-library"
                   prefetch={true}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 hover:underline underline-offset-4 decoration-brand-300 dark:decoration-brand-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
                 >
-                  <span>Civil Service reviewer is live now</span>
-                  <ArrowUpRight className="w-4 h-4" />
+                  <span>Explore Philippine exams</span>
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </Link>
+                <span className="ml-3 inline-block text-sm font-medium text-slate-500 dark:text-slate-400">No account needed to begin</span>
               </div>
             </div>
 
             {/* The Philippine Examination Index Signature Component */}
-            <div id="exam-index" className="pt-1 scroll-mt-20">
+            <div id="exam-library" className="pt-1 scroll-mt-20">
               <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-border">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-brand-600" />
                   <h2 className="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">
-                    The Philippine Examination Index
+                    Philippine exam library
                   </h2>
                 </div>
               </div>
@@ -81,7 +81,7 @@ export function ReviewTayoHomeView() {
             <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-medium text-slate-500 dark:text-slate-400 border-t border-border/60">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                100% Free &amp; Open Access
+                Start as a guest
               </span>
               <span className="text-slate-300 dark:text-slate-700">&bull;</span>
               <span className="flex items-center gap-1.5">

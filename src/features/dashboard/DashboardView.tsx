@@ -140,7 +140,7 @@ export function DashboardView() {
 
   const greetingName = session?.user?.name
     ? `Welcome back, ${session.user.name}`
-    : "Your study space";
+    : "What will you improve today?";
 
   const streakText = LocalStorageService.formatDayStreak(streakDays);
 
@@ -150,7 +150,7 @@ export function DashboardView() {
   const allOptionalHidden =
     !showExamCalendar && !showActivityCalendar && !showStreakSummary && !showSubjectProgress && !showRecentSessions;
 
-  const badgeExamTitle = currentExamConfig?.fullName || currentExamConfig?.shortName || currentWorkspace?.examId?.toUpperCase() || "Civil Service Examination";
+  const badgeExamTitle = currentExamConfig?.fullName || currentExamConfig?.shortName || currentWorkspace?.examId?.toUpperCase() || "Current examination";
   const badgeTrackTitle = currentWorkspace?.trackName || "Standard";
 
   return (

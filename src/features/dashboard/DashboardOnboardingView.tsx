@@ -13,17 +13,21 @@ export function DashboardOnboardingView() {
   const allExams = getAllExams();
   const upcomingExams = allExams.filter((e) => e.availability !== "available");
 
-  // Track selection state for live exam (CSE default: professional)
-  const [selectedLevels, setSelectedLevels] = useState<Record<string, string>>({
-    cse: "professional",
-  });
+  const [selectedLevels, setSelectedLevels] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      availableExams
+        .filter((exam) => exam.levels[0])
+        .map((exam) => [exam.id, exam.levels[0].id]),
+    ),
+  );
 
   const handleLevelChange = (examId: string, levelId: string) => {
     setSelectedLevels((prev) => ({ ...prev, [examId]: levelId }));
   };
 
   const handleStartPreparing = (examId: string) => {
-    const levelId = selectedLevels[examId] || (examId === "cse" ? "professional" : undefined);
+    const exam = availableExams.find((candidate) => candidate.id === examId);
+    const levelId = selectedLevels[examId] || exam?.levels[0]?.id;
     createWorkspace({
       examId,
       levelId,
@@ -37,13 +41,13 @@ export function DashboardOnboardingView() {
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-brand-700 dark:text-brand-300 text-xs font-semibold">
           <Layers className="w-3.5 h-3.5" />
-          <span>Study Workspace Setup</span>
+          <span>Exam workspace setup</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Your study space
+          Choose one exam to build your workspace
         </h1>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-          Choose an examination to begin building your personalized preparation instance with continuous countdown timers, syllabus breakdown, and diagnostic analytics.
+          Your selected track, target date, practice history, and recommendations stay organized inside that exam. You can begin as a guest and sign in later to sync progress.
         </p>
       </div>
 
@@ -51,10 +55,10 @@ export function DashboardOnboardingView() {
       <div className="space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Available Reviewers
+            Available now
           </h2>
           <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-            Ready for Study
+            Ready to study
           </span>
         </div>
 

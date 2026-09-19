@@ -1,46 +1,51 @@
-# ReviewTayo Multi-Exam Planning Walkthrough
-
-## Remediation Re-Audit — 2026-09-18
-
-The attached claim that all four findings are resolved and fully verified is not yet supported. RT-01, RT-02, and the intended RT-03 navigation split are implemented. RT-04 remains incomplete: Escape does not dismiss the desktop `More` disclosure, and the new focus/zoom/motion/contrast tests do not assert the behaviors claimed by their names. `npm run verify` passes with 54 files and 322 tests, but the complete `npm run test:e2e` run fails with 60 passed and 5 failed stale mobile-navigation expectations. See `.design/review-report.md` for evidence and corrections.
-
-## Post-Implementation Audit — 2026-09-18
-
-The Phase 1 implementation was independently rechecked. The core umbrella-brand experience, catalog, `/reviewers`, `/cse`, legacy-route preservation, SEO entries, and disabled future-exam actions are present. The audit verdict is **Needs changes**, with four medium findings covering roadmap wording, catalog-driven routing, global-versus-CSE navigation, and incomplete evidence for the claimed keyboard/focus/contrast checks. Full details are in `.design/review-report.md`.
-
-Verification rerun: `npm run verify` passed (53 files / 316 tests / 79 routes), and `npm run test:e2e` passed (60 Chromium tests).
+# ReviewTayo Library-to-Exam Journey Walkthrough
 
 ## Result
 
-Prepared a phased product and technical plan that makes ReviewTayo the umbrella platform at `https://www.reviewtayo.online`, keeps CSE as the only launched reviewer, and establishes a safe path for LET, Nursing, BFP, NAPOLCOM, and later Philippine exams.
+ReviewTayo now presents itself as a library of Philippine exam reviewers before asking a learner to enter an exam-specific workspace. The homepage leads with exam selection, clearly separates the live CSE reviewer from planned exams, and keeps sign-in optional. Once a learner enters CSE, the header changes to an exam-scoped navigation model with the active exam/track, an `All exams` return path, and focused Overview, Practice, Mock exams, Guides, and Exam info destinations.
 
-## What was reviewed
+The dashboard now uses generic exam configuration for its default track and either guides a new learner through workspace creation or states the active workspace context. Shared exam-engine behavior remains unchanged and exam-neutral.
 
-- Product vision, multi-exam expansion model, development phases, MVP discipline, and generic-engine constraints.
-- Existing homepage, global navigation, routes, exam configuration, preferences/storage, metadata, sitemap, and browser tests.
-- Current production-domain configuration and existing CSE SEO footprint.
+## Design evidence
 
-## Main decisions
+- Completed the Design Arc workflow in fully automatic mode with Guidelines + Mobbin benchmarks.
+- Inspected Coursera's web onboarding and learning-area separation as a structural benchmark: public context remains legible while personal learning work has a distinct destination.
+- Applied current W3C guidance for consistent navigation, descriptive headings/labels, visible focus, and touch-target sizing.
+- Created and visually validated the proposal board at `.codex/design-arc/reviews/reviewtayo-library-journey-2026-09-20/proposal-board.svg`.
+- The first proposal render had two text-containment issues; one correction round resolved both. Final Design Arc verdict: **meets direction**.
 
-- `/` becomes the ReviewTayo platform homepage.
-- `/cse` becomes the focused entry page for the currently available reviewer.
-- `/reviewers` lists CSE and future reviewers with honest availability states.
-- Existing CSE URLs remain stable during the first implementation to reduce SEO and regression risk.
-- Future exams are catalog/configuration entries first; test flows launch only after official-rule research, original content authoring, independent review, and verification.
-- Shared engine code remains exam-neutral.
+## What changed
 
-## Verification status
+- Reworked the public header around `Exams`, `How it works`, and `Study resources`.
+- Added a distinct exam-workspace header with active exam/track context and scoped navigation.
+- Added a skip link and verified Escape closes the desktop More menu and restores focus.
+- Reframed the homepage hero around choosing an exam and replaced the dense index with live/planned library cards.
+- Kept planned reviewers truthful and non-actionable while exposing the one live reviewer clearly.
+- Generalized dashboard onboarding and guest dashboard copy so the shared experience does not imply CSE is the whole platform.
+- Updated unit and browser tests to cover the revised labels, routing, onboarding, keyboard flow, mobile menu, and responsive hierarchy.
 
-- This unit of work changes planning documents only; no application behavior was changed.
-- `npm run verify`: passed with exit code 0 (typecheck, lint, architecture check, 50 test files / 303 tests, and production build with 77 routes).
-- Browser/e2e: not applicable until the planned user-facing implementation begins.
+## Verification
+
+- `npm run verify`: **PASS, exit code 0**
+  - Typecheck: passed.
+  - ESLint: passed.
+  - Architecture guard: passed; no exam-identity branching in engine code.
+  - Vitest: **58 files / 340 tests passed**.
+  - Next.js production build: passed; **79 routes generated**.
+- `npm run test:e2e`: **PASS, 68/68 Chromium tests**.
+- Manual browser walkthrough: **PASS**.
+  - Homepage rendered meaningful content with no framework error overlay or console errors.
+  - `Open reviewer` navigated from the library to `/cse` and replaced platform navigation with the six-item exam context.
+  - Dashboard rendered an active exam workspace and actionable next step without errors.
+  - Mobile homepage at a 390×844 override reported `scrollWidth === clientWidth` (375 CSS px in the embedded browser), showed the library before the CSE card, and exposed the platform mobile menu.
+  - Temporary viewport override was reset after inspection.
 
 ## Definition of Done
 
-- [x] `npm run verify` passes (typecheck, lint, architecture check, unit/integration tests, build)
-- [x] No application logic changed without tests
-- [x] Browser check correctly deferred because this task produced a plan, not UI changes
-- [x] No secrets added or committed
+- [x] `npm run verify` passes (typecheck, lint, architecture, unit/integration tests, build)
+- [x] New/changed logic has new/updated tests
+- [x] E2E/browser checks performed for the user-facing navigation and exam flow
+- [x] No secrets committed; no new environment variables added
 - [x] No exam-question content copied or paraphrased from an external source
-- [x] No exam-specific branching added to engine code
+- [x] Engine code has no exam-specific branching
 - [x] `implementation_plan.md` and `walkthrough.md` exist for this task

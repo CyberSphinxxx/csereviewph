@@ -3,15 +3,15 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata = {
-  title: "Dashboard — Philippine Civil Service Exam Reviewer",
-  description: "User dashboard, test readiness, study streaks, and performance analytics.",
+  title: "My Exam Workspace",
+  description: "Exam-specific study actions, readiness, practice history, and progress.",
 };
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
       <Header />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <DashboardView />
       </main>
       <Footer />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
@@ -11,6 +11,29 @@ import { Logo } from "@/components/ui/Logo";
 import { HeaderExamSwitcher } from "./HeaderExamSwitcher";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 
+const EXAM_ROUTE_PREFIXES = [
+  "/cse",
+  "/practice",
+  "/exams",
+  "/dashboard",
+  "/results",
+  "/guides",
+  "/articles",
+];
+
+function isExamRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return pathname === "/exam-info" || EXAM_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+function navClass(active: boolean) {
+  return `min-h-10 inline-flex items-center px-3 py-2 text-sm rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
+    active
+      ? "bg-brand-50 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300 font-bold"
+      : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
+  }`;
+}
+
 export function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -19,30 +42,28 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
-      const history = LocalStorageService.getAttemptHistory();
-      const bookmarks = LocalStorageService.getBookmarks();
-      const mistakes = LocalStorageService.getMistakeBank();
-      if (history.length > 0 || bookmarks.length > 0 || mistakes.length > 0) {
-        setHasProgress(true);
-      }
+      setHasProgress(
+        LocalStorageService.getAttemptHistory().length > 0 ||
+          LocalStorageService.getBookmarks().length > 0 ||
+          LocalStorageService.getMistakeBank().length > 0,
+      );
     } catch {
-      // LocalStorage unavailable in private mode or SSR
+      // Storage can be unavailable during SSR or in restricted browser modes.
     }
   }, []);
 
-  // Close menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setMoreMenuOpen(false);
   }, [pathname]);
 
-  // Click outside to dismiss More menu
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
         setMoreMenuOpen(false);
       }
     };
@@ -50,319 +71,126 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const showProgress = Boolean(session?.user || hasProgress || currentWorkspace);
-  const isDashboard = pathname === "/dashboard" || pathname?.startsWith("/dashboard/");
-  const isCseContext =
-    pathname === "/cse" ||
-    pathname?.startsWith("/cse/") ||
-    pathname?.startsWith("/practice") ||
-    pathname?.startsWith("/exams") ||
-    pathname?.startsWith("/guides") ||
-    pathname?.startsWith("/articles") ||
-    pathname?.startsWith("/dashboard") ||
-    pathname?.startsWith("/results") ||
-    pathname === "/exam-info" ||
-    Boolean(currentWorkspace);
+  const examContext = isExamRoute(pathname);
+  const showWorkspaceLink = Boolean(session?.user || hasProgress || currentWorkspace);
+  const dashboardActive = pathname === "/dashboard" || pathname?.startsWith("/dashboard/");
+  const practiceHref = currentExamConfig?.routes?.practiceUrl || "/practice";
+  const mockHref = currentExamConfig?.routes?.fullMockUrl || practiceHref;
+  const infoHref = currentExamConfig?.routes?.infoUrl || "/exam-info";
 
-  const examInfoHref =
-    currentExamConfig?.routes?.infoUrl ||
-    (currentWorkspace?.examId === "cse" ? "/cse/exam-guide" : "/exam-info");
+  const handleMoreKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Escape" && moreMenuOpen) {
+      event.preventDefault();
+      setMoreMenuOpen(false);
+      moreButtonRef.current?.focus();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-white/95 dark:bg-[#1E191C]/95 backdrop-blur-md print:hidden transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-800 focus:ring-2 focus:ring-brand-600"
+      >
+        Skip to main content
+      </a>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 min-w-0">
           <Link
             href="/"
-            prefetch={true}
-            className="flex items-center group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded-lg"
-            aria-label="ReviewTayo home"
+            prefetch
+            className="flex items-center shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+            aria-label="ReviewTayo exam library home"
           >
-            <Logo
-              format="horizontal"
-              className="h-8 sm:h-9 w-auto text-brand-700 dark:text-white transition-opacity group-hover:opacity-90"
-            />
+            <Logo format="horizontal" className="h-8 sm:h-9 w-auto text-brand-700 dark:text-white" />
           </Link>
-          <HeaderExamSwitcher />
+          {examContext && <HeaderExamSwitcher />}
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-1 sm:space-x-2">
-          {showProgress && (
-            <Link
-              href="/dashboard"
-              prefetch={true}
-              aria-current={isDashboard ? "page" : undefined}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition ${
-                isDashboard
-                  ? "bg-brand-50 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800/80 shadow-xs"
-                  : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
-            >
-              Dashboard
-            </Link>
-          )}
-
-          <Link
-            href="/reviewers"
-            prefetch={true}
-            className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-              pathname === "/reviewers" || pathname?.startsWith("/reviewers/")
-                ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            Reviewers
-          </Link>
-
-          {!isCseContext ? (
+        <nav className="hidden md:flex items-center gap-1" aria-label={examContext ? "Exam workspace" : "Primary"}>
+          {examContext ? (
             <>
-              <Link
-                href="/#how-it-works"
-                className="px-2.5 py-1.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              >
-                How It Works
-              </Link>
-              <Link
-                href="/cse"
-                prefetch={true}
-                className="px-2.5 py-1.5 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 hover:text-brand-800 dark:hover:text-white hover:bg-brand-50/70 dark:hover:bg-brand-950/50 transition font-semibold"
-              >
-                CSE Reviewer
-              </Link>
+              <Link href="/reviewers" className={navClass(false)}>All exams</Link>
+              <Link href="/dashboard" aria-current={dashboardActive ? "page" : undefined} className={navClass(Boolean(dashboardActive))}>Overview</Link>
+              <Link href={practiceHref} className={navClass(Boolean(pathname?.startsWith("/practice")))}>Practice</Link>
+              <Link href={mockHref} className={navClass(Boolean(pathname?.startsWith("/exams")))}>Mock exams</Link>
+              <Link href="/guides" className={navClass(Boolean(pathname?.startsWith("/guides")))}>Guides</Link>
+              <Link href={infoHref} className={navClass(pathname === infoHref || Boolean(pathname?.startsWith(`${infoHref}/`)))}>Exam info</Link>
             </>
           ) : (
             <>
-              <Link
-                href="/practice"
-                prefetch={true}
-                className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-                  pathname?.startsWith("/practice")
-                    ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                    : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                Practice
-              </Link>
-              <Link
-                href="/guides"
-                prefetch={true}
-                className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-                  pathname?.startsWith("/guides")
-                    ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                    : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                Study Guides
-              </Link>
-              <Link
-                href={examInfoHref}
-                prefetch={true}
-                className={`px-2.5 py-1.5 text-sm font-medium rounded-lg transition ${
-                  pathname === examInfoHref || pathname?.startsWith(examInfoHref)
-                    ? "text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60"
-                    : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                Exam Info
-              </Link>
+              <Link href="/reviewers" className={navClass(pathname === "/reviewers")}>Exams</Link>
+              <Link href="/#how-it-works" className={navClass(false)}>How it works</Link>
+              <Link href="/guides" className={navClass(Boolean(pathname?.startsWith("/guides")))}>Study resources</Link>
+              {showWorkspaceLink && <Link href="/dashboard" className={navClass(false)}>My workspace</Link>}
             </>
           )}
 
-          {/* Desktop More Menu for Utilities */}
-          <div className="relative" ref={moreMenuRef}>
+          <div ref={moreMenuRef} className="relative" onKeyDown={handleMoreKeyDown}>
             <button
+              ref={moreButtonRef}
               type="button"
-              onClick={() => setMoreMenuOpen((prev) => !prev)}
+              onClick={() => setMoreMenuOpen((open) => !open)}
               aria-expanded={moreMenuOpen}
               aria-haspopup="true"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className={navClass(false)}
             >
-              <span>More</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${moreMenuOpen ? "rotate-180" : ""}`} />
+              More <ChevronDown className={`ml-1 h-4 w-4 transition-transform motion-reduce:transition-none ${moreMenuOpen ? "rotate-180" : ""}`} aria-hidden="true" />
             </button>
-
             {moreMenuOpen && (
-              <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white dark:bg-[#1E191C] border border-border shadow-lg py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <Link
-                  href="/#how-it-works"
-                  onClick={() => setMoreMenuOpen(false)}
-                  className="block px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  How It Works
-                </Link>
-                <Link
-                  href="/reviewers"
-                  prefetch={true}
-                  onClick={() => setMoreMenuOpen(false)}
-                  className="block px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  All Reviewers
-                </Link>
-                <Link
-                  href="/faq"
-                  prefetch={true}
-                  onClick={() => setMoreMenuOpen(false)}
-                  className="block px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  FAQ &amp; Support
-                </Link>
-                <Link
-                  href="/settings"
-                  prefetch={true}
-                  onClick={() => setMoreMenuOpen(false)}
-                  className="block px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  Settings &amp; Preferences
-                </Link>
+              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-white dark:bg-[#1E191C] p-1.5 shadow-lg">
+                <Link href="/faq" className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">FAQ &amp; help</Link>
+                <Link href="/about" className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">About ReviewTayo</Link>
+                <Link href="/settings" className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Settings</Link>
               </div>
             )}
           </div>
 
-          <div className="pl-1">
-            <UserNav />
-          </div>
+          <div className="pl-1"><UserNav /></div>
         </nav>
 
-        {/* Mobile Navigation Controls */}
-        <div className="flex items-center space-x-2 md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
           <UserNav />
           <button
             type="button"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            aria-label="Open navigation menu"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
-            className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600"
+            className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+            {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <nav
-          id="mobile-navigation"
-          aria-label="Mobile navigation"
-          className="md:hidden border-t border-border bg-white/98 dark:bg-[#1E191C]/98 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in"
-        >
-          <div className="flex items-center justify-between pb-2 mb-1 border-b border-border/60">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Navigation Menu
-            </span>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-label="Close navigation menu"
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600"
-            >
-              <X className="w-5 h-5" aria-hidden="true" />
-            </button>
+        <nav id="mobile-navigation" aria-label={examContext ? "Exam workspace mobile" : "Primary mobile"} className="md:hidden border-t border-border bg-white px-4 py-3 shadow-lg dark:bg-[#1E191C]">
+          <div className="mb-2 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            {examContext ? `${currentExamConfig?.shortName || "Exam"} workspace` : "ReviewTayo library"}
           </div>
-
-          {showProgress && (
-            <Link
-              href="/dashboard"
-              prefetch={true}
-              onClick={() => setMobileMenuOpen(false)}
-              aria-current={isDashboard ? "page" : undefined}
-              className={`block px-3 py-2 text-sm font-semibold rounded-lg transition ${
-                isDashboard
-                  ? "bg-brand-50 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800"
-                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
-            >
-              Dashboard
-            </Link>
-          )}
-          <Link
-            href="/reviewers"
-            prefetch={true}
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-          >
-            All Reviewers
-          </Link>
-
-          {!isCseContext ? (
-            <>
-              <Link
-                href="/#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                How It Works
-              </Link>
-              <Link
-                href="/cse"
-                prefetch={true}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-semibold text-brand-700 dark:text-brand-300 hover:bg-brand-50/60 dark:hover:bg-brand-950/40 rounded-lg transition"
-              >
-                Civil Service Exam (Live)
-              </Link>
-            </>
-          ) : (
-            <>
-              <div className="pt-1.5 pb-1 px-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
-                  {currentExamConfig?.shortName || "Current"} Reviewer
-                </span>
-              </div>
-              <Link
-                href="/practice"
-                prefetch={true}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                Practice Subtests
-              </Link>
-              <Link
-                href="/guides"
-                prefetch={true}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                Study Guides
-              </Link>
-              <Link
-                href={examInfoHref}
-                prefetch={true}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                Exam Info
-              </Link>
-            </>
-          )}
-
-          <div className="pt-2 mt-2 border-t border-border space-y-1">
-            {isCseContext && (
-              <Link
-                href="/#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                How It Works
-              </Link>
+          <div className="grid gap-1">
+            {examContext ? (
+              <>
+                <Link href="/reviewers" className={navClass(false)}>← All exams</Link>
+                <Link href="/dashboard" className={navClass(Boolean(dashboardActive))}>Overview</Link>
+                <Link href={practiceHref} className={navClass(Boolean(pathname?.startsWith("/practice")))}>Practice</Link>
+                <Link href={mockHref} className={navClass(Boolean(pathname?.startsWith("/exams")))}>Mock exams</Link>
+                <Link href="/guides" className={navClass(Boolean(pathname?.startsWith("/guides")))}>Guides</Link>
+                <Link href={infoHref} className={navClass(pathname === infoHref)}>Exam info</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/reviewers" className={navClass(pathname === "/reviewers")}>Exams</Link>
+                <Link href="/#how-it-works" className={navClass(false)}>How it works</Link>
+                <Link href="/guides" className={navClass(Boolean(pathname?.startsWith("/guides")))}>Study resources</Link>
+                {showWorkspaceLink && <Link href="/dashboard" className={navClass(false)}>My workspace</Link>}
+              </>
             )}
-            <Link
-              href="/faq"
-              prefetch={true}
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-            >
-              FAQ &amp; Help
-            </Link>
-            <Link
-              href="/settings"
-              prefetch={true}
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-            >
-              Settings
-            </Link>
+            <div className="my-1 border-t border-border" />
+            <Link href="/faq" className={navClass(false)}>FAQ &amp; help</Link>
+            <Link href="/settings" className={navClass(false)}>Settings</Link>
           </div>
         </nav>
       )}

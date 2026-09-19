@@ -23,7 +23,7 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     // Start keyboard traversal with Tab
     await page.keyboard.press("Tab");
 
-    // 1. First focusable link should be Logo home link or skip link
+    // 1. First focusable link is the skip link, followed by the home logo.
     const firstFocused = await page.evaluate(() => {
       const el = document.activeElement;
       return {
@@ -33,20 +33,24 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
       };
     });
     expect(firstFocused.tag).toBe("a");
-    expect(firstFocused.ariaLabel).toMatch(/ReviewTayo home/i);
+    expect(firstFocused.href).toBe("#main-content");
+
+    await page.keyboard.press("Tab"); // Logo
+    const logoLabel = await page.evaluate(() => document.activeElement?.getAttribute("aria-label"));
+    expect(logoLabel).toMatch(/ReviewTayo.*home/i);
 
     // 2. Tab into desktop navigation items
-    await page.keyboard.press("Tab"); // Reviewers
+    await page.keyboard.press("Tab"); // Exams
     const navItem1 = await page.evaluate(() => document.activeElement?.textContent?.trim());
-    expect(navItem1).toBe("Reviewers");
+    expect(navItem1).toBe("Exams");
 
     await page.keyboard.press("Tab"); // How It Works
     const navItem2 = await page.evaluate(() => document.activeElement?.textContent?.trim());
-    expect(navItem2).toBe("How It Works");
+    expect(navItem2).toBe("How it works");
 
-    await page.keyboard.press("Tab"); // CSE Reviewer
+    await page.keyboard.press("Tab"); // Study resources
     const navItem3 = await page.evaluate(() => document.activeElement?.textContent?.trim());
-    expect(navItem3).toBe("CSE Reviewer");
+    expect(navItem3).toBe("Study resources");
 
     await page.keyboard.press("Tab"); // More Menu button
     const moreBtn = await page.evaluate(() => {
@@ -67,8 +71,8 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
 
     // Dismiss with Escape
     await page.keyboard.press("Escape");
-    // Verify menu closes cleanly or returns
-    await page.mouse.click(10, 10); // Outside dismiss check
+    await expect(page.getByRole("button", { name: "More" })).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("button", { name: "More" })).toBeFocused();
 
     // Continue Tab down into Hero CTAs
     let reachedStartBtn = false;
@@ -76,9 +80,8 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
       await page.keyboard.press("Tab");
       const activeText = await page.evaluate(() => document.activeElement?.textContent?.trim() || "");
       if (
-        activeText.includes("Civil Service reviewer is live now") ||
-        activeText.includes("Start CSE review") ||
-        activeText.includes("The Philippine Examination Index")
+        activeText.includes("Explore Philippine exams") ||
+        activeText.includes("Open reviewer")
       ) {
         reachedStartBtn = true;
         break;
@@ -128,12 +131,12 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     await expect(h1).toBeVisible();
 
     // Verify primary action remains clickable and visible
-    const cseBtn = page.getByRole("link", { name: /Civil Service reviewer is live now/i });
+    const cseBtn = page.getByRole("link", { name: /Explore Philippine exams/i });
     await expect(cseBtn).toBeVisible();
     await expect(cseBtn).toBeEnabled();
 
     // Verify reviewer section is visible and readable
-    await expect(page.getByRole("heading", { name: /The Philippine Examination Index/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Philippine exam library/i })).toBeVisible();
   });
 
   test("Reduced motion preference disables/minimizes transitions", async ({ page }) => {
@@ -154,7 +157,7 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     await page.waitForLoadState("networkidle");
 
     // Check primary button background and color
-    const cseBtnStyles = await page.getByRole("link", { name: /Open CSE Reviewer/i }).first().evaluate((el) => {
+    const cseBtnStyles = await page.getByRole("link", { name: /Explore Philippine exams/i }).evaluate((el) => {
       const computed = window.getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,
@@ -177,7 +180,7 @@ test.describe("ReviewTayo Multi-Exam Platform Accessibility & Responsive Verific
     expect(bodyColor).toBeDefined();
 
     // Check category badge / status
-    const badgeColor = await page.getByText("LIVE").first().evaluate((el) => {
+    const badgeColor = await page.getByText("Live").first().evaluate((el) => {
       const computed = window.getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,

@@ -19,7 +19,7 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
   const publicRoutes = [
     {
       path: "/",
-      expectedH1: "Choose your exam.",
+      expectedH1: "Choose the exam you’re preparing for.",
       expectedTitle: "Philippine Exam Reviewer & Mock Tests",
       canonical: "https://www.reviewtayo.online",
     },
@@ -177,10 +177,10 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
       const openMenuBtn = page.getByRole("button", { name: "Open navigation menu" });
       if (await openMenuBtn.isVisible()) {
         await openMenuBtn.click();
-        const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
+        const mobileNav = page.getByRole("navigation", { name: /Primary mobile|Exam workspace mobile/ });
         await expect(mobileNav).toBeVisible();
-        await expect(mobileNav.getByRole("link", { name: /all reviewers|reviewers/i })).toBeVisible();
-        await mobileNav.getByRole("button", { name: "Close navigation menu" }).click();
+        await expect(mobileNav.getByRole("link", { name: /Exams|All exams/i }).first()).toBeVisible();
+        await page.getByRole("button", { name: "Close navigation menu" }).click();
         await expect(mobileNav).toBeHidden();
         await expect(openMenuBtn).toBeVisible();
       }
