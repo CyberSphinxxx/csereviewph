@@ -67,7 +67,7 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
     id: "cse",
     slug: "cse",
     shortName: "CSE",
-    fullName: "Civil Service Examination (CSE-PPT)",
+    fullName: "Civil Service Exam (CSE)",
     description:
       "Independent preparation for Career Service Professional and Subprofessional examinations with full-length continuous timers and detailed subject breakdowns.",
     agency: "Civil Service Commission (CSC)",
@@ -93,7 +93,7 @@ export const EXAM_CATALOG: ExamCatalogEntry[] = [
     ],
     accent: "brand",
     href: "/cse",
-    actionLabel: "Open CSE Reviewer",
+    actionLabel: "Open exam",
     badgeText: "Available Today",
     capabilities: {
       hasQuickDrill: true,
