@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
   Clock,
@@ -9,38 +10,38 @@ import {
   Target,
   Award,
   FileCheck2,
-  ChevronRight,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { ExamSubNav } from "@/components/layout/ExamSubNav";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { HeroExamLevelSelector } from "@/components/home/HeroExamLevelSelector";
 import { SubtestExplorer } from "@/components/home/SubtestExplorer";
 
 export function CSELandingClient() {
-  const [selectedLevel, setSelectedLevel] = useState<"professional" | "subprofessional">("professional");
+  const searchParams = useSearchParams();
+  const paramLevel = searchParams?.get("level");
+
+  const [selectedLevel, setSelectedLevel] = useState<"professional" | "subprofessional">(
+    paramLevel === "subprofessional" ? "subprofessional" : "professional"
+  );
+
+  useEffect(() => {
+    if (paramLevel === "subprofessional" || paramLevel === "professional") {
+      setSelectedLevel(paramLevel);
+    }
+  }, [paramLevel]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground relative selection:bg-[#f8edef] selection:text-[#86152d]">
       <Header />
+      <ExamSubNav
+        examId="cse"
+        currentLevel={selectedLevel}
+        onLevelChange={setSelectedLevel}
+      />
 
       <main className="flex-1 animate-page-enter">
-        {/* Breadcrumb strip */}
-        <div className="bg-slate-50/80 dark:bg-slate-950/60 border-b border-border/60 py-2 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <Link href="/" className="hover:text-brand-700 dark:hover:text-white transition">
-              ReviewTayo
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <Link href="/reviewers" className="hover:text-brand-700 dark:hover:text-white transition">
-              Reviewers
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="font-semibold text-slate-900 dark:text-white">
-              Civil Service Exam (CSE-PPT)
-            </span>
-          </div>
-        </div>
 
         {/* ========================================================================= */}
         {/* HERO SECTION: Stable Promise, Exam-Level Selection Card, Focused Action   */}
@@ -65,7 +66,7 @@ export function CSELandingClient() {
 
                 {/* Two-Sentence Explanation */}
                 <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-md leading-relaxed">
-                  Prepare for the CSE-PPT Professional and Subprofessional exams with free subtest drills, full-length continuous-timer mock exams, and clear explanations.
+                  Prepare for the Civil Service Exam (CSE) Professional and Subprofessional tracks with free subtest drills, full-length continuous-timer mock exams, and clear explanations.
                 </p>
 
                 {/* Outcome Cue: Evidence of the promised outcome */}
