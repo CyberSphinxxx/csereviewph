@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
 import { PeekingOwl } from "@/components/home/PeekingOwl";
+import { getExamCountdown } from "@/lib/date-utils";
 
 export interface HeroExamLevelSelectorProps {
   selectedLevel: "professional" | "subprofessional";
@@ -17,18 +18,23 @@ export function HeroExamLevelSelector({
   const isPro = selectedLevel === "professional";
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const countdown = getExamCountdown("2027-03-14");
+
   return (
-    <div className="relative mx-auto w-full max-w-md space-y-2.5">
-      {/* Quiet Exam Schedule Line aligned with card's left edge */}
-      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 px-0.5">
-        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" aria-hidden="true" />
-        <span className="font-medium text-slate-700 dark:text-slate-300">Exam schedule</span>
-        <span className="text-slate-300 dark:text-slate-700">&middot;</span>
-        <span>March 14, 2027</span>
-        <span className="text-slate-300 dark:text-slate-700">&middot;</span>
+    <div className="relative mx-auto w-full max-w-md space-y-3">
+      {/* Prominent Exam Schedule with Countdown */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800/80 text-xs text-slate-700 dark:text-slate-300 shadow-2xs">
+        <div className="flex items-center gap-1.5 sm:gap-2 font-medium">
+          <Calendar className="w-4 h-4 text-brand-700 dark:text-brand-400 shrink-0" aria-hidden="true" />
+          <span className="font-semibold text-slate-600 dark:text-slate-400">Exam schedule</span>
+          <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+          <span className="font-bold text-slate-900 dark:text-white">{countdown.formattedDate}</span>
+          <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+          <span className="text-brand-700 dark:text-brand-400 font-bold">{countdown.label}</span>
+        </div>
         <Link
           href="/cse/exam-guide#schedule"
-          className="inline-flex items-center gap-0.5 font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition underline underline-offset-2 decoration-brand-200 dark:decoration-brand-800 hover:decoration-brand-500"
+          className="inline-flex items-center gap-0.5 font-bold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 underline underline-offset-2 shrink-0"
         >
           <span>View dates</span>
           <ArrowRight className="w-3 h-3" />
