@@ -43,7 +43,7 @@ describe("DashboardView Component", () => {
     expect(screen.getByText("Choose one exam to build your workspace")).toBeInTheDocument();
     expect(screen.getByText(/Your selected track, target date, practice history, and recommendations/i)).toBeInTheDocument();
     expect(screen.getByText("Available now")).toBeInTheDocument();
-    expect(screen.getByText(/Civil Service Examination \(CSE-PPT\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Civil Service Exam \(CSE\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Start preparing/i)).toBeInTheDocument();
 
     // Must NOT show meaningless empty stat tiles with 0%
@@ -141,8 +141,9 @@ describe("DashboardView Component", () => {
 
     // Header brand and navigation should be present
     expect(screen.getByRole("banner")).toBeInTheDocument();
-    expect(screen.getAllByText("Practice").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Guides").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Exams").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Study resources").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("My dashboard").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Sign In").length).toBeGreaterThanOrEqual(1);
 
     // Footer should be present
