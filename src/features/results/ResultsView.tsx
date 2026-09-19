@@ -24,6 +24,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { QuestionReportModal } from "@/features/practice/QuestionReportModal";
+import { useSession } from "@/lib/auth/auth-client";
 
 export interface AttemptData {
   id: string;
@@ -41,6 +42,7 @@ interface ResultsViewProps {
 
 export function ResultsView({ attemptData }: ResultsViewProps) {
   const { title, mode, questions, answers, scoreResult } = attemptData;
+  const { data: session } = useSession();
 
   const [filter, setFilter] = useState<"all" | "incorrect" | "correct" | "flagged">("all");
   const [expandedQuestionIds, setExpandedQuestionIds] = useState<Set<string>>(new Set());
@@ -189,6 +191,37 @@ export function ResultsView({ attemptData }: ResultsViewProps) {
             <strong>CSC Proprietary Rating Formula:</strong> The Philippine Civil Service Commission (CSC) utilizes a proprietary general rating formula across subtests with calibrated statistical weighting that is not publicly disclosed. Diagnostic scores on this reviewer are designed to evaluate topic mastery and guide preparation, and do not replicate or guarantee an official CSC Certificate of Eligibility rating.
           </p>
         </div>
+
+        {/* Guest Progress Save Nudge (Non-blocking) */}
+        {!session?.user && (
+          <div className="rounded-2xl border border-brand-200 dark:border-brand-800 bg-brand-50/70 dark:bg-brand-950/40 p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-brand-800 dark:text-brand-300 font-bold text-sm">
+                <Sparkles className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
+                <span>Save your progress and track improvement</span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+                Create a free account or sign in to sync your diagnostic scores, review mistakes across devices, and unlock streak tracking.
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Link
+                href="/create-account"
+                prefetch={true}
+                className="inline-flex min-h-10 items-center justify-center px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs sm:text-sm shadow-2xs transition"
+              >
+                Create free account
+              </Link>
+              <Link
+                href="/sign-in"
+                prefetch={true}
+                className="inline-flex min-h-10 items-center justify-center px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs sm:text-sm transition"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Performance Breakdown by Subject */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
