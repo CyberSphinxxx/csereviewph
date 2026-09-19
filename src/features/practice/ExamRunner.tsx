@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type EngineQuestion,
@@ -32,10 +31,8 @@ import {
   Eye,
   CheckCircle2,
   BookOpen,
-  Contrast,
   Check,
-  ChevronDown,
-  MoreHorizontal,
+  Sliders,
 } from "lucide-react";
 
 import {
@@ -48,6 +45,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { useExamKeyboardShortcuts } from "./hooks/useExamKeyboardShortcuts";
 import { ExamScratchpad } from "./ExamScratchpad";
 import { QuestionReportModal } from "./QuestionReportModal";
+import { TestModeBar } from "./TestModeBar";
 
 interface ExamRunnerProps {
   initialQuestions: EngineQuestion[];
@@ -61,7 +59,6 @@ export function ExamRunner({
   initialQuestions,
   rules,
   title,
-  subtitle,
 }: ExamRunnerProps) {
   const router = useRouter();
   const levelSlug = title.toLowerCase().includes("subprof") ? "subprofessional" : "professional";
@@ -81,7 +78,7 @@ export function ExamRunner({
 
   // Testing UX & Accessibility States
   const [eliminatedChoices, setEliminatedChoices] = useState<Record<string, string[]>>({});
-  const [practiceFeedbackMode, setPracticeFeedbackMode] = useState<"instant" | "simulated">("instant");
+  const [practiceFeedbackMode] = useState<"instant" | "simulated">("instant");
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [scratchpadNotes, setScratchpadNotes] = useState("");
   const [fontSize, setFontSize] = useState<"normal" | "large" | "xl">("normal");
@@ -89,7 +86,6 @@ export function ExamRunner({
   const [reduceMotion, setReduceMotion] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showDisplayMenu, setShowDisplayMenu] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const displayMenuRef = useRef<HTMLDivElement>(null);
 
   // Check for existing active draft on mount
@@ -225,10 +221,6 @@ export function ExamRunner({
     }
   }, [session, levelSlug, rules, topicId, title, initialQuestions]);
 
-  // Handle Save & Exit Navigation
-  const handleOpenExitModal = () => {
-    setShowExitModal(true);
-  };
 
   const handleSaveAndExit = () => {
     if (session.answers.size > 0) {
@@ -445,15 +437,13 @@ export function ExamRunner({
       setShowScratchpad(false);
       setShowExitModal(false);
       setShowDisplayMenu(false);
-      setShowMobileMenu(false);
     },
     isModalOpen:
       showNavigator ||
       showReviewModal ||
       showScratchpad ||
       showExitModal ||
-      showDisplayMenu ||
-      showMobileMenu,
+      showDisplayMenu,
   });
 
   const questionFontSizeClass = {
@@ -480,246 +470,23 @@ export function ExamRunner({
         highContrast ? "bg-slate-200" : "bg-slate-100"
       } ${reduceMotion ? "[&_*]:!transition-none [&_*]:!animation-none" : ""}`}
     >
-      {/* Top Focused Exam Header */}
-      <header
-        className={`sticky top-0 z-30 border-b shadow-2xs px-4 sm:px-6 lg:px-8 py-2.5 transition-colors ${
-          highContrast ? "bg-white border-slate-900" : "bg-white border-slate-200"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          {/* Left: Save & Exit Navigation */}
-          <div className="flex items-center">
-            <button
-              type="button"
-              onClick={handleOpenExitModal}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold transition shadow-2xs group"
-              title="Save progress and leave test"
-              aria-label="Save and exit test"
-            >
-              <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
-              <span>Save &amp; Exit</span>
-            </button>
-          </div>
-
-          {/* Center: Test Title & Compact Metadata (Desktop) */}
-          <div className="hidden md:flex flex-col items-center justify-center text-center min-w-0 px-2">
-            <h1 className="text-sm font-bold text-slate-900 tracking-tight truncate max-w-md">
-              {title}
-            </h1>
-            <span className="text-[11px] text-slate-500 font-medium">
-              {subtitle ? subtitle : `${session.totalQuestions} Questions • ${rules.timeLimitMinutes}m`}
-            </span>
-          </div>
-
-          {/* Center on Mobile: Compact Question Indicator */}
-          <div className="flex md:hidden items-center text-xs font-bold text-slate-900 truncate">
-            <span>
-              Q{session.currentIndex + 1} of {session.totalQuestions}
-            </span>
-          </div>
-
-          {/* Right: Tools & Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Display Accessibility Menu */}
-            <div className="relative hidden sm:block" ref={displayMenuRef}>
-              <button
-                type="button"
-                onClick={() => setShowDisplayMenu((prev) => !prev)}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-medium transition shadow-2xs"
-                aria-expanded={showDisplayMenu}
-                aria-haspopup="true"
-                aria-label="Display accessibility settings"
-              >
-                <span>Display</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-              </button>
-
-              {showDisplayMenu && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-3 z-50 text-xs space-y-3 animate-in fade-in zoom-in-95 duration-100">
-                  <div>
-                    <span className="font-bold text-slate-800 block mb-1.5">Font Size</span>
-                    <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
-                      <button
-                        type="button"
-                        onClick={() => setFontSize("normal")}
-                        className={`py-1 rounded-lg font-semibold transition ${
-                          fontSize === "normal"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500 hover:text-slate-800"
-                        }`}
-                      >
-                        Normal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFontSize("large")}
-                        className={`py-1 rounded-lg font-semibold transition ${
-                          fontSize === "large"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500 hover:text-slate-800"
-                        }`}
-                      >
-                        Large
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFontSize("xl")}
-                        className={`py-1 rounded-lg font-semibold transition ${
-                          fontSize === "xl"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500 hover:text-slate-800"
-                        }`}
-                      >
-                        X-Large
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-800 block">High Contrast</span>
-                      <span className="text-[10px] text-slate-500">Sharper borders &amp; text</span>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={highContrast}
-                      aria-label="Toggle high contrast"
-                      onClick={() => setHighContrast((prev) => !prev)}
-                      className={`w-10 h-6 rounded-full transition-colors p-0.5 flex items-center ${
-                        highContrast ? "bg-slate-900 justify-end" : "bg-slate-200 justify-start"
-                      }`}
-                    >
-                      <span className="w-5 h-5 rounded-full bg-white shadow-xs" />
-                    </button>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-800 block">Reduce Motion</span>
-                      <span className="text-[10px] text-slate-500">Minimize animations</span>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={reduceMotion}
-                      aria-label="Toggle reduce motion"
-                      onClick={() => setReduceMotion((prev) => !prev)}
-                      className={`w-10 h-6 rounded-full transition-colors p-0.5 flex items-center ${
-                        reduceMotion ? "bg-slate-900 justify-end" : "bg-slate-200 justify-start"
-                      }`}
-                    >
-                      <span className="w-5 h-5 rounded-full bg-white shadow-xs" />
-                    </button>
-                  </div>
-
-                  {rules.mode === "practice" && (
-                    <div className="pt-2 border-t border-slate-100">
-                      <span className="font-bold text-slate-800 block mb-1.5">Feedback Mode</span>
-                      <div className="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
-                        <button
-                          type="button"
-                          onClick={() => setPracticeFeedbackMode("instant")}
-                          className={`py-1 rounded-lg font-semibold transition ${
-                            practiceFeedbackMode === "instant"
-                              ? "bg-white text-slate-900 shadow-xs"
-                              : "text-slate-500 hover:text-slate-800"
-                          }`}
-                        >
-                          Instant
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPracticeFeedbackMode("simulated")}
-                          className={`py-1 rounded-lg font-semibold transition ${
-                            practiceFeedbackMode === "simulated"
-                              ? "bg-white text-slate-900 shadow-xs"
-                              : "text-slate-500 hover:text-slate-800"
-                          }`}
-                        >
-                          Simulated
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="pt-2 border-t border-slate-100 text-right">
-                    <Link
-                      href="/settings/reading"
-                      target="_blank"
-                      className="text-[11px] font-semibold text-brand-700 hover:text-brand-800 underline"
-                    >
-                      More reading settings &rarr;
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Virtual Scratchpad */}
-            <button
-              type="button"
-              onClick={() => setShowScratchpad(true)}
-              className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-medium transition shadow-2xs ${
-                isMathOrAnalytical
-                  ? "border-brand-300 bg-brand-50 hover:bg-brand-100 text-brand-900 font-semibold"
-                  : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
-              }`}
-              title="Open Virtual Scratchpad (Press S)"
-            >
-              <Edit3 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-              <span>Scratchpad</span>
-            </button>
-
-            {/* High-Contrast Continuous Countdown Timer */}
-            <div
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-mono font-bold tracking-wider shadow-2xs transition-colors ${
-                session.timer.isWarning
-                  ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
-                  : "bg-slate-50 border-slate-200 text-slate-900"
-              }`}
-            >
-              <Clock
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
-                  session.timer.isWarning ? "text-rose-600" : "text-brand-600"
-                }`}
-              />
-              <span id="exam-timer">{formatTimeRemaining(session.timer.remainingSeconds)}</span>
-            </div>
-
-            {/* Question Map Button (Desktop Trigger) */}
-            <button
-              type="button"
-              onClick={() => setShowNavigator(true)}
-              className="hidden lg:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-medium transition shadow-2xs"
-              aria-label="Open Question Map / Palette"
-            >
-              <LayoutGrid className="w-3.5 h-3.5 text-slate-500" />
-              <span>Question Map</span>
-            </button>
-
-            {/* Submit Action */}
-            <button
-              type="button"
-              onClick={() => setShowReviewModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-xs transition active:scale-95 shrink-0"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Submit</span>
-            </button>
-
-            {/* Mobile Exam Overflow Menu Trigger */}
-            <button
-              type="button"
-              onClick={() => setShowMobileMenu(true)}
-              className="sm:hidden inline-flex items-center justify-center p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition"
-              aria-label="More exam options"
-            >
-              <MoreHorizontal className="w-4 h-4 text-slate-600" />
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Top Focused Minimal Test Mode Header */}
+      <TestModeBar
+        examName={title || "Civil Service Exam (CSE)"}
+        levelName={levelSlug === "subprofessional" ? "Subprofessional" : "Professional"}
+        currentIndex={session.currentIndex}
+        totalQuestions={session.totalQuestions}
+        remainingSeconds={session.timer.remainingSeconds}
+        isWarning={session.timer.isWarning}
+        hasAnswers={summary.answered > 0}
+        onExit={() => {
+          if (summary.answered > 0) {
+            handleSaveAndExit();
+          } else {
+            handleDiscardAndExit();
+          }
+        }}
+      />
 
       {/* Resume Session Banner */}
       {showResumeBanner && savedDraft && (
@@ -808,6 +575,128 @@ export function ExamRunner({
                         <span>{currentAnswer?.isFlagged ? "Flagged" : "Flag"}</span>
                       </button>
                     )}
+
+                    {/* Virtual Scratchpad for calculations */}
+                    <button
+                      type="button"
+                      onClick={() => setShowScratchpad(true)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                        isMathOrAnalytical
+                          ? "bg-brand-50 text-brand-900 border border-brand-300"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                      title="Open Virtual Scratchpad (Press S)"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                      <span>Scratchpad</span>
+                    </button>
+
+                    {/* Question Map / Palette Drawer Trigger */}
+                    <button
+                      type="button"
+                      onClick={() => setShowNavigator(true)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition"
+                      aria-label="Open Question Map / Palette"
+                      title="Open Question Map / Palette"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5 text-slate-600" />
+                      <span className="hidden sm:inline">Map</span>
+                    </button>
+
+                    {/* Display Menu Trigger */}
+                    <div className="relative" ref={displayMenuRef}>
+                      <button
+                        type="button"
+                        onClick={() => setShowDisplayMenu((prev) => !prev)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition"
+                        aria-label="Display accessibility settings"
+                        aria-expanded={showDisplayMenu}
+                      >
+                        <Sliders className="w-3.5 h-3.5 text-slate-600" />
+                        <span className="hidden sm:inline">Display</span>
+                      </button>
+
+                      {showDisplayMenu && (
+                        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 space-y-3 text-xs">
+                          <div>
+                            <span className="font-bold text-slate-800 block mb-1.5">Font Size</span>
+                            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
+                              <button
+                                type="button"
+                                onClick={() => setFontSize("normal")}
+                                className={`py-1 rounded-lg font-semibold transition ${
+                                  fontSize === "normal"
+                                    ? "bg-white text-slate-900 shadow-xs"
+                                    : "text-slate-500 hover:text-slate-800"
+                                }`}
+                              >
+                                Normal
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFontSize("large")}
+                                className={`py-1 rounded-lg font-semibold transition ${
+                                  fontSize === "large"
+                                    ? "bg-white text-slate-900 shadow-xs"
+                                    : "text-slate-500 hover:text-slate-800"
+                                }`}
+                              >
+                                Large
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFontSize("xl")}
+                                className={`py-1 rounded-lg font-semibold transition ${
+                                  fontSize === "xl"
+                                    ? "bg-white text-slate-900 shadow-xs"
+                                    : "text-slate-500 hover:text-slate-800"
+                                }`}
+                              >
+                                X-Large
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                              <span className="font-bold text-slate-800 block">High Contrast</span>
+                              <span className="text-[10px] text-slate-500">Sharper borders &amp; text</span>
+                            </div>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={highContrast}
+                              aria-label="Toggle high contrast"
+                              onClick={() => setHighContrast((prev) => !prev)}
+                              className={`w-10 h-6 rounded-full transition-colors p-0.5 flex items-center ${
+                                highContrast ? "bg-slate-900 justify-end" : "bg-slate-200 justify-start"
+                              }`}
+                            >
+                              <span className="w-5 h-5 rounded-full bg-white shadow-xs" />
+                            </button>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                              <span className="font-bold text-slate-800 block">Reduce Motion</span>
+                              <span className="text-[10px] text-slate-500">Minimize animations</span>
+                            </div>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={reduceMotion}
+                              aria-label="Toggle reduce motion"
+                              onClick={() => setReduceMotion((prev) => !prev)}
+                              className={`w-10 h-6 rounded-full transition-colors p-0.5 flex items-center ${
+                                reduceMotion ? "bg-slate-900 justify-end" : "bg-slate-200 justify-start"
+                              }`}
+                            >
+                              <span className="w-5 h-5 rounded-full bg-white shadow-xs" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <button
                       type="button"
@@ -1036,6 +925,14 @@ export function ExamRunner({
                 <LayoutGrid className="w-4 h-4 text-slate-600" />
                 <span>Question Map</span>
               </h3>
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition active:scale-95"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Submit</span>
+              </button>
             </div>
 
             {/* Compact Legend: ● Answered ○ Unanswered ◇ Flagged */}
@@ -1126,101 +1023,6 @@ export function ExamRunner({
         </div>
       )}
 
-      {/* Mobile Exam Overflow Sheet */}
-      {showMobileMenu && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 animate-in slide-in-from-bottom duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-              <h3 className="font-bold text-sm text-slate-900">Exam Tools</h3>
-              <button
-                type="button"
-                onClick={() => setShowMobileMenu(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-1 text-sm font-medium">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowNavigator(true);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition"
-              >
-                <LayoutGrid className="w-4 h-4 text-slate-500" />
-                <span>Question Map</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowScratchpad(true);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition"
-              >
-                <Edit3 className="w-4 h-4 text-brand-600" />
-                <span>Virtual Scratchpad</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowDisplayMenu(true);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition"
-              >
-                <Contrast className="w-4 h-4 text-slate-500" />
-                <span>Display Settings</span>
-              </button>
-              {rules.allowsFlagging && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(12);
-                    setSession((prev) => toggleFlag(prev, currentQuestion.id));
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition"
-                >
-                  <Flag
-                    className={`w-4 h-4 ${
-                      currentAnswer?.isFlagged ? "fill-amber-600 text-amber-600" : "text-slate-500"
-                    }`}
-                  />
-                  <span>{currentAnswer?.isFlagged ? "Unflag Question" : "Flag Question"}</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowReportModal(true);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition"
-              >
-                <AlertCircle className="w-4 h-4 text-slate-500" />
-                <span>Report Question</span>
-              </button>
-              <div className="pt-2 border-t border-slate-100 mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMobileMenu(false);
-                    setShowExitModal(true);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 transition font-semibold"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Save &amp; Exit</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Virtual Scratchpad Component */}
       <ExamScratchpad
