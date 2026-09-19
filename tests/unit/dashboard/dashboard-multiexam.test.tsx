@@ -83,7 +83,7 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     const { unmount } = render(<DashboardView />);
 
     // Verification: CSE Title Badge
-    expect(screen.getByText(/Civil Service Examination.*Professional/i)).toBeInTheDocument();
+    expect(screen.getByText(/Civil Service Exam.*Professional/i)).toBeInTheDocument();
     expect(screen.getByText("What will you improve today?")).toBeInTheDocument();
 
     // Verification: CSE Subjects
@@ -139,7 +139,7 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     render(<DashboardView />);
 
     // Verification: CSE state restored with previous metrics
-    expect(screen.getByText(/Civil Service Examination.*Professional/i)).toBeInTheDocument();
+    expect(screen.getByText(/Civil Service Exam.*Professional/i)).toBeInTheDocument();
     expect(screen.getByText("90%")).toBeInTheDocument();
     expect(screen.getAllByText("10").length).toBeGreaterThanOrEqual(1);
   });
