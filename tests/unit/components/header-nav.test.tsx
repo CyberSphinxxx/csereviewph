@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, afterAll } from "vitest";
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Header } from "@/components/layout/Header";
+import { Header, GlobalHeader } from "@/components/layout/Header";
+import { ExamSubNav } from "@/components/layout/ExamSubNav";
 
 // Mock next/navigation usePathname
 let mockPathname = "/";
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -18,66 +20,71 @@ afterAll(() => {
   mockPathname = "/cse";
 });
 
-describe("Header Component Navigation Hierarchy (RT-03)", () => {
-  it("renders platform-oriented navigation on umbrella pages (/)", () => {
+describe("GlobalHeader & ExamSubNav Two-Layer Navigation IA", () => {
+  it("renders identical Layer 1 navigation on umbrella pages (/)", () => {
     mockPathname = "/";
     render(<Header />);
 
-    // Umbrella nav links should be present
+    // Layer 1 global nav links should be present
     expect(screen.getByRole("link", { name: "Exams" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "How it works" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Study resources" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "My dashboard" })).toBeInTheDocument();
 
-    // CSE-specific top-level nav links should NOT be in primary desktop nav on umbrella pages
-    expect(screen.queryByRole("link", { name: /^Practice$/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /^Mock exams$/ })).not.toBeInTheDocument();
+    // Old "More" dropdown and "How it works" should NOT be in Layer 1 header
+    expect(screen.queryByRole("button", { name: "More" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "How it works" })).not.toBeInTheDocument();
   });
 
-  it("renders platform-oriented navigation on /reviewers", () => {
+  it("renders identical Layer 1 navigation on /reviewers", () => {
     mockPathname = "/reviewers";
     render(<Header />);
 
     expect(screen.getByRole("link", { name: "Exams" })).toHaveAttribute("href", "/reviewers");
-    expect(screen.getByRole("link", { name: "How it works" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Study resources" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "My dashboard" })).toBeInTheDocument();
   });
 
-  it("renders CSE-specific contextual navigation in CSE context (/cse)", () => {
+  it("preserves identical Layer 1 global navigation inside exam context (/cse)", () => {
     mockPathname = "/cse";
     render(<Header />);
 
-    // Badge showing active exam context
-    expect(screen.getAllByText("CSE").length).toBeGreaterThanOrEqual(1);
+    // Global navigation never moves or changes between pages
+    expect(screen.getByRole("link", { name: "Exams" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Study resources" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "My dashboard" })).toBeInTheDocument();
 
-    // Contextual CSE links
-    expect(screen.getByRole("link", { name: "All exams" })).toHaveAttribute("href", "/reviewers");
+    // Exam-specific links must NOT be in Layer 1 GlobalHeader
+    expect(screen.queryByRole("link", { name: "All exams" })).not.toBeInTheDocument();
+  });
+
+  it("renders Layer 2 ExamSubNav with contextual links and level switcher in exam context", () => {
+    mockPathname = "/cse";
+    render(<ExamSubNav examId="cse" />);
+
+    // Contextual CSE sub-nav links
     expect(screen.getByRole("link", { name: "Overview" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Practice" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Mock exams" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Guides" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Exam info" })).toBeInTheDocument();
+
+    // Level selector button / pill
+    expect(screen.getByRole("button", { name: /switch level or exam/i })).toBeInTheDocument();
   });
 
-  it("renders CSE-specific contextual navigation in practice routes (/practice)", () => {
-    mockPathname = "/practice";
-    render(<Header />);
-
-    expect(screen.getAllByText("CSE").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("link", { name: "Practice" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Guides" })).toBeInTheDocument();
-  });
-
-  it("dismisses the More menu with Escape and restores focus", () => {
+  it("opens mobile drawer and closes with Escape key", () => {
     mockPathname = "/";
     render(<Header />);
 
-    const trigger = screen.getByRole("button", { name: "More" });
-    fireEvent.click(trigger);
-    expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("link", { name: "FAQ & help" })).toBeInTheDocument();
+    const openMenuBtn = screen.getByRole("button", { name: "Open navigation menu" });
+    fireEvent.click(openMenuBtn);
 
-    fireEvent.keyDown(trigger, { key: "Escape" });
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(trigger).toHaveFocus();
+    // Mobile drawer should be open with links
+    const mobileNav = screen.getByRole("navigation", { name: "Global mobile navigation" });
+    expect(mobileNav).toBeInTheDocument();
+
+    // Press Escape to dismiss
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("navigation", { name: "Global mobile navigation" })).not.toBeInTheDocument();
   });
 });
