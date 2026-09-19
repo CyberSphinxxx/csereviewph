@@ -23,15 +23,15 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
     // Verify umbrella proposition and heading
     await expect(page.getByText(/Philippine exam preparation/i).first()).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Choose the exam/i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Free practice exams/i);
 
     // Verify Reviewers catalog section
-    await expect(page.getByRole("heading", { name: /Philippine exam library/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Available now/i })).toBeVisible();
     await expect(page.getByText("Live").first()).toBeVisible();
-    await expect(page.getByText("Planned").first()).toBeVisible();
+    await expect(page.getByText(/Coming soon/i).first()).toBeVisible();
 
     // Click primary CTA to enter CSE reviewer
-    const startCseBtn = page.getByRole("link", { name: /Open reviewer/i });
+    const startCseBtn = page.getByRole("link", { name: /^Open exam/i }).first();
     await expect(startCseBtn).toBeVisible();
     await startCseBtn.click();
     await expect(page).toHaveURL(/\/cse$/);
@@ -47,7 +47,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/Philippine Civil Service Exam/i);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/Reviewer & Online Mock Tests/i);
     await expect(
-      page.getByText(/Prepare for the CSE-PPT Professional and Subprofessional exams with free subtest drills, full-length continuous-timer mock exams/i)
+      page.getByText(/Prepare for the Civil Service Exam \(CSE\) Professional and Subprofessional/i)
     ).toBeVisible();
 
     // Verify streamlined header navigation for new visitors (no premature dashboard)
@@ -342,7 +342,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     // 1. Choose an exam workspace, then check Dashboard Header, Footer & Target Exam Countdown
     await page.goto("/dashboard");
     await expect(page.getByRole("banner")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Practice", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "My dashboard", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toBeVisible();
 
