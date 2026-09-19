@@ -30,19 +30,19 @@ test.describe("ReviewTayo Homepage Hero Redesign Visual & Responsive Verificatio
       await page.waitForLoadState("networkidle");
 
       // Verify masthead
-      await expect(page.getByText("Philippine Exam Preparation", { exact: true })).toBeVisible();
+      await expect(page.getByText(/Philippine Exam Preparation/i).first()).toBeVisible();
 
       // Verify H1
       const h1 = page.getByRole("heading", { level: 1 });
-      await expect(h1).toContainText(/Choose the exam/i);
+      await expect(h1).toContainText(/Free practice exams/i);
 
       // Verify live CSE contextual action
-      const liveCseLink = page.getByRole("link", { name: /^Open reviewer/i });
+      const liveCseLink = page.getByRole("link", { name: /^Open exam/i }).first();
       await expect(liveCseLink).toBeVisible();
       await expect(liveCseLink).toHaveAttribute("href", "/cse");
 
       // Verify index rows are visible
-      await expect(page.getByRole("heading", { name: /Philippine exam library/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /Available now/i })).toBeVisible();
       await expect(page.getByText("Civil Service Commission (CSC)").first()).toBeVisible();
       await expect(page.getByRole("heading", { name: "Licensure Examination for Teachers" })).toBeVisible();
     }
@@ -88,7 +88,7 @@ test.describe("ReviewTayo Homepage Hero Redesign Visual & Responsive Verificatio
     await expect(page.getByRole("heading", { name: /Welcome back/i })).not.toBeVisible();
 
     // 2. Click CSE link -> navigates to /cse
-    const cseLink = page.getByRole("link", { name: /^Open reviewer/i });
+    const cseLink = page.getByRole("link", { name: /^Open exam/i }).first();
     await cseLink.click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/cse$/);
