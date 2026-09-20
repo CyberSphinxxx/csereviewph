@@ -46,17 +46,17 @@ export function PracticeActivityGrid({ streakDays }: PracticeActivityGridProps) 
   return (
     <section
       aria-labelledby="activity-grid-heading"
-      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-4"
+      className="rounded-[22px] bg-white p-5 sm:p-6 shadow-[0_0_0_1px_rgba(138,22,48,0.12),0_14px_30px_-22px_rgba(90,15,35,0.35)] space-y-4"
     >
       {/* Header: Streak & Weekly Active Count */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f3e6e9]">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Consistency Tracker
             </span>
           </div>
-          <h3 id="activity-grid-heading" className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+          <h3 id="activity-grid-heading" className="font-display text-xl font-extrabold tracking-[-0.02em] text-slate-900 flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-500 fill-amber-500" />
             <span>{streakText} study streak</span>
           </h3>
@@ -137,7 +137,7 @@ export function PracticeActivityGrid({ streakDays }: PracticeActivityGridProps) 
       </div>
 
       {/* Focused Cell Details & Text Legend */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs border-t border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs border-t border-[#f3e6e9]">
         {/* Selected Date Summary */}
         <div className="text-slate-700 flex items-center gap-2">
           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -174,7 +174,7 @@ export function PracticeActivityGrid({ streakDays }: PracticeActivityGridProps) 
       </div>
 
       {/* Explanatory Rule */}
-      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-500 flex items-start gap-2">
+      <div className="p-2.5 rounded-xl bg-slate-50 border border-[#f3e6e9] text-[11px] text-slate-500 flex items-start gap-2">
         <Info className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
         <span>
           <strong>Streak rule:</strong> Answer at least 1 question per day to advance your study streak. Visiting the dashboard records a daily check-in.
