@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Check, Plus, Settings } from "lucide-react";
 import { getExamConfig, type ExamCatalogEntry } from "@/config/exams";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
+import { useExamLevel } from "@/lib/hooks/useExamLevel";
 import { MyExamsDialog } from "@/components/workspace/MyExamsDialog";
 
 interface ExamSubNavProps {
@@ -21,8 +22,9 @@ export function ExamSubNav({
 }: ExamSubNavProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { currentWorkspace, allWorkspaces, switchWorkspace, updateWorkspace } = useExamWorkspace();
+
+  const [sharedLevel, setSharedLevel] = useExamLevel<"professional" | "subprofessional">(examId);
 
   const [isOpen, setIsOpen] = useState(false);
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
@@ -34,12 +36,8 @@ export function ExamSubNav({
   const examConfig: ExamCatalogEntry | undefined = getExamConfig(examId) || getExamConfig("cse");
   const levels = examConfig?.levels || [];
 
-  // Determine current active level: prop -> searchParams -> workspace -> default
-  const paramLevel = searchParams?.get("level");
-  const activeLevelSlug =
-    propLevel ||
-    (paramLevel === "subprofessional" ? "subprofessional" : paramLevel === "professional" ? "professional" : undefined) ||
-    (currentWorkspace?.trackName?.toLowerCase().includes("subprof") ? "subprofessional" : "professional");
+  // Determine current active level: propLevel || sharedLevel
+  const activeLevelSlug = propLevel || sharedLevel;
 
   const currentLevelObj = levels.find((lvl) => lvl.id === activeLevelSlug) || levels[0];
   const shortName = examConfig?.shortName || "CSE";
@@ -80,6 +78,9 @@ export function ExamSubNav({
     setIsOpen(false);
     const typedLevel = levelId === "subprofessional" ? "subprofessional" : "professional";
 
+    // Update shared level (updates localStorage, URL replaceState, and broadcasts)
+    setSharedLevel(typedLevel);
+
     // If callback provided, notify parent
     if (onLevelChange) {
       onLevelChange(typedLevel);
@@ -90,11 +91,6 @@ export function ExamSubNav({
       updateWorkspace(currentWorkspace.id, {
         trackName: typedLevel === "subprofessional" ? "Subprofessional" : "Professional",
       });
-    }
-
-    // If on /cse, update URL query cleanly
-    if (pathname === "/cse") {
-      router.replace(`/cse?level=${typedLevel}`, { scroll: false });
     }
   };
 
