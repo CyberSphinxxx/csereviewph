@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,6 +36,32 @@
     --reading-font-size: 1rem;
     --reading-line-height: 1.6;
     --reading-max-width: 65ch;
+
+    /* ReviewTayo Landing Design Tokens */
+    --mr: #8a1630;
+    --mr2: #a81b3b;
+    --wine: #2a0a12;
+    --blush: #fbeff0;
+    --paper: #fdf8f6;
+    --gold: #f6b93b;
+    --ink: #1b1216;
+    --ok: #12a150;
+    --bad: #d1344b;
+    --brand-primary: var(--mr);
+    --brand-accent: var(--gold);
+    --brand-background: var(--paper);
+    --brand-surface: #ffffff;
+    --brand-text: var(--ink);
+    --brand-muted: #5a4a50;
+    --brand-border: rgba(138, 22, 48, 0.12);
+    --radius-card: 26px;
+    --shadow-card: 0 30px 60px -30px rgba(60, 10, 25, 0.55);
+
+    /* Dynamic gradient section stops */
+    --s1: 760px;
+    --s2: 1560px;
+    --s3: 2460px;
+    --s4: 3340px;
   }
 
   .dark {
@@ -132,3 +160,185 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(56, 47, 52, 0.8);
 }
+
+/* ========================================================================= */
+/* ReviewTayo Landing V3 Design Styles & Animations                          */
+/* ========================================================================= */
+
+.font-display {
+  font-family: "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+  letter-spacing: -0.035em;
+}
+
+.font-body {
+  font-family: Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.font-logo {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* Owl & Mascot Keyframes */
+.owl {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.owl .eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 6s infinite;
+}
+
+.owl .pupil {
+  transition: transform 0.12s ease-out;
+}
+
+.animate-owl-bob {
+  animation: bob 4.6s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.08); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--r, 0deg)); }
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes burst {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+
+@keyframes marq {
+  to { transform: translateX(-50%); }
+}
+
+/* Continuous Page Gradient */
+.landing-page-gradient {
+  background: linear-gradient(
+    180deg,
+    #fdf8f6 0px,
+    #fcf0f1 var(--s1, 760px),
+    #f9e2e7 var(--s2, 1560px),
+    #f3ccd6 var(--s3, 2460px),
+    #e19bad var(--s4, 3340px),
+    #b8385a calc(var(--s4, 3340px) + 130px),
+    #7c1233 calc(var(--s4, 3340px) + 290px),
+    #4a0f1f calc(var(--s4, 3340px) + 500px),
+    #2a0a12 calc(var(--s4, 3340px) + 780px),
+    #210610 100%
+  );
+}
+
+/* Confetti particles for interactive card */
+.conf-particle {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 6;
+  animation: burst 0.95s ease-out forwards;
+}
+
+/* Carousel rail scrollbar suppression across all browsers */
+.c-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.c-rail::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Bento "Why 162?" tile mascot hover tilt */
+.t-why .t-why-owl {
+  display: block;
+  width: 64px;
+  flex: none;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.t-why:hover .t-why-owl {
+  transform: rotate(-8deg) translateY(-4px);
+}
+
+/* Hero Floating Proof Cards & Parallax */
+.cards {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+.fw {
+  position: absolute;
+  pointer-events: auto;
+  transition: transform 0.3s ease-out;
+}
+.fc {
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  text-align: left;
+  box-shadow: 0 18px 40px -18px rgba(90, 15, 35, 0.5), 0 0 0 1px rgba(138, 22, 48, 0.08);
+  animation: float 6s ease-in-out infinite;
+  transform: rotate(var(--r, 0deg));
+}
+.fw:nth-child(2) .fc { animation-delay: -1.6s; }
+.fw:nth-child(3) .fc { animation-delay: -3s; }
+.fw:nth-child(4) .fc { animation-delay: -4.4s; }
+
+@media (max-width: 900px) {
+  .cards {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 26px 0 8px;
+  }
+  .fw {
+    position: static;
+  }
+  .cards .fw {
+    transform: none !important;
+  }
+.cards .fw:nth-child(4) {
+    display: none;
+  }
+}
+
+.fc small { display: block; color: #7a6a70; font-size: 12px; }
+.fq { width: 236px; }
+.fq .q { margin: 10px 0; font: 700 17px/1.25 Figtree, system-ui, sans-serif; }
+.pills { display: flex; gap: 6px; }
+.pills i { font-style: normal; flex: 1; text-align: center; padding: 7px 0; border-radius: 10px; background: #f6ecee; font-weight: 700; font-size: 13px; }
+.pills .ok { background: var(--ok); color: #fff; }
+.fs { width: 170px; text-align: center; }
+.fs svg { display: block; margin: 0 auto 6px; }
+.fx { width: 258px; display: flex; gap: 12px; align-items: flex-start; }
+.fx .ow { width: 38px; flex: none; }
+.fx p { font-weight: 600; font-size: 14px; line-height: 1.3; }
+.fp { width: 210px; }
+.fp b { font: 800 30px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -0.03em; }
+.fp .bar { height: 10px; border-radius: 9px; background: #f1e4e7; margin-top: 9px; overflow: hidden; }
+.fp .bar i { display: block; width: 38%; height: 100%; background: var(--gold); border-radius: 9px; }
