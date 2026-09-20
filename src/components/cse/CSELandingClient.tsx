@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
   Clock,
@@ -17,20 +15,10 @@ import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { HeroExamLevelSelector } from "@/components/home/HeroExamLevelSelector";
 import { SubtestExplorer } from "@/components/home/SubtestExplorer";
+import { useExamLevel } from "@/lib/hooks/useExamLevel";
 
 export function CSELandingClient() {
-  const searchParams = useSearchParams();
-  const paramLevel = searchParams?.get("level");
-
-  const [selectedLevel, setSelectedLevel] = useState<"professional" | "subprofessional">(
-    paramLevel === "subprofessional" ? "subprofessional" : "professional"
-  );
-
-  useEffect(() => {
-    if (paramLevel === "subprofessional" || paramLevel === "professional") {
-      setSelectedLevel(paramLevel);
-    }
-  }, [paramLevel]);
+  const [selectedLevel, setSelectedLevel] = useExamLevel<"professional" | "subprofessional">("cse");
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground relative selection:bg-[#f8edef] selection:text-[#86152d]">
