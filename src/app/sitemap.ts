@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getCanonicalUrl } from "@/lib/env";
-import { getAllStudyGuides, getAllArticles } from "@/lib/content";
+import { getAllStudyGuides, getAllArticles, GUIDE_HUBS } from "@/lib/content";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getCanonicalUrl();
@@ -66,7 +66,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // 2. Study Guides (Catalog and individual subtest guides with verified content dates)
+  // 2. Study Guides (directory, per-exam hubs, and individual subtest guides with verified content dates)
   const studyGuides = getAllStudyGuides();
   const guideRoutes: MetadataRoute.Sitemap = [
     {
@@ -75,6 +75,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    // Per-exam guide hubs (/guides/cse, /guides/let, ...)
+    ...GUIDE_HUBS.map((hub) => ({
+      url: `${baseUrl}/guides/${hub.slug}`,
+      lastModified: platformReleaseDate,
+      changeFrequency: "weekly" as const,
+      priority: hub.examId === "cse" ? 0.9 : 0.7,
+    })),
     ...studyGuides.map((guide) => ({
       url: `${baseUrl}/guides/${guide.slug}`,
       lastModified: guide.isoUpdatedDate
