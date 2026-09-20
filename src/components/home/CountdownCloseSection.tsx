@@ -118,7 +118,7 @@ export function CountdownCloseSection() {
                   Start free diagnostic
                 </Link>
                 <Link
-                  href="#exams"
+                  href="/reviewers"
                   className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-white bg-transparent shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.4)] hover:bg-white/10 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
                 >
                   Browse exams
