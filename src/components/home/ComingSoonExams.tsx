@@ -48,10 +48,10 @@ export function ComingSoonExams() {
         <div>
           <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-700 dark:text-brand-400">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Coming Soon</span>
+            <span>Coming soon</span>
           </div>
           <h2 id="coming-soon-heading" className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
-            Coming Soon: More Philippine Exams
+            Coming soon: more Philippine exams
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
             Each reviewer is built according to official regulatory syllabi and authored independently. Get notified when practice opens.
