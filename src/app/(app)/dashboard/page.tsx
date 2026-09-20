@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-[#fdf8f6] dark:bg-[#161315]">
       <Header />
       <main id="main-content" className="flex-1">
         <DashboardView />
