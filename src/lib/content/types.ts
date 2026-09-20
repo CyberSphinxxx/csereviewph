@@ -1,3 +1,6 @@
+/** Exams a piece of content serves. "cse" is the default for legacy guide entries. Matches EXAM_CATALOG ids. */
+export type ContentExamId = "cse" | "let" | "cle" | "napolcom" | "nursing" | "bfp";
+
 export interface GuideSection {
   id: string;
   heading: string;
@@ -22,6 +25,8 @@ export interface StudyGuide {
   title: string;
   seoTitle?: string;
   subject: string;
+  /** Exam whose syllabus this guide targets. Defaults to "cse" in data. */
+  examId: ContentExamId;
   level: "All" | "Professional" | "Subprofessional";
   description: string;
   readTimeMinutes: number;
