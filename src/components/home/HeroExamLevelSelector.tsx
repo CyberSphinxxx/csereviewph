@@ -2,9 +2,10 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PeekingOwl } from "@/components/home/PeekingOwl";
-import { getExamCountdown } from "@/lib/date-utils";
+import { ExamCountdown } from "@/components/common/ExamCountdown";
+import { getExamConfig } from "@/config/exams";
 
 export interface HeroExamLevelSelectorProps {
   selectedLevel: "professional" | "subprofessional";
@@ -18,28 +19,21 @@ export function HeroExamLevelSelector({
   const isPro = selectedLevel === "professional";
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const countdown = getExamCountdown("2027-03-14");
+  const cseConfig = getExamConfig("cse");
+  const levels = cseConfig?.levels || [];
+  const proLevel = levels.find((l) => l.id === "professional");
+  const subproLevel = levels.find((l) => l.id === "subprofessional");
+
+  const diagnosticLabel = cseConfig?.diagnostic?.label || "10 questions · 10 minutes";
 
   return (
     <div className="relative mx-auto w-full max-w-md space-y-3">
       {/* Prominent Exam Schedule with Countdown */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800/80 text-xs text-slate-700 dark:text-slate-300 shadow-2xs">
-        <div className="flex items-center gap-1.5 sm:gap-2 font-medium">
-          <Calendar className="w-4 h-4 text-brand-700 dark:text-brand-400 shrink-0" aria-hidden="true" />
-          <span className="font-semibold text-slate-600 dark:text-slate-400">Exam schedule</span>
-          <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-          <span className="font-bold text-slate-900 dark:text-white">{countdown.formattedDate}</span>
-          <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-          <span className="text-brand-700 dark:text-brand-400 font-bold">{countdown.label}</span>
-        </div>
-        <Link
-          href="/cse/exam-guide#schedule"
-          className="inline-flex items-center gap-0.5 font-bold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 underline underline-offset-2 shrink-0"
-        >
-          <span>View dates</span>
-          <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
+      <ExamCountdown
+        examDate={cseConfig?.examDate || "2027-03-14"}
+        scheduleHref="/cse/exam-guide#schedule"
+        variant="pill"
+      />
 
       {/* Card Stacking Context Wrapper */}
       <div className="relative z-0">
@@ -64,101 +58,112 @@ export function HeroExamLevelSelector({
             </h2>
           </div>
 
-        {/* Level Radio Options */}
-        <div className="space-y-2.5" role="radiogroup" aria-label="Civil Service Exam Level">
-          {/* Option: Professional */}
-          <button
-            type="button"
-            role="radio"
-            aria-checked={isPro}
-            onClick={() => onSelectLevel("professional")}
-            className={`w-full text-left p-3.5 rounded-xl border transition active:scale-[0.99] duration-75 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
-              isPro
-                ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 shadow-xs ring-1 ring-brand-600 dark:ring-brand-400"
-                : "border-border bg-white dark:bg-[#1E191C] hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/40 dark:hover:bg-slate-800/40"
-            }`}
-          >
-            {/* Custom Radio Circle */}
-            <span
-              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
+          {/* Level Radio Options */}
+          <div className="space-y-2.5" role="radiogroup" aria-label="Civil Service Exam Level">
+            {/* Option: Professional */}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={isPro}
+              onClick={() => onSelectLevel("professional")}
+              className={`w-full text-left p-3.5 rounded-xl border transition active:scale-[0.99] duration-75 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
                 isPro
-                  ? "border-brand-600 dark:border-brand-400 bg-brand-600 dark:bg-brand-500"
-                  : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 shadow-xs ring-1 ring-brand-600 dark:ring-brand-400"
+                  : "border-border bg-white dark:bg-[#1E191C] hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/40 dark:hover:bg-slate-800/40"
               }`}
             >
-              {isPro && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-            </span>
+              {/* Custom Radio Circle */}
+              <span
+                className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
+                  isPro
+                    ? "border-brand-600 dark:border-brand-400 bg-brand-600 dark:bg-brand-500"
+                    : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                }`}
+              >
+                {isPro && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+              </span>
 
-            <div className="space-y-0.5 flex-1 min-w-0">
-              <span className="text-sm font-bold text-slate-900 dark:text-white block">Professional</span>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
-                For second-level positions &middot; <span className="font-medium text-brand-700 dark:text-brand-400">Includes Analytical Ability</span>
-              </p>
-            </div>
-          </button>
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <span className="text-sm font-bold text-slate-900 dark:text-white block">
+                  {proLevel?.shortName || "Professional"}
+                </span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                  {proLevel?.description || "For second-level positions"} &middot;{" "}
+                  <span className="font-medium text-brand-700 dark:text-brand-400">
+                    Includes Analytical Ability
+                  </span>
+                </p>
+              </div>
+            </button>
 
-          {/* Option: Subprofessional */}
-          <button
-            type="button"
-            role="radio"
-            aria-checked={!isPro}
-            onClick={() => onSelectLevel("subprofessional")}
-            className={`w-full text-left p-3.5 rounded-xl border transition active:scale-[0.99] duration-75 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
-              !isPro
-                ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 shadow-xs ring-1 ring-brand-600 dark:ring-brand-400"
-                : "border-border bg-white dark:bg-[#1E191C] hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/40 dark:hover:bg-slate-800/40"
-            }`}
-          >
-            {/* Custom Radio Circle */}
-            <span
-              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
+            {/* Option: Subprofessional */}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!isPro}
+              onClick={() => onSelectLevel("subprofessional")}
+              className={`w-full text-left p-3.5 rounded-xl border transition active:scale-[0.99] duration-75 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
                 !isPro
-                  ? "border-brand-600 dark:border-brand-400 bg-brand-600 dark:bg-brand-500"
-                  : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 shadow-xs ring-1 ring-brand-600 dark:ring-brand-400"
+                  : "border-border bg-white dark:bg-[#1E191C] hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/40 dark:hover:bg-slate-800/40"
               }`}
             >
-              {!isPro && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-            </span>
+              {/* Custom Radio Circle */}
+              <span
+                className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
+                  !isPro
+                    ? "border-brand-600 dark:border-brand-400 bg-brand-600 dark:bg-brand-500"
+                    : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                }`}
+              >
+                {!isPro && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+              </span>
 
-            <div className="space-y-0.5 flex-1 min-w-0">
-              <span className="text-sm font-bold text-slate-900 dark:text-white block">Subprofessional</span>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
-                For first-level positions &middot; <span className="font-medium text-brand-700 dark:text-brand-400">Includes Clerical Ability</span>
-              </p>
-            </div>
-          </button>
-        </div>
-
-        {/* Primary CTA Button */}
-        <div className="pt-0.5 space-y-2.5">
-          <Link
-            href={`/exams/${selectedLevel}/quick`}
-            prefetch={true}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm sm:text-base shadow-sm transition transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
-          >
-            <span>Start Free Diagnostic</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-
-          {/* Reassurance Copy with clear timing signal */}
-          <div className="text-center text-xs text-slate-500 space-y-0.5">
-            <p>10 questions &middot; 10-minute timer &middot; Starts immediately</p>
-            <p className="font-medium text-slate-600 dark:text-slate-400">No account required</p>
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <span className="text-sm font-bold text-slate-900 dark:text-white block">
+                  {subproLevel?.shortName || "Subprofessional"}
+                </span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                  {subproLevel?.description || "For first-level positions"} &middot;{" "}
+                  <span className="font-medium text-brand-700 dark:text-brand-400">
+                    Includes Clerical Ability
+                  </span>
+                </p>
+              </div>
+            </button>
           </div>
-        </div>
 
-        {/* Comparison Helper Link */}
-        <div className="pt-2 text-center border-t border-border">
-          <a
-            href="#compare-levels"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 transition underline underline-offset-4 decoration-brand-200 dark:decoration-brand-800 hover:decoration-brand-500"
-          >
-            <span>Not sure which level? Compare the two levels</span>
-            <ArrowRight className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-          </a>
+          {/* Primary CTA Button */}
+          <div className="pt-0.5 space-y-2.5">
+            <Link
+              href={`/exams/${selectedLevel}/quick`}
+              prefetch={true}
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm sm:text-base shadow-sm transition transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+            >
+              <span>Start free diagnostic</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            {/* Reassurance Copy with clear timing signal */}
+            <div className="text-center text-xs text-slate-500 space-y-0.5">
+              <p>{diagnosticLabel} &middot; Starts immediately</p>
+              <p className="font-medium text-slate-600 dark:text-slate-400">No account required</p>
+            </div>
+          </div>
+
+          {/* Comparison Helper Link */}
+          <div className="pt-2 text-center border-t border-border">
+            <a
+              href="#compare-levels"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 transition underline underline-offset-4 decoration-brand-200 dark:decoration-brand-800 hover:decoration-brand-500"
+            >
+              <span>Not sure which level? Compare the two levels</span>
+              <ArrowRight className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
+
