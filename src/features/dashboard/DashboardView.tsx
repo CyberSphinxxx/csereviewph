@@ -8,28 +8,27 @@ import {
   type SubjectReadinessMetric,
   type TargetExamConfig,
   type StoredMistakeItem,
+  type DailyActivityCell,
 } from "@/lib/storage";
 import { usePreferences } from "@/lib/preferences";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 import { getNextBestStepRecommendation } from "./recommendation-engine";
-import { TodayActionCard } from "./TodayActionCard";
+import { DashboardBento } from "./DashboardBento";
 import { ExamCalendarCard } from "./ExamCalendarCard";
 import { PracticeActivityGrid } from "./PracticeActivityGrid";
-import { SubjectProgressList } from "./SubjectProgressList";
-import { RecentSessionsList } from "./RecentSessionsList";
 import { DataStorageSection } from "./DataStorageSection";
 import { DashboardOnboardingView } from "./DashboardOnboardingView";
-import {
-  Target,
-  Award,
-  Flame,
-  CheckCircle2,
-  Clock,
-  Check,
-  SlidersHorizontal,
-  BookOpen,
-} from "lucide-react";
+import { SlidersHorizontal, Clock, BookOpen, Check } from "lucide-react";
 import { useSession } from "@/lib/auth/auth-client";
+
+function computeDaysRemaining(dateStr: string): number {
+  const parts = dateStr.split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return 0;
+  const target = new Date(parts[0], parts[1] - 1, parts[2]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((target.getTime() - today.getTime()) / 864e5));
+}
 
 export function DashboardView() {
   const { data: session } = useSession();
@@ -52,6 +51,7 @@ export function DashboardView() {
     dailyGoal: 25,
   });
   const [dailyAnswered, setDailyAnswered] = useState(0);
+  const [weekCells, setWeekCells] = useState<DailyActivityCell[]>([]);
 
   const loadDashboardData = useCallback(() => {
     const wsId = currentWorkspace?.id;
@@ -75,6 +75,7 @@ export function DashboardView() {
     const config = LocalStorageService.getTargetExamConfig(wsId);
     setTargetConfig(config);
     setDailyAnswered(LocalStorageService.getDailyQuestionsAnswered());
+    setWeekCells(LocalStorageService.getActivityGridData(1));
   }, [currentWorkspace?.id]);
 
   useEffect(() => {
@@ -100,6 +101,22 @@ export function DashboardView() {
   if (isLoaded && !currentWorkspace) {
     return <DashboardOnboardingView />;
   }
+
+  // Weakest measured subject feeds the "Recommended next" tile
+  const measuredSubjects = subjectReadiness.filter((s) => s.questionsAnswered > 0);
+  const weakest =
+    measuredSubjects.length > 0
+      ? measuredSubjects.reduce((m, s) =>
+          s.accuracyPercentage < m.accuracyPercentage ? s : m
+        )
+      : null;
+
+  const examDateLabel = (() => {
+    const d = new Date(`${targetConfig.targetDate}T00:00:00`);
+    return Number.isNaN(d.getTime())
+      ? targetConfig.targetDate
+      : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  })();
 
   // Compute aggregate statistics truthfully (D01: No invented numbers!)
   const totalTests = history.length;
@@ -142,8 +159,6 @@ export function DashboardView() {
     ? `Welcome back, ${session.user.name}`
     : "What will you improve today?";
 
-  const streakText = LocalStorageService.formatDayStreak(streakDays);
-
   const isCompact = preferences.dashboard.spacing === "compact";
   const { showExamCalendar, showActivityCalendar, showStreakSummary, showSubjectProgress, showRecentSessions } =
     preferences.dashboard;
@@ -153,21 +168,24 @@ export function DashboardView() {
   const badgeExamTitle = currentExamConfig?.fullName || currentExamConfig?.shortName || currentWorkspace?.examId?.toUpperCase() || "Current examination";
   const badgeTrackTitle = currentWorkspace?.trackName || "Standard";
 
+  const ghostBtn =
+    "inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-[13px] text-[#1b1216] dark:text-[#f5eff1] shadow-[inset_0_0_0_1.5px_rgba(27,18,22,0.24)] dark:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.28)] hover:bg-[rgba(27,18,22,0.05)] dark:hover:bg-white/10 transition-colors";
+  const primaryBtn =
+    "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8a1630] hover:bg-[#701126] text-white text-[13px] font-extrabold shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 transition-all";
+
   return (
     <div className={`animate-page-enter ${isCompact ? "py-4 px-4 sm:px-6 lg:px-8" : "py-7 px-4 sm:px-6 lg:px-8"}`}>
-      <div className={`max-w-7xl mx-auto ${isCompact ? "space-y-4" : "space-y-7"}`}>
-        {/* Top Header: Greeting, Pacing Context, and Quick Launch */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className={`max-w-7xl mx-auto ${isCompact ? "space-y-4" : "space-y-6"}`}>
+        {/* Top Header: Greeting, Exam Context, and Quick Launch */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 text-xs font-semibold">
-                {badgeExamTitle} &bull; {badgeTrackTitle}
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#fbeff0] dark:bg-[#351a22] text-[#8a1630] dark:text-[#fad1da] text-xs font-extrabold">
+              {badgeExamTitle} &bull; {badgeTrackTitle}
+            </span>
+            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-[-0.03em] text-[#1b1216] dark:text-[#f5eff1] mt-2.5">
               {greetingName}
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-0.5">
+            <p className="text-[#5a4a50] dark:text-[#a89ba1] text-sm mt-1">
               Personalized daily study pacing and practice accuracy based on your sessions.
             </p>
           </div>
@@ -175,10 +193,10 @@ export function DashboardView() {
           <div className="flex items-center gap-2.5">
             <Link
               href="/settings/dashboard"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-semibold shadow-2xs transition"
+              className={ghostBtn}
               title="Customize dashboard layout"
             >
-              <SlidersHorizontal className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <SlidersHorizontal className="w-4 h-4 opacity-60" />
               <span className="hidden sm:inline">Customize View</span>
             </Link>
 
@@ -186,7 +204,7 @@ export function DashboardView() {
               <Link
                 href={currentExamConfig.routes.quickDrillUrl}
                 prefetch={true}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-sm transition"
+                className={primaryBtn}
               >
                 <Clock className="w-4 h-4" />
                 <span>Start Quick Drill</span>
@@ -195,7 +213,7 @@ export function DashboardView() {
               <Link
                 href={currentExamConfig?.routes?.practiceUrl || "/practice"}
                 prefetch={true}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-sm transition"
+                className={primaryBtn}
               >
                 <BookOpen className="w-4 h-4" />
                 <span>Practice Drills</span>
@@ -208,15 +226,15 @@ export function DashboardView() {
         {feedbackMessage && (
           <div
             role="alert"
-            className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs sm:text-sm font-medium flex items-center justify-between shadow-xs animate-fade-in"
+            className="p-3.5 rounded-2xl bg-[#e9f8ef] border border-[#12a150]/30 text-[#0e5c2f] dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs animate-fade-in"
           >
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <Check className="w-4 h-4 text-[#12a150] dark:text-emerald-400" />
               <span>{feedbackMessage}</span>
             </div>
             <button
               onClick={() => setFeedbackMessage(null)}
-              className="text-xs text-emerald-700 dark:text-emerald-300 font-bold px-1"
+              className="text-xs text-[#0e7d3d] dark:text-emerald-300 font-extrabold px-1 hover:opacity-70"
             >
               ✕
             </button>
@@ -225,117 +243,56 @@ export function DashboardView() {
 
         {/* All Optional Sections Hidden Banner */}
         {allOptionalHidden && (
-          <div className="p-3.5 rounded-xl bg-brand-50/60 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800 text-xs text-brand-900 dark:text-brand-200 flex items-center justify-between">
+          <div className="p-3.5 rounded-2xl bg-[#fbeff0] border border-[#8a1630]/20 text-[#6b1226] dark:bg-brand-950/30 dark:border-brand-800 dark:text-brand-200 text-xs font-semibold flex items-center justify-between gap-3">
             <span>Optional sections are hidden. Your daily study action and progress recording remain active.</span>
-            <Link href="/settings/dashboard" className="font-bold underline ml-2 shrink-0 hover:opacity-80">
+            <Link href="/settings/dashboard" className="font-extrabold underline shrink-0 hover:opacity-80">
               Restore sections in Settings &rarr;
             </Link>
           </div>
         )}
 
-        {/* Truthful Stat Tiles */}
-        <div className={`grid ${showStreakSummary ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"} gap-3.5 sm:gap-4`}>
-          {/* Practice Accuracy */}
-          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider">
-                Practice accuracy
-              </span>
-              <Target className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-              {avgAccuracy !== null ? `${avgAccuracy}%` : "Not measured yet"}
-            </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              {avgAccuracy !== null
-                ? `Study target: 80% (${totalTests} ${totalTests === 1 ? "test" : "tests"})`
-                : "Take a diagnostic to establish baseline"}
-            </div>
-          </div>
+        {/* Bento workspace grid */}
+        <DashboardBento
+          recommendation={recommendation}
+          mistakeCount={mistakeCount}
+          dueMistakeCount={dueMistakes.length}
+          bookmarkCount={bookmarkCount}
+          dailyAnswered={dailyAnswered}
+          dailyGoal={targetConfig.dailyGoal || 25}
+          daysRemaining={computeDaysRemaining(targetConfig.targetDate)}
+          examName={targetConfig.examName}
+          examDateLabel={examDateLabel}
+          streakDays={streakDays}
+          weekCells={weekCells}
+          avgAccuracy={avgAccuracy}
+          totalTests={totalTests}
+          passedTests={passedTests}
+          itemsAnswered={estimatedQuestionsAnswered}
+          subjects={subjectReadiness}
+          history={history}
+          weakest={
+            weakest
+              ? { name: weakest.subjectName, accuracy: weakest.accuracyPercentage }
+              : null
+          }
+          practiceHref={currentExamConfig?.routes?.practiceUrl || "/practice"}
+          diagnosticHref={currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick"}
+          showExamTile={showExamCalendar}
+          showStreakTile={showStreakSummary}
+          showSubjectTile={showSubjectProgress}
+          showSessionsTile={showRecentSessions}
+        />
 
-          {/* Tests Completed */}
-          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider">
-                Tests completed
-              </span>
-              <Award className="w-4 h-4 text-gold-500" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{totalTests}</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              {totalTests > 0
-                ? `${passedTests} met target (${Math.round((passedTests / totalTests) * 100)}%)`
-                : "No tests completed yet"}
-            </div>
-          </div>
+        {/* Below the bento: consistency tracker + exam details, then data controls */}
+        <div
+          className={`grid grid-cols-1 ${
+            showActivityCalendar && showExamCalendar ? "lg:grid-cols-2" : ""
+          } ${isCompact ? "gap-4" : "gap-6"} items-start`}
+        >
+          {showActivityCalendar && <PracticeActivityGrid streakDays={streakDays} />}
 
-          {/* Study Streak (Optional) */}
-          {showStreakSummary && (
-            <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Study streak
-                </span>
-                <Flame className="w-4 h-4 text-amber-500" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{streakText}</div>
-              <div className="text-xs text-amber-700 dark:text-amber-400 font-medium mt-1">
-                {streakDays > 0 ? "Daily streak active" : "Answer 1 question today"}
-              </div>
-            </div>
-          )}
-
-          {/* Items Answered */}
-          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider">
-                Items answered
-              </span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-              {estimatedQuestionsAnswered}
-            </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Across current exam sessions
-            </div>
-          </div>
-        </div>
-
-        {/* 2-Column Responsive Layout (2/3 Study, 1/3 Personal Context) */}
-        <div className={`grid grid-cols-1 ${showExamCalendar ? "lg:grid-cols-3" : "lg:grid-cols-1"} ${isCompact ? "gap-4 sm:gap-5" : "gap-6 sm:gap-7"} items-start`}>
-          {/* Main Study Column */}
-          <div className={`${showExamCalendar ? "lg:col-span-2" : "lg:col-span-1"} ${isCompact ? "space-y-4" : "space-y-6 sm:space-y-7"}`}>
-            {/* Priority 1: Dominant "For today" Action (Permanent anchor) */}
-            <TodayActionCard
-              recommendation={recommendation}
-              mistakeCount={mistakeCount}
-              dueMistakeCount={dueMistakes.length}
-              bookmarkCount={bookmarkCount}
-              dailyAnswered={dailyAnswered}
-              dailyGoal={targetConfig.dailyGoal || 25}
-            />
-
-            {/* Optional Activity Grid */}
-            {showActivityCalendar && (
-              <PracticeActivityGrid streakDays={streakDays} />
-            )}
-
-            {/* Optional Subject Progress */}
-            {showSubjectProgress && (
-              <SubjectProgressList subjects={subjectReadiness} />
-            )}
-
-            {/* Optional Recent Sessions */}
-            {showRecentSessions && (
-              <RecentSessionsList history={history} />
-            )}
-          </div>
-
-          {/* Personal Context Column */}
           {showExamCalendar && (
-            <div className={`${isCompact ? "space-y-4" : "space-y-6"}`}>
-              {/* "Your Exam" Card */}
+            <div id="exam-details" className="min-w-0">
               <ExamCalendarCard
                 config={targetConfig}
                 dailyAnswered={dailyAnswered}
@@ -349,18 +306,19 @@ export function DashboardView() {
                   setTimeout(() => setFeedbackMessage(null), 4000);
                 }}
               />
-
-              {/* Compact Local Storage & Data Controls */}
-              <DataStorageSection
-                onDataChanged={loadDashboardData}
-                onShowMessage={(msg) => {
-                  setFeedbackMessage(msg);
-                  setTimeout(() => setFeedbackMessage(null), 4000);
-                }}
-              />
             </div>
           )}
         </div>
+
+        {showExamCalendar && (
+          <DataStorageSection
+            onDataChanged={loadDashboardData}
+            onShowMessage={(msg) => {
+              setFeedbackMessage(msg);
+              setTimeout(() => setFeedbackMessage(null), 4000);
+            }}
+          />
+        )}
       </div>
     </div>
   );
