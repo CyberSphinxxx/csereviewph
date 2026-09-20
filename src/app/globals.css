@@ -65,30 +65,49 @@
   }
 
   .dark {
-    --background: #161315;
-    --foreground: #f5eff1;
-    --card: #1e191c;
-    --card-foreground: #f5eff1;
-    --popover: #1e191c;
-    --popover-foreground: #f5eff1;
-    --primary: #c53b57;
+    --background: #1a0c11;
+    --foreground: #f8ecee;
+    --card: #2b1620;
+    --card-foreground: #f8ecee;
+    --popover: #2b1620;
+    --popover-foreground: #f8ecee;
+    --primary: #8a1630;
     --primary-foreground: #ffffff;
-    --secondary: #262024;
-    --secondary-foreground: #f5eff1;
-    --muted: #262024;
-    --muted-foreground: #a89ba1;
-    --accent: #351a22;
-    --accent-foreground: #fad1da;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #f5eff1;
-    --border: #382f34;
-    --input: #4e4249;
-    --ring: #e57389;
+    --secondary: #3b1a25;
+    --secondary-foreground: #f8ecee;
+    --muted: #3a1f29;
+    --muted-foreground: #d6bcc3;
+    --accent: #3b1a25;
+    --accent-foreground: #ff9fb5;
+    --destructive: #8a1630;
+    --destructive-foreground: #ffffff;
+    --border: rgba(255, 255, 255, 0.14);
+    --input: rgba(255, 255, 255, 0.16);
+    --ring: #ff9fb5;
 
     /* Semantic active / selection highlight tokens in dark mode */
-    --highlight: #351a22;
-    --highlight-foreground: #fad1da;
-    --highlight-border: #de5572;
+    --highlight: #3b1a25;
+    --highlight-foreground: #ff9fb5;
+    --highlight-border: #8a1630;
+
+    /* ReviewTayo dark red theme tokens matching image 1.png */
+    --bg: #1a0c11;
+    --band: #22101a;
+    --surf: #2b1620;
+    --ink: #f8ecee;
+    --mute: #d6bcc3;
+    --blush: #3b1a25;
+    --pill: #3a1f29;
+    --line: rgba(255, 255, 255, 0.16);
+    --mrt: #ff9fb5;
+    --hdr: rgba(26, 12, 17, 0.88);
+    --focus: #ffd27a;
+
+    --brand-background: #1a0c11;
+    --brand-surface: #2b1620;
+    --brand-text: #f8ecee;
+    --brand-muted: #d6bcc3;
+    --brand-border: rgba(255, 255, 255, 0.14);
   }
 }
 
@@ -342,3 +361,129 @@ body {
 .fp b { font: 800 30px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -0.03em; }
 .fp .bar { height: 10px; border-radius: 9px; background: #f1e4e7; margin-top: 9px; overflow: hidden; }
 .fp .bar i { display: block; width: 38%; height: 100%; background: var(--gold); border-radius: 9px; }
+
+/* Dark mode styling for hero proof cards */
+.dark .fc {
+  background: #2b1620;
+  color: #f8ecee;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.dark .fc small {
+  color: #d6bcc3;
+}
+.dark .fq .q,
+.dark .fc b,
+.dark .fc p {
+  color: #f8ecee;
+}
+.dark .pills i {
+  background: #3a1f29;
+  color: #f8ecee;
+}
+.dark .pills .ok {
+  background: var(--ok);
+  color: #fff;
+}
+.dark .fp .bar {
+  background: #3a1f29;
+}
+
+/* ========================================================================= */
+/* ReviewTayo Exams Page (reviewtayo-exams-v2) Styles & Ticket Masks         */
+/* ========================================================================= */
+
+.fam-civil { --bgc: #8a1630; --fgc: #fff; }
+.fam-safety { --bgc: #dce6f8; --fgc: #1f3a6e; }
+.fam-lic { --bgc: #fdeec6; --fgc: #6b4300; }
+.fam-school { --bgc: #d7efe0; --fgc: #14532d; }
+.fam-skills { --bgc: #e6dcf7; --fgc: #45276f; }
+
+.tk-in {
+  --sw: 132px;
+  -webkit-mask: radial-gradient(circle 11px at var(--sw) 0, #0000 98%, #000) top/100% 51% no-repeat,
+    radial-gradient(circle 11px at var(--sw) 100%, #0000 98%, #000) bottom/100% 51% no-repeat;
+  mask: radial-gradient(circle 11px at var(--sw) 0, #0000 98%, #000) top/100% 51% no-repeat,
+    radial-gradient(circle 11px at var(--sw) 100%, #0000 98%, #000) bottom/100% 51% no-repeat;
+}
+
+@media (max-width: 640px) {
+  .tk-in {
+    --sw: 98px;
+  }
+}
+
+.say-bubble::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  bottom: 12px;
+  width: 14px;
+  height: 14px;
+  background: inherit;
+  transform: rotate(45deg);
+  border-radius: 0 0 0 3px;
+}
+
+.exams-closing-gradient {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #fcf0f1 12%,
+    #f9e2e7 24%,
+    #f3ccd6 36%,
+    #e19bad 48%,
+    #b8385a 62%,
+    #7c1233 74%,
+    #4a0f1f 86%,
+    #2a0a12 94%,
+    #210610 100%
+  );
+}
+
+/* Warm blush/pink gradient for Exams page starting from soft rose into maroon */
+.exams-page-gradient {
+  background: linear-gradient(
+    180deg,
+    #fdf8f6 0px,
+    #fcf0f1 500px,
+    #f9e2e7 1200px,
+    #f3ccd6 2000px,
+    #e19bad 2800px,
+    #b8385a 3200px,
+    #7c1233 3500px,
+    #4a0f1f 3800px,
+    #2a0a12 4100px,
+    #210610 100%
+  );
+}
+
+.dark .exams-page-gradient,
+.dark .landing-page-gradient {
+  background: linear-gradient(
+    180deg,
+    #1a0c11 0px,
+    #22101a 600px,
+    #2b1620 1400px,
+    #3b1a25 2400px,
+    #2a0a12 3400px,
+    #210610 100%
+  );
+}
+
+.dark .exams-closing-gradient {
+  background: linear-gradient(
+    180deg,
+    #2b1620 0%,
+    #3b1a25 25%,
+    #4a0f1f 55%,
+    #2a0a12 85%,
+    #210610 100%
+  );
+}
+
+.dark .fam-civil { --bgc: #8a1630; --fgc: #fff; }
+.dark .fam-safety { --bgc: #1f304f; --fgc: #cce0ff; }
+.dark .fam-lic { --bgc: #4a3410; --fgc: #fdeec6; }
+.dark .fam-school { --bgc: #133a22; --fgc: #c2ebd0; }
+.dark .fam-skills { --bgc: #352152; --fgc: #e1d3f7; }
+
