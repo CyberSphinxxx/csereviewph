@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -15,9 +14,10 @@ import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { HeroExamLevelSelector } from "@/components/home/HeroExamLevelSelector";
 import { SubtestExplorer } from "@/components/home/SubtestExplorer";
+import { useExamLevel } from "@/lib/hooks/useExamLevel";
 
 export function HomePageClient() {
-  const [selectedLevel, setSelectedLevel] = useState<"professional" | "subprofessional">("professional");
+  const [selectedLevel, setSelectedLevel] = useExamLevel<"professional" | "subprofessional">("cse");
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground relative selection:bg-[#f8edef] selection:text-[#86152d]">
