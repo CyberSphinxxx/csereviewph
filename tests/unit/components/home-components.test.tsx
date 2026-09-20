@@ -42,11 +42,11 @@ describe("HeroExamLevelSelector Component", () => {
       <HeroExamLevelSelector selectedLevel="professional" onSelectLevel={handleSelect} />
     );
 
-    const cta = screen.getByRole("link", { name: /Start Free Diagnostic/i });
+    const cta = screen.getByRole("link", { name: /Start free diagnostic/i });
     expect(cta).toBeInTheDocument();
     expect(cta).toHaveAttribute("href", "/exams/professional/quick");
 
-    expect(screen.getByText(/10 questions · 10-minute timer/i)).toBeInTheDocument();
+    expect(screen.getByText(/10 questions · 10 minutes/i)).toBeInTheDocument();
     expect(screen.getByText(/No account required/i)).toBeInTheDocument();
 
     // Re-render with subprofessional
