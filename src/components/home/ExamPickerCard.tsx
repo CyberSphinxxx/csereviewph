@@ -1,39 +1,40 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import { PeekingOwl } from "@/components/home/PeekingOwl";
-import { getExamCountdown } from "@/lib/date-utils";
+import { ExamCountdown } from "@/components/common/ExamCountdown";
+import { useExamLevel } from "@/lib/hooks/useExamLevel";
+import { getExamConfig } from "@/config/exams";
 
 export interface ExamPickerCardProps {
   initialLevel?: "professional" | "subprofessional";
 }
 
-export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCardProps) {
-  const [selectedLevel, setSelectedLevel] = useState<"professional" | "subprofessional">(initialLevel);
+export function ExamPickerCard({ initialLevel }: ExamPickerCardProps = {}) {
+  const [selectedLevel, setSelectedLevel] = useExamLevel<"professional" | "subprofessional">("cse");
   const cardRef = useRef<HTMLDivElement>(null);
-  const countdown = getExamCountdown("2027-03-14");
+  void initialLevel;
+
+  const cseConfig = getExamConfig("cse");
+  const levels = cseConfig?.levels || [];
+  const proLevel = levels.find((l) => l.id === "professional");
+  const subproLevel = levels.find((l) => l.id === "subprofessional");
+
   const isPro = selectedLevel === "professional";
+  const activeLevel = isPro ? proLevel : subproLevel;
+  const diagnostic = cseConfig?.diagnostic || {
+    label: "10 questions · 10 minutes",
+  };
 
   return (
     <div className="relative mx-auto w-full max-w-md space-y-2.5">
       {/* Exam Countdown Banner aligned above card */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs text-slate-500 dark:text-slate-400 px-1">
-        <div className="flex items-center gap-1.5 font-medium">
-          <Calendar className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0" aria-hidden="true" />
-          <span className="text-slate-800 dark:text-slate-200 font-semibold">{countdown.formattedDate}</span>
-          <span className="text-slate-300 dark:text-slate-600">&bull;</span>
-          <span className="text-brand-700 dark:text-brand-400 font-bold">{countdown.label}</span>
-        </div>
-        <Link
-          href="/cse/exam-guide#schedule"
-          className="inline-flex items-center gap-0.5 font-semibold text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 underline underline-offset-2 decoration-brand-200 dark:decoration-brand-800"
-        >
-          <span>View dates</span>
-          <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
+      <ExamCountdown
+        examDate={cseConfig?.examDate || "2027-03-14"}
+        scheduleHref="/cse/exam-guide#schedule"
+      />
 
       {/* Card Stacking Context Wrapper with Peeking Mascot */}
       <div className="relative z-0">
@@ -55,7 +56,7 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
             </span>
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-lg sm:text-xl font-black text-slate-950 dark:text-white tracking-tight">
-                Civil Service Exam (CSE)
+                {cseConfig?.fullName || "Civil Service Exam (CSE)"}
               </h2>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -93,11 +94,18 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">Professional</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">170 items &bull; 3h 10m</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {proLevel?.shortName || "Professional"}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    {proLevel?.items || 170} items &bull; 3h 10m
+                  </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  1st &amp; 2nd level positions &bull; <strong className="text-brand-800 dark:text-brand-300 font-semibold">Includes Analytical Ability</strong>
+                  {proLevel?.description || "For second-level positions"} &bull;{" "}
+                  <strong className="text-brand-800 dark:text-brand-300 font-semibold">
+                    Includes Analytical Ability
+                  </strong>
                 </p>
               </div>
             </button>
@@ -126,11 +134,18 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">Subprofessional</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">165 items &bull; 2h 40m</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {subproLevel?.shortName || "Subprofessional"}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    {subproLevel?.items || 165} items &bull; 2h 40m
+                  </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Clerical &amp; administrative &bull; <strong className="text-brand-800 dark:text-brand-300 font-semibold">Includes Clerical Ability</strong>
+                  {subproLevel?.description || "For first-level positions"} &bull;{" "}
+                  <strong className="text-brand-800 dark:text-brand-300 font-semibold">
+                    Includes Clerical Ability
+                  </strong>
                 </p>
               </div>
             </button>
@@ -150,7 +165,7 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
             <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-slate-400" />
-                10-min drill
+                {diagnostic.label}
               </span>
               <span>&bull;</span>
               <span>Starts immediately</span>
@@ -171,7 +186,7 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
             </Link>
           </div>
 
-          {/* Real Data Stats Row */}
+          {/* Real Data Stats Row - Verified numbers only */}
           <div className="pt-2 border-t border-border/70 grid grid-cols-3 gap-2 text-center text-[11px]">
             <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-border/60">
               <div className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">5</div>
@@ -179,13 +194,15 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
             </div>
             <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-border/60">
               <div className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">
-                {isPro ? "170" : "165"}
+                {activeLevel?.items || (isPro ? 170 : 165)}
               </div>
-              <div className="text-slate-500 dark:text-slate-400 font-medium">Full Mock Items</div>
+              <div className="text-slate-500 dark:text-slate-400 font-medium">Full mock items</div>
             </div>
             <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-border/60">
-              <div className="font-extrabold text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm">100%</div>
-              <div className="text-slate-500 dark:text-slate-400 font-medium">Free Access</div>
+              <div className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">
+                {isPro ? "3h 10m" : "2h 40m"}
+              </div>
+              <div className="text-slate-500 dark:text-slate-400 font-medium">Continuous timer</div>
             </div>
           </div>
         </div>
@@ -193,3 +210,4 @@ export function ExamPickerCard({ initialLevel = "professional" }: ExamPickerCard
     </div>
   );
 }
+
