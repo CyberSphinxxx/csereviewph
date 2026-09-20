@@ -84,7 +84,7 @@ export function DataStorageSection({ onDataChanged, onShowMessage }: DataStorage
   return (
     <section
       aria-labelledby="storage-section-heading"
-      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-3"
+      className="rounded-[22px] bg-white p-5 sm:p-6 shadow-[0_0_0_1px_rgba(138,22,48,0.12),0_14px_30px_-22px_rgba(90,15,35,0.35)] space-y-3"
     >
       <div className="space-y-1">
         <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function DataStorageSection({ onDataChanged, onShowMessage }: DataStorage
             Saved on this device &bull; Manage data
           </span>
         </div>
-        <h3 id="storage-section-heading" className="text-base font-bold text-slate-900">
+        <h3 id="storage-section-heading" className="font-display text-base font-bold tracking-[-0.01em] text-slate-900">
           Your Progress is Saved Locally
         </h3>
       </div>
@@ -102,7 +102,7 @@ export function DataStorageSection({ onDataChanged, onShowMessage }: DataStorage
         Your test history, mistake bank, and bookmarks are saved securely in your browser under Republic Act 10173 (Data Privacy Act). No account is required.
       </p>
 
-      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2">
+      <div className="pt-2 border-t border-[#f3e6e9] flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={handleCloudSync}
@@ -138,7 +138,7 @@ export function DataStorageSection({ onDataChanged, onShowMessage }: DataStorage
         </button>
       </div>
 
-      <div className="pt-2 border-t border-slate-100 text-right">
+      <div className="pt-2 border-t border-[#f3e6e9] text-right">
         <Link
           href="/settings/data"
           className="text-xs font-semibold text-brand-700 hover:text-brand-800 underline inline-flex items-center gap-1"
