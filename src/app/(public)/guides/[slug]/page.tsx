@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { getAllStudyGuides, getStudyGuideBySlug } from "@/lib/content";
+import { getExamConfig } from "@/config/exams";
 import { getStudyGuideSchema, getBreadcrumbSchema } from "@/lib/seo/schema";
 import { getCanonicalUrl } from "@/lib/env";
 import {
@@ -71,6 +72,8 @@ export default async function StudyGuideDetailPage({
   }
 
   const guideJsonLd = getStudyGuideSchema(guide);
+  const exam = getExamConfig(guide.examId ?? "cse");
+  const hubHref = exam ? `/guides/${exam.slug}` : "/guides";
 
   const breadcrumbJsonLd = getBreadcrumbSchema([
     {
@@ -78,8 +81,12 @@ export default async function StudyGuideDetailPage({
       url: getCanonicalUrl(),
     },
     {
-      name: "Study Guides",
+      name: "Study resources",
       url: getCanonicalUrl("/guides"),
+    },
+    {
+      name: `${exam?.shortName ?? "Exam"} guides`,
+      url: getCanonicalUrl(hubHref),
     },
     {
       name: guide.title,
@@ -88,7 +95,7 @@ export default async function StudyGuideDetailPage({
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-[#fdf8f6] dark:bg-[#1a0c11]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(guideJsonLd) }}
@@ -108,16 +115,20 @@ export default async function StudyGuideDetailPage({
             </Link>
             <span>/</span>
             <Link href="/guides" className="hover:text-brand-700 transition">
-              Study Guides
+              Study resources
             </Link>
             <span>/</span>
-            <span className="text-slate-900 font-medium truncate max-w-[200px] sm:max-w-md">
+            <Link href={hubHref} className="hover:text-brand-700 transition whitespace-nowrap">
+              {exam?.shortName ?? "Exam"} guides
+            </Link>
+            <span>/</span>
+            <span className="text-slate-900 dark:text-[#f8ecee] font-medium truncate max-w-[160px] sm:max-w-md">
               {guide.title}
             </span>
           </nav>
 
           {/* Guide Header */}
-          <header className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+          <header className="bg-white dark:bg-[#2b1620] rounded-2xl shadow-[0_0_0_1px_rgba(138,22,48,0.1),0_18px_40px_-28px_rgba(90,15,35,0.4)] p-6 sm:p-8 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100">
                 {guide.subject}
@@ -162,7 +173,7 @@ export default async function StudyGuideDetailPage({
           </header>
 
           {/* Table of Contents Box */}
-          <nav aria-label="Table of contents" className="p-5 rounded-xl bg-slate-100 border border-slate-200">
+          <nav aria-label="Table of contents" className="p-5 rounded-xl bg-[#f6ecee] dark:bg-[#1f1017]">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-2">
               Table of Contents
             </span>
@@ -187,7 +198,7 @@ export default async function StudyGuideDetailPage({
               <section
                 key={section.id}
                 id={section.id}
-                className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6 scroll-mt-20"
+                className="bg-white dark:bg-[#2b1620] rounded-2xl shadow-[0_0_0_1px_rgba(138,22,48,0.09),0_18px_40px_-28px_rgba(90,15,35,0.4)] p-6 sm:p-8 space-y-6 scroll-mt-20"
               >
                 <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-brand-600 shrink-0" />
@@ -255,7 +266,7 @@ export default async function StudyGuideDetailPage({
 
           {/* Guide Sources and Official Basis */}
           {guide.sources && guide.sources.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-3">
+            <div className="bg-white dark:bg-[#2b1620] rounded-2xl shadow-[0_0_0_1px_rgba(138,22,48,0.09)] p-6 sm:p-8 space-y-3">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 Official Syllabus References & Legal Authorities
               </h3>
@@ -289,10 +300,10 @@ export default async function StudyGuideDetailPage({
           </div>
 
           {/* Next Steps CTA */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-brand-700 to-brand-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
+          <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#8a1630] to-[#2a0a12] text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_20px_44px_-24px_rgba(138,22,48,0.7)]">
             <div className="space-y-1 text-center sm:text-left">
               <h3 className="text-lg font-bold">Apply what you learned</h3>
-              <p className="text-xs text-brand-100">
+              <p className="text-xs text-[#f3cbd3]">
                 Practice specific {guide.subject} questions in timed examination conditions.
               </p>
             </div>
