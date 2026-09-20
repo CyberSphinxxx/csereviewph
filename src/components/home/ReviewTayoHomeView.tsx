@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { LandingHeader } from "@/components/home/LandingHeader";
+import React, { useEffect, useRef } from "react";
+import { Header } from "@/components/layout/Header";
 import { HeroSection } from "@/components/home/HeroSection";
 import { TryQuestionSection } from "@/components/home/TryQuestionSection";
 import { ExamChooserRail } from "@/components/home/ExamChooserRail";
@@ -11,7 +11,6 @@ import { LandingFooter } from "@/components/home/LandingFooter";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 
 export function ReviewTayoHomeView() {
-  const [isDarkHeader, setIsDarkHeader] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
 
   // Measure section positions to configure seamless gradient stops (--s1, --s2, --s3, --s4)
@@ -82,40 +81,14 @@ export function ReviewTayoHomeView() {
     return () => window.removeEventListener("pointermove", handlePointerMove);
   }, []);
 
-  // Monitor scroll position for dynamic sticky header color transition
-  useEffect(() => {
-    let ticking = false;
-
-    const checkHeaderTheme = () => {
-      ticking = false;
-      const secE = document.getElementById("sec-e");
-      if (secE) {
-        const rect = secE.getBoundingClientRect();
-        setIsDarkHeader(rect.top < -150);
-      }
-    };
-
-    const handleScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(checkHeaderTheme);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    checkHeaderTheme();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div
       ref={pageRef}
       id="page"
       className="landing-page-gradient min-h-screen flex flex-col font-body text-[#1b1216] selection:bg-[#fbeff0] selection:text-[#8a1630] relative"
     >
-      {/* Sticky Adaptable Header */}
-      <LandingHeader isDark={isDarkHeader} />
+      {/* Unified Global Sticky Header */}
+      <Header />
 
       {/* Main Content Sections */}
       <main id="top" className="flex-1">
