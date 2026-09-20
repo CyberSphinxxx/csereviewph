@@ -3,6 +3,30 @@ import type { Article, StudyGuide, FAQItem } from "@/lib/content/types";
 import { CANONICAL_ORIGIN } from "@/lib/env";
 
 /**
+ * ItemList over a set of guides for a hub page (/guides, /guides/cse, ...).
+ * positions are 1-based and follow the rendered order.
+ */
+export function getGuideItemListSchema(
+  guides: StudyGuide[],
+  listName: string,
+  listUrl: string
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: listName,
+    url: `${CANONICAL_ORIGIN}${listUrl}`,
+    numberOfItems: guides.length,
+    itemListElement: guides.map((guide, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${CANONICAL_ORIGIN}/guides/${guide.slug}`,
+      name: guide.title,
+    })),
+  };
+}
+
+/**
  * Production Schema.org JSON-LD and Metadata builders for ReviewTayo.
  * Centralized to guarantee adherence to Google Search Central guidelines
  * and avoid schema replication drift in tests and templates.
