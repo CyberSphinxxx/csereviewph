@@ -100,7 +100,7 @@ describe("exams.ts — Central Exam Catalog", () => {
     expect(resolved?.href).toBe("/cse");
 
     // Upcoming exams exist in catalog but must not be marked as available for live test taking
-    const upcomingSlugs = ["let", "nursing", "bfp", "napolcom"];
+    const upcomingSlugs = ["let", "criminology", "napolcom"];
     for (const slug of upcomingSlugs) {
       const exam = getExamBySlug(slug);
       expect(exam).toBeDefined();
@@ -110,4 +110,35 @@ describe("exams.ts — Central Exam Catalog", () => {
     // Invalid slug triggers undefined
     expect(getExamBySlug("unknown-exam-slug")).toBeUndefined();
   });
+
+  it("strictly enforces category taxonomy and never allows 'Professional' as a category", () => {
+    const allowedCategories = ["civil-service", "licensure", "public-safety"];
+    for (const exam of getAllExams()) {
+      expect(allowedCategories).toContain(exam.category);
+      expect(exam.category).not.toBe("professional");
+    }
+  });
+
+  it("enforces canonical level descriptions and diagnostic copy for CSE", () => {
+    const cse = getExamBySlug("cse")!;
+    expect(cse).toBeDefined();
+
+    const pro = cse.levels.find((l) => l.id === "professional");
+    const subpro = cse.levels.find((l) => l.id === "subprofessional");
+
+    expect(pro?.description).toBe("For second-level positions");
+    expect(subpro?.description).toBe("For first-level positions");
+
+    expect(cse.diagnostic.label).toBe("10 questions · 10 minutes");
+    expect(cse.diagnostic.questionCount).toBe(10);
+    expect(cse.diagnostic.durationMinutes).toBe(10);
+
+    // Stats row must not include marketing claims like "100% Free Access"
+    if (cse.stats) {
+      for (const stat of cse.stats) {
+        expect(stat.label.toLowerCase()).not.toContain("free access");
+      }
+    }
+  });
 });
+
