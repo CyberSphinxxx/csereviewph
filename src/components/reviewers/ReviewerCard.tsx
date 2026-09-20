@@ -12,9 +12,8 @@ export function ReviewerCard({ exam, featured = false }: ReviewerCardProps) {
 
   const categoryLabels: Record<ExamCatalogEntry["category"], string> = {
     "civil-service": "Civil Service",
-    licensure: "Professional Licensure",
-    "public-safety": "Public Safety & Law Enforcement",
-    other: "Specialized Certification",
+    licensure: "Licensure",
+    "public-safety": "Public Safety",
   };
 
   return (
