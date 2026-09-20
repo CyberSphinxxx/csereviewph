@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
@@ -60,7 +62,7 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li className="pt-1">
-                <Link href="#exams" className="text-[#f6b93b] font-semibold hover:underline">
+                <Link href="/reviewers" className="text-[#f6b93b] font-semibold hover:underline">
                   Browse all Philippine exams &rarr;
                 </Link>
               </li>
@@ -137,6 +139,29 @@ export function LandingFooter() {
                 <Link href="/terms" className="text-[#e6c3cb] hover:text-white hover:underline transition">
                   Terms of Service
                 </Link>
+              </li>
+              <li>
+                <Link href="/disclaimer" className="text-[#e6c3cb] hover:text-white hover:underline transition">
+                  Non-Affiliation Notice
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-[#e6c3cb] hover:text-white hover:underline transition">
+                  Contact Support
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("open-cookie-settings"));
+                    }
+                  }}
+                  className="text-[#e6c3cb] hover:text-white hover:underline transition text-left cursor-pointer"
+                >
+                  Cookie &amp; Ad Preferences
+                </button>
               </li>
             </ul>
           </div>
