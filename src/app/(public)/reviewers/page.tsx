@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { ReviewerCatalog } from "@/components/reviewers/ReviewerCatalog";
+import { LandingFooter } from "@/components/home/LandingFooter";
+import { ExamsPageView } from "@/components/reviewers/ExamsPageView";
 import { CANONICAL_ORIGIN } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Philippine Exam Reviewers Directory",
+  title: "Philippine Exam Reviewers & Mock Tests",
   description:
-    "Explore available and planned Philippine examination reviewers on ReviewTayo, including Civil Service Exam, LET, Nursing, BFP, and NAPOLCOM.",
+    "Explore 69 Philippine examination reviewers and mock exam tools on ReviewTayo, including Civil Service Exam (CSE-PPT), LET, Nursing, BFP, and NAPOLCOM.",
   alternates: {
     canonical: "/reviewers",
   },
   openGraph: {
-    title: "Philippine Exam Reviewers Directory | ReviewTayo",
+    title: "Philippine Exam Reviewers & Mock Tests | ReviewTayo",
     description:
-      "Comprehensive directory of Philippine licensure, civil service, and qualifying examination reviewers. Review CSE today and discover upcoming exam tools.",
+      "Interactive directory of Philippine licensure, civil service, and college entrance examinations. Practice the Civil Service Exam today with full mock tests.",
     url: "/reviewers",
     type: "website",
   },
@@ -29,7 +29,7 @@ export default function ReviewersPage() {
     name: "Philippine Exam Reviewers Directory",
     url: `${CANONICAL_ORIGIN}/reviewers`,
     description:
-      "Directory of Philippine examination reviewers and mock exam tools on ReviewTayo.",
+      "Comprehensive interactive directory of Philippine examination reviewers and mock exam tools on ReviewTayo.",
     isPartOf: {
       "@type": "WebSite",
       name: "ReviewTayo",
@@ -55,78 +55,35 @@ export default function ReviewersPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
+    <div className="exams-page-gradient min-h-screen flex flex-col text-[#1b1216] dark:text-[#f8ecee] overflow-x-hidden w-full max-w-full selection:bg-[#fbeff0] selection:text-[#8a1630]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
 
-      <main className="flex-1">
-        {/* Breadcrumb strip */}
+      <main id="main-content" className="flex-1 overflow-x-hidden w-full max-w-full">
+        {/* Subtle Breadcrumb Strip */}
         <nav
           aria-label="Breadcrumb"
-          className="bg-slate-50/80 dark:bg-slate-950/60 border-b border-border/60 py-2.5 px-4 sm:px-6 lg:px-8"
+          className="bg-white/50 dark:bg-[#1a0c11]/50 backdrop-blur-xs border-b border-[#8a1630]/10 dark:border-white/10 py-2.5 px-5 sm:px-11"
         >
-          <div className="max-w-7xl mx-auto flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <Link href="/" className="hover:text-brand-700 dark:hover:text-white transition">
+          <div className="max-w-[1200px] mx-auto flex items-center gap-1.5 text-xs font-semibold text-[#5a4a50] dark:text-[#d6bcc3]">
+            <Link href="/" className="hover:text-[#8a1630] dark:hover:text-[#ff9fb5] transition">
               ReviewTayo
             </Link>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="font-semibold text-slate-900 dark:text-white">
+            <ChevronRight className="w-3 h-3 text-[#5a4a50]/60 dark:text-[#d6bcc3]/60" />
+            <span className="text-[#8a1630] dark:text-[#ff9fb5] font-bold">
               Exams
             </span>
           </div>
         </nav>
 
-        {/* Directory Hero Header */}
-        <section className="py-12 sm:py-16 border-b border-border bg-gradient-to-b from-white via-brand-50/10 to-background dark:from-[#1E191C] dark:via-[#1E191C]/60 dark:to-background">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>ReviewTayo Exam Catalog</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-              Philippine Exams Directory
-            </h1>
-
-            <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-              Find verified preparation tools, subtest drills, and full-length simulated mock tests designed for major Philippine career and licensure examinations.
-            </p>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                100% Original Syllabus Questions
-              </span>
-              <span>&bull;</span>
-              <span>Single Continuous Countdown Timers</span>
-              <span>&bull;</span>
-              <span>Comprehensive Subject Analytics</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Reviewer Catalog Section */}
-        <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ReviewerCatalog initialCategory="all" showCategoryTabs={true} />
-        </section>
-
-        {/* Editorial Standards & Roadmap Section */}
-        <section className="py-12 bg-slate-50/80 dark:bg-slate-950/60 border-t border-border">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 text-center">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              Our Content Authenticity Commitment
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-              ReviewTayo strictly authors every question fresh from published regulatory syllabi and laws. We never scrape, reproduce, or copy exam items from past confidential tests, unofficial reviewer PDFs, or social media groups. Every upcoming reviewer listed above is built step-by-step to adhere to rigorous editorial quality gates before release.
-            </p>
-          </div>
-        </section>
+        {/* Interactive Exams Experience */}
+        <ExamsPageView />
       </main>
 
-      <Footer />
+      <LandingFooter />
     </div>
   );
 }
