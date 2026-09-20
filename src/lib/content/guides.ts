@@ -3,6 +3,7 @@ import type { StudyGuide } from "./types";
 export const STUDY_GUIDES: StudyGuide[] = [
   {
     slug: "ra-6713-code-of-conduct",
+    examId: "cse",
     title: "Republic Act No. 6713: Code of Conduct & Ethical Standards for Public Officials",
     seoTitle: "RA 6713 Code of Conduct & Ethics Guide",
     subject: "General Information",
@@ -77,6 +78,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   },
   {
     slug: "philippine-constitution-essentials",
+    examId: "cse",
     title: "1987 Philippine Constitution: High-Yield Provisions for Civil Service Examinees",
     seoTitle: "1987 Philippine Constitution Reviewer",
     subject: "General Information",
@@ -136,6 +138,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   },
   {
     slug: "verbal-ability-grammar-paragraph-org",
+    examId: "cse",
     title: "Verbal Ability: Grammar Mastery & Paragraph Organization Strategies",
     seoTitle: "CSE Verbal Ability & Grammar Guide",
     subject: "Verbal Ability",
@@ -194,6 +197,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   },
   {
     slug: "numerical-ability-word-problems",
+    examId: "cse",
     title: "Numerical Ability: Core Formulas, Percentage Shortcuts & Word Problems",
     seoTitle: "CSE Numerical Ability & Math Guide",
     subject: "Numerical Ability",
@@ -246,6 +250,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   },
   {
     slug: "analytical-reasoning-logic",
+    examId: "cse",
     title: "Analytical Ability: Syllogisms, Assumptions & Analogy Formulas",
     seoTitle: "CSE Analytical Ability & Logic Guide",
     subject: "Analytical Ability",
@@ -294,6 +299,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   },
   {
     slug: "clerical-ability-filing-procedures",
+    examId: "cse",
     title: "Clerical Ability: Alphabetical Filing Rules & Office Procedures",
     seoTitle: "CSE Clerical Ability & Filing Guide",
     subject: "Clerical Ability",
