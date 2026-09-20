@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { UserNav } from "@/components/auth/UserNav";
-import { Logo } from "@/components/ui/Logo";
+import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
 
 function navClass(active: boolean) {
-  return `min-h-10 inline-flex items-center px-3 py-2 text-sm rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
+  return `min-h-10 inline-flex items-center px-3.5 py-2 text-sm rounded-xl transition-colors font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b] ${
     active
-      ? "bg-brand-50 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300 font-bold"
-      : "text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
+      ? "bg-[#8a1630] text-white dark:bg-[#8a1630] dark:text-white font-bold shadow-xs"
+      : "text-[#1b1216] dark:text-[#f8ecee] hover:text-[#8a1630] dark:hover:text-[#ff9fb5] hover:bg-[#fbeff0] dark:hover:bg-[#3b1a25]"
   }`;
 }
 
@@ -48,29 +48,32 @@ export function Header() {
   const isDashboardActive = pathname === "/dashboard" || Boolean(pathname?.startsWith("/dashboard/"));
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-white/95 dark:bg-[#1E191C]/95 backdrop-blur-md print:hidden transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-[#8a1630]/10 dark:border-white/10 bg-[#fdf8f6]/90 dark:bg-[#1a0c11]/90 backdrop-blur-md print:hidden transition-colors">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-800 focus:ring-2 focus:ring-brand-600"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#8a1630] focus:ring-2 focus:ring-[#f6b93b]"
       >
         Skip to main content
       </a>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-16 flex items-center justify-between gap-4">
-        {/* Left: Brand Identity (Logo + Wordmark) - stable on every page */}
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-11 min-h-[66px] flex items-center justify-between gap-4">
+        {/* Left: Brand Identity (ReviewTayo Owl + Georgia Wordmark) */}
         <div className="flex items-center gap-3 min-w-0">
           <Link
             href="/"
             prefetch
-            className="flex items-center shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+            className="flex items-center gap-2 font-logo text-[23px] text-[#8a1630] dark:text-[#f8ecee] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
             aria-label="ReviewTayo home"
           >
-            <Logo format="horizontal" className="h-8 sm:h-9 w-auto text-brand-700 dark:text-white" />
+            <span className="w-[27px] h-[27px] rounded-lg inline-flex items-center justify-center bg-transparent shrink-0">
+              <ReviewTayoOwl size={27} withCap aria-hidden="true" />
+            </span>
+            <span className="font-logo font-normal">reviewtayo</span>
           </Link>
         </div>
 
-        {/* Center/Right: Stable Global Navigation Links (Identical on every page) */}
-        <nav className="hidden md:flex items-center gap-1" aria-label="Global navigation">
+        {/* Center/Right: Stable Global Navigation Links */}
+        <nav className="hidden md:flex items-center gap-1.5" aria-label="Global navigation">
           <Link
             href="/reviewers"
             aria-current={isExamsActive ? "page" : undefined}
@@ -93,7 +96,7 @@ export function Header() {
             My dashboard
           </Link>
 
-          <div className="pl-3 ml-2 border-l border-border/80">
+          <div className="pl-3 ml-2 border-l border-[#8a1630]/15 dark:border-white/15">
             <UserNav />
           </div>
         </nav>
@@ -108,7 +111,7 @@ export function Header() {
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
-            className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="w-10 h-10 inline-flex items-center justify-center rounded-xl border border-[#8a1630]/15 dark:border-white/15 bg-white dark:bg-[#2b1620] text-[#8a1630] dark:text-[#f8ecee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
@@ -121,7 +124,7 @@ export function Header() {
           ref={drawerRef}
           id="mobile-navigation"
           aria-label="Global mobile navigation"
-          className="md:hidden border-t border-border bg-white px-4 py-3 shadow-lg dark:bg-[#1E191C] animate-in fade-in slide-in-from-top-2 duration-150"
+          className="md:hidden border-t border-[#8a1630]/15 dark:border-white/15 bg-white px-4 py-3 shadow-lg dark:bg-[#2b1620] animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="grid gap-1">
             <Link
@@ -146,7 +149,7 @@ export function Header() {
               My dashboard
             </Link>
 
-            <div className="my-2 border-t border-border" />
+            <div className="my-2 border-t border-[#8a1630]/15 dark:border-white/15" />
 
             <Link
               href="/faq"
