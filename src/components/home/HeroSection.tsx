@@ -1,12 +1,14 @@
-"use client";
-
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
+import { useSession } from "@/lib/auth/auth-client";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  const { data: session, refetch } = useSession();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -56,40 +58,68 @@ export function HeroSection() {
       className="relative min-h-[700px] flex flex-col items-center pt-9 px-6 pb-0 text-center overflow-hidden"
     >
       {/* Background Decorative Glow & Dashed Concentric Rings */}
-      <div className="absolute left-1/2 -bottom-[150px] w-[560px] h-[560px] rounded-full -translate-x-1/2 bg-[radial-gradient(circle,#f7cdd5_0,#f9e0e4_52%,transparent_70%)] pointer-events-none" />
-      <div className="absolute left-1/2 -bottom-[270px] w-[460px] h-[460px] -translate-x-1/2 border-[1.5px] border-dashed border-[#8a1630]/30 rounded-full pointer-events-none" />
-      <div className="absolute left-1/2 -bottom-[410px] w-[700px] h-[700px] -translate-x-1/2 border-[1.5px] border-dashed border-[#8a1630]/30 rounded-full pointer-events-none" />
+      <div className="absolute left-1/2 -bottom-[150px] w-[560px] h-[560px] rounded-full -translate-x-1/2 bg-[radial-gradient(circle,#f7cdd5_0,#f9e0e4_52%,transparent_70%)] dark:bg-[radial-gradient(circle,rgba(138,22,48,0.3)_0,rgba(59,26,37,0.4)_52%,transparent_70%)] pointer-events-none" />
+      <div className="absolute left-1/2 -bottom-[270px] w-[460px] h-[460px] -translate-x-1/2 border-[1.5px] border-dashed border-[#8a1630]/30 dark:border-white/15 rounded-full pointer-events-none" />
+      <div className="absolute left-1/2 -bottom-[410px] w-[700px] h-[700px] -translate-x-1/2 border-[1.5px] border-dashed border-[#8a1630]/30 dark:border-white/15 rounded-full pointer-events-none" />
 
       {/* Display Headline */}
-      <h1 className="font-display font-extrabold text-[clamp(42px,6.8vw,88px)] leading-[0.98] tracking-[-0.035em] text-[#1b1216] relative z-10 m-0">
+      <h1 className="font-display font-extrabold text-[clamp(42px,6.8vw,88px)] leading-[0.98] tracking-[-0.035em] text-[#1b1216] dark:text-[#f8ecee] relative z-10 m-0">
         Review smarter.
         <br />
         Pass sooner.
       </h1>
 
       {/* Subtitle */}
-      <p className="text-[20px] text-[#5a4a50] mt-5 mb-7 max-w-[34ch] relative z-10 font-normal">
+      <p className="text-[20px] text-[#5a4a50] dark:text-[#d6bcc3] mt-5 mb-7 max-w-[34ch] relative z-10 font-normal">
         Free timed mock exams for Philippine government and licensure tests.
       </p>
 
       {/* Calls to Action */}
       <div className="flex gap-3 flex-wrap justify-center relative z-10">
-        <Link
-          href="/exams/professional/quick"
-          className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-white bg-[#8a1630] shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 hover:shadow-[0_16px_28px_-10px_rgba(138,22,48,0.8)] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
-        >
-          Start free diagnostic
-        </Link>
-        <Link
-          href="#exams"
-          className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-[#1b1216] bg-transparent shadow-[inset_0_0_0_1.5px_rgba(27,18,22,0.24)] hover:bg-[rgba(27,18,22,0.06)] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
-        >
-          Browse exams
-        </Link>
+        {session?.user ? (
+          <>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-white bg-[#8a1630] shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 hover:shadow-[0_16px_28px_-10px_rgba(138,22,48,0.8)] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
+            >
+              Go to my dashboard &rarr;
+            </Link>
+            <Link
+              href="/reviewers"
+              className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-[#1b1216] dark:text-[#f8ecee] bg-white dark:bg-[#2b1620] shadow-[inset_0_0_0_1.5px_rgba(27,18,22,0.24)] dark:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.2)] hover:bg-[rgba(27,18,22,0.06)] dark:hover:bg-[#3b1a25] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
+            >
+              Browse exams
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/reviewers"
+              className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-white bg-[#8a1630] shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 hover:shadow-[0_16px_28px_-10px_rgba(138,22,48,0.8)] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
+            >
+              Choose an exam
+            </Link>
+            <button
+              type="button"
+              onClick={() => setAuthModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-6 py-[15px] rounded-[14px] font-bold text-[16px] text-[#1b1216] dark:text-[#f8ecee] bg-white dark:bg-[#2b1620] shadow-[inset_0_0_0_1.5px_rgba(27,18,22,0.24)] dark:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.2)] hover:bg-[rgba(27,18,22,0.06)] dark:hover:bg-[#3b1a25] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
+            >
+              Sign in
+            </button>
+          </>
+        )}
       </div>
 
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => {
+          refetch();
+        }}
+      />
+
       {/* Trust Badges */}
-      <div className="flex gap-x-[22px] gap-y-2 justify-center flex-wrap mt-5 font-semibold text-[14px] text-[#4d3d43] relative z-10">
+      <div className="flex gap-x-[22px] gap-y-2 justify-center flex-wrap mt-5 font-semibold text-[14px] text-[#4d3d43] dark:text-[#d6bcc3] relative z-10">
         <span className="inline-flex items-center gap-1.5">
           <svg className="w-[17px] h-[17px] stroke-[#12a150] fill-none stroke-[3] stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
             <path d="M5 12.5l4.5 4.5L19 7.5" />
@@ -129,7 +159,7 @@ export function HeroSection() {
         <div className="fw" data-depth="36" style={{ right: "3%", top: "32%" }}>
           <div className="fc fs" style={{ ["--r" as string]: "3deg" }}>
             <svg viewBox="0 0 80 80" width="78" className="mx-auto mb-1.5" aria-hidden="true">
-              <circle cx="40" cy="40" r="32" fill="none" stroke="#f3dfe3" strokeWidth="9" />
+              <circle cx="40" cy="40" r="32" fill="none" strokeWidth="9" className="stroke-[#f3dfe3] dark:stroke-[#3a1f29]" />
               <circle
                 cx="40"
                 cy="40"
@@ -147,13 +177,13 @@ export function HeroSection() {
                 textAnchor="middle"
                 fontSize="19"
                 fontWeight="800"
-                fill="#1b1216"
                 fontFamily="Bricolage Grotesque, sans-serif"
+                className="fill-[#1b1216] dark:fill-[#f8ecee]"
               >
                 82%
               </text>
             </svg>
-            <b className="block font-bold text-[14px] text-[#1b1216]">Verbal ability</b>
+            <b className="block font-bold text-[14px] text-[#1b1216] dark:text-[#f8ecee]">Verbal ability</b>
             <small>sample result</small>
           </div>
         </div>
@@ -164,7 +194,7 @@ export function HeroSection() {
             <span className="ow w-[38px] shrink-0 block">
               <ReviewTayoOwl size={38} withCap />
             </span>
-            <p className="font-semibold text-[14px] leading-[1.3] text-[#1b1216] m-0">
+            <p className="font-semibold text-[14px] leading-[1.3] text-[#1b1216] dark:text-[#f8ecee] m-0">
               Scarce means hard to find, so the opposite is plentiful.
             </p>
           </div>
