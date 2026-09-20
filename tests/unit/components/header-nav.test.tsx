@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterAll } from "vitest";
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Header, GlobalHeader } from "@/components/layout/Header";
+import { Header } from "@/components/layout/Header";
 import { ExamSubNav } from "@/components/layout/ExamSubNav";
 
 // Mock next/navigation usePathname
