@@ -90,6 +90,8 @@ export default function RootLayout({
         <meta name="theme-color" content="#faf8f7" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#161315" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         {/* Google Consent Mode v2 default initialization (ADS-04, ADS-05) */}
         <script
