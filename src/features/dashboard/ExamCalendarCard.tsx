@@ -171,7 +171,7 @@ export function ExamCalendarCard({
   return (
     <section
       aria-labelledby="exam-target-heading"
-      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-5"
+      className="rounded-[22px] bg-white p-5 sm:p-6 shadow-[0_0_0_1px_rgba(138,22,48,0.12),0_14px_30px_-22px_rgba(90,15,35,0.35)] space-y-5"
     >
       {/* Top Header: Exam Title & Change Date Action */}
       <div className="flex items-start justify-between gap-3">
@@ -180,7 +180,7 @@ export function ExamCalendarCard({
             <CalendarIcon className="w-3.5 h-3.5" />
             <span id="exam-target-heading">Your Exam</span>
           </div>
-          <h3 className="text-lg font-extrabold text-slate-900 leading-tight">
+          <h3 className="font-display text-lg font-extrabold tracking-[-0.02em] text-slate-900 leading-tight">
             {config.examName || "Target Exam"}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -205,7 +205,7 @@ export function ExamCalendarCard({
       </div>
 
       {/* Days Remaining / Status Banner */}
-      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+      <div className="p-3.5 rounded-xl bg-slate-50 border border-[#f3e6e9] flex items-center justify-between">
         <div>
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
             Target Exam Pacing
@@ -486,7 +486,7 @@ export function ExamCalendarCard({
               </span>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#f3e6e9]">
               <button
                 type="button"
                 onClick={handleCancelEdit}
