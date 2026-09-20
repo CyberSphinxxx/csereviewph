@@ -22,20 +22,28 @@ test.describe("ReviewTayo Multi-Exam Platform Visual & Interactive Walkthrough",
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(/Philippine exam preparation/i).first()).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Free practice exams/i);
-    await expect(page.getByText(/Choose the exam you’re preparing for/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Review smarter/i);
+    await expect(page.getByText(/Free timed mock exams for Philippine government/i).first()).toBeVisible();
 
-    // Available now and live exam checks
-    await expect(page.getByRole("heading", { name: /Start With a Live Reviewer/i })).toBeVisible();
-    await expect(page.getByText("Live").first()).toBeVisible();
+    // Verify "Choose an exam" button links to /reviewers
+    const chooseExamBtn = page.getByRole("link", { name: /Choose an exam/i });
+    await expect(chooseExamBtn).toBeVisible();
+    await expect(chooseExamBtn).toHaveAttribute("href", "/reviewers");
 
-    // Verify CSE card has Open exam link
+    // 2. Click "Choose an exam" -> navigates to /reviewers
+    await chooseExamBtn.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/reviewers$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/What are you aiming for\?/i);
+
+    // Test category filter
+    await page.getByRole("button", { name: /Education/i }).first().click();
+    await expect(page.getByText(/Licensure Examination for Professional Teachers/i).first()).toBeVisible();
+    await page.getByRole("button", { name: /All exams/i }).click();
+
+    // 3. Click "Open exam" on live CSE card -> navigates to /cse
     const cseCardBtn = page.getByRole("link", { name: /Open exam/i }).first();
     await expect(cseCardBtn).toBeVisible();
-    await expect(cseCardBtn).toHaveAttribute("href", "/cse");
-
-    // 2. Click "Open exam" -> navigates to /cse
     await cseCardBtn.click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/cse(\?.*)?$/);
@@ -45,18 +53,6 @@ test.describe("ReviewTayo Multi-Exam Platform Visual & Interactive Walkthrough",
     const subNav = page.getByRole("navigation", { name: /Exam navigation/i });
     await expect(subNav).toBeVisible();
     await expect(subNav.getByRole("link", { name: "Overview" })).toBeVisible();
-
-    // 3. Click global "Exams" nav link -> navigates to /reviewers
-    const examsLink = page.getByRole("navigation", { name: "Global navigation" }).getByRole("link", { name: "Exams", exact: true });
-    await examsLink.click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/reviewers$/);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Philippine Exams Directory/i);
-
-    // Test filter tabs
-    await page.getByRole("button", { name: "Licensure" }).click();
-    await expect(page.getByText("Licensure Examination for Teachers")).toBeVisible();
-    await page.getByRole("button", { name: "All Exams" }).click();
 
     // 4. Test 2-click hero diagnostic flow from homepage
     await page.goto("/");
