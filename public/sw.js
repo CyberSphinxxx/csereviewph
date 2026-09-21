@@ -1,7 +1,11 @@
 // Service Worker for ReviewTayo (reviewtayo.online)
 // Provides full offline study support for drills, guides, and mistake reviews.
 
-const CACHE_NAME = "csereviewph-v2";
+// Bump on every deploy that changes app code: the activate handler purges any
+// cache whose name doesn't match, so clients drop stale chunks and HTML.
+// (Next.js static chunks are content-hashed, but precached HTML can keep
+// referencing them long after a deploy — a fresh cache name is the reset.)
+const CACHE_NAME = "csereviewph-v3";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -51,6 +55,14 @@ self.addEventListener("activate", (event) => {
       )
       .then(() => self.clients.claim())
   );
+});
+
+// Allow the app to force-activate a waiting SW immediately after a deploy
+// (call: navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" }))
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Fetch: Network First with Cache Fallback for navigation, Cache First for static chunks
