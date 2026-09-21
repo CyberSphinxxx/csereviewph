@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ExamRunner } from "@/features/practice/ExamRunner";
 import type { EngineQuestion, ExamRuleConfig } from "@/features/exam-engine";
 
@@ -136,12 +136,14 @@ describe("ExamRunner Component", () => {
     expect(screen.getByText("Question 1 of 2")).toBeInTheDocument();
   });
 
-  it("opens review modal before submission", () => {
+  it("opens review modal before submission for timed assessments", () => {
+    const fullRules: ExamRuleConfig = { ...mockRules, mode: "full" };
+
     render(
       <ExamRunner
         initialQuestions={mockQuestions}
-        rules={mockRules}
-        title="Diagnostic Quick Test"
+        rules={fullRules}
+        title="Full Mock Exam"
       />
     );
 
@@ -367,9 +369,10 @@ describe("ExamRunner Component", () => {
     // Select correct choice A
     fireEvent.click(screen.getByText("Alpha Choice"));
 
-    // Verify instant feedback card appears with rationale
-    expect(screen.getByText(/Correct! Option A is right/i)).toBeInTheDocument();
+    // The owl delivers the verdict; its bubble carries the full rationale —
+    // no separate card renders below the question in coach practice mode
     expect(screen.getByText("Educational explanation for question 1")).toBeInTheDocument();
+    expect(screen.queryByText(/Educational Concept & Rationale/i)).not.toBeInTheDocument();
   });
 
   it("opens and interacts with the virtual arithmetic scratchpad", () => {
@@ -396,5 +399,213 @@ describe("ExamRunner Component", () => {
     // Close scratchpad
     fireEvent.click(screen.getByRole("button", { name: /keep working/i }));
     expect(screen.queryByText(/Scratchpad & Arithmetic Canvas/i)).not.toBeInTheDocument();
+  });
+
+  it("shows the owl coach panel with streak reactions in practice mode", () => {
+    const practiceRules: ExamRuleConfig = { ...mockRules, mode: "practice" };
+
+    render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={practiceRules}
+        title="Topic Practice"
+      />
+    );
+
+    // Coach panel is present with the idle greeting bubble and no streak yet
+    expect(screen.getByTestId("coach-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("coach-streak")).toHaveTextContent("simulan natin");
+
+    // Correct answer (A): owl goes happy, streak starts
+    fireEvent.click(screen.getByText("Alpha Choice"));
+    expect(screen.getByTestId("coach-streak")).toHaveTextContent("Streak \u00D71");
+
+    // Next question, then a wrong answer (A is wrong on q2): streak resets
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.click(screen.getByText("Gamma Choice"));
+    expect(screen.getByTestId("coach-streak")).toHaveTextContent("simulan natin");
+
+    // The owl bubble carries the explanation instead of a separate card
+    expect(screen.getByText("Educational explanation for question 2")).toBeInTheDocument();
+  });  it("shows coach chrome in quick mode but does not reveal answers before submit", () => {
+    render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={mockRules}
+        title="Diagnostic Quick Test"
+      />
+    );
+
+    // Quick 10-item practice runs the coach chrome
+    expect(screen.getByTestId("coach-panel")).toBeInTheDocument();
+
+    // But quick mode is still timed and assessment-like: no instant rationale,
+    // and the owl never reacts because answers are hidden until submission.
+    fireEvent.click(screen.getByText("Alpha Choice"));
+    expect(screen.queryByText(/Educational Concept & Rationale/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId("coach-streak")).toHaveTextContent("simulan natin");
+    expect(screen.getByText("Selected")).toBeInTheDocument();
+  });
+
+  it("places the owl coach rail left of the question with per-answer stats", () => {
+    const practiceRules: ExamRuleConfig = { ...mockRules, mode: "practice" };
+
+    const { container } = render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={practiceRules}
+        title="Topic Practice"
+      />
+    );
+
+    // The coach rail precedes the question heading in DOM order (left column).
+    const panel = screen.getByTestId("coach-panel");
+    const heading = screen.getByText("Question 1 of 2");
+    expect(
+      heading.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_PRECEDING
+    ).toBeTruthy();
+
+    // Stats line counts answers and corrects as the player goes.
+    expect(screen.getByTestId("coach-progress")).toHaveTextContent("Answered 0/2 - Correct 0");
+    fireEvent.click(screen.getByText("Alpha Choice"));
+    expect(screen.getByTestId("coach-progress")).toHaveTextContent("Answered 1/2 - Correct 1");
+
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.click(screen.getByText("Gamma Choice"));
+    expect(screen.getByTestId("coach-progress")).toHaveTextContent("Answered 2/2 - Correct 1");
+
+    // The legacy placement (inside the right-hand map aside) is gone.
+    expect(container.querySelectorAll("aside [data-testid='coach-panel']")).toHaveLength(0);
+  });
+
+  it("renders the exam hall with zero owl mascots for distraction-free mocks", () => {
+    const fullRules: ExamRuleConfig = { ...mockRules, mode: "full" };
+
+    const { container } = render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={fullRules}
+        title="Full Mock Exam"
+      />
+    );
+
+    // No coach panel and no owl SVG anywhere in the runner.
+    expect(screen.queryByTestId("coach-panel")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("coach-panel-compact")).not.toBeInTheDocument();
+    expect(container.querySelector("svg.owl")).toBeNull();
+
+    // Small banks stay on a single map page (no pager rendered).
+    expect(screen.queryByTestId("map-pagination")).not.toBeInTheDocument();
+  });
+
+  it("paginates the question map in pages of 50 for large banks", () => {
+    const manyQuestions: EngineQuestion[] = Array.from({ length: 120 }, (_, i) => ({
+      id: `q${i + 1}`,
+      topicId: "top-1",
+      topicName: "Grammar",
+      topicSlug: "grammar",
+      subjectId: "sub-1",
+      subjectName: "Verbal Ability",
+      subjectSlug: "verbal-ability",
+      questionText: `Sample text for question ${i + 1}`,
+      explanation: `Explanation ${i + 1}`,
+      difficulty: "easy",
+      language: "en",
+      choices: [
+        { id: `q${i + 1}-a`, choiceLabel: "A", text: `Choice A of ${i + 1}`, isCorrect: true, order: 0 },
+        { id: `q${i + 1}-b`, choiceLabel: "B", text: `Choice B of ${i + 1}`, isCorrect: false, order: 1 },
+      ],
+    }));
+
+    render(
+      <ExamRunner
+        initialQuestions={manyQuestions}
+        rules={mockRules}
+        title="Diagnostic Quick Test"
+      />
+    );
+
+    // Open the map drawer: 120 items -> 3 pages, page 1 shows 1-50.
+    fireEvent.click(screen.getByRole("button", { name: /palette/i }));
+    expect(screen.getAllByText("1 / 3").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("50").length).toBeGreaterThan(0);
+    expect(screen.queryAllByText("51")).toHaveLength(0);
+
+    // Pager advances to page 2: 51-100 only.
+    fireEvent.click(screen.getAllByRole("button", { name: /next map page/i })[0]);
+    expect(screen.getAllByText("2 / 3").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("51").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("100").length).toBeGreaterThan(0);
+    expect(screen.queryAllByText("50")).toHaveLength(0);
+    expect(screen.queryAllByText("101")).toHaveLength(0);
+
+    // Jumping to a mapped question closes the drawer and lands on it.
+    fireEvent.click(screen.getAllByRole("button", { name: "51" })[0]);
+    expect(screen.getByText("Question 51 of 120")).toBeInTheDocument();
+  });
+
+  it("keeps the exam hall chrome without a coach panel in medium mode", () => {
+    const mediumRules: ExamRuleConfig = { ...mockRules, mode: "medium" };
+
+    render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={mediumRules}
+        title="Medium Assessment"
+      />
+    );
+
+    // No coach panel in graded assessment modes
+    expect(screen.queryByTestId("coach-panel")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("coach-panel-compact")).not.toBeInTheDocument();
+
+    // Instant feedback stays off; exam-day rules apply
+    fireEvent.click(screen.getByText("Alpha Choice"));
+    expect(screen.queryByText(/Educational Concept & Rationale/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Selected")).toBeInTheDocument();
+  });
+
+  it("lets revealed-answer practice submit straight from the last question", async () => {
+    const practiceRules: ExamRuleConfig = { ...mockRules, mode: "practice" };
+
+    render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={practiceRules}
+        title="Topic Practice"
+      />
+    );
+
+    // Answer both questions, navigating with Next
+    fireEvent.click(screen.getByText("Alpha Choice"));
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.click(screen.getByText("Delta Choice"));
+
+    // On the final question the CTA skips the review modal entirely
+    fireEvent.click(screen.getByRole("button", { name: /submit test/i }));
+
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("/results/"))
+    );
+    expect(screen.queryByText("Review Before Submission")).not.toBeInTheDocument();
+  });
+
+  it("keeps the review confirmation for the full mock exam", () => {
+    const fullRules: ExamRuleConfig = { ...mockRules, mode: "full" };
+
+    render(
+      <ExamRunner
+        initialQuestions={mockQuestions}
+        rules={fullRules}
+        title="Full Mock Exam"
+      />
+    );
+
+    // Navigate to the last question, then the CTA reads "Review & Submit"
+    // and opens the confirmation modal
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.click(screen.getByRole("button", { name: /review & submit/i }));
+    expect(screen.getByText("Review Before Submission")).toBeInTheDocument();
+    expect(screen.getByText("Submit Test")).toBeInTheDocument();
   });
 });
