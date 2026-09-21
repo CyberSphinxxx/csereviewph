@@ -11,29 +11,24 @@ describe("HeroExamLevelSelector Component", () => {
       <HeroExamLevelSelector selectedLevel="professional" onSelectLevel={handleSelect} />
     );
 
-    expect(screen.getByText(/START YOUR REVIEW/i)).toBeInTheDocument();
-    expect(screen.getByText(/Choose your exam level/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Start your review/i })).toBeInTheDocument();
 
     expect(screen.getByText("Professional")).toBeInTheDocument();
-    expect(screen.getByText(/For second-level positions/i)).toBeInTheDocument();
-    expect(screen.getByText(/Includes Analytical Ability/i)).toBeInTheDocument();
+    expect(screen.getByText(/For second-level positions|2nd-level positions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Analytical Ability/i)).toBeInTheDocument();
 
     expect(screen.getByText("Subprofessional")).toBeInTheDocument();
-    expect(screen.getByText(/For first-level positions/i)).toBeInTheDocument();
-    expect(screen.getByText(/Includes Clerical Ability/i)).toBeInTheDocument();
+    expect(screen.getByText(/For first-level positions|1st-level positions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Clerical Ability/i)).toBeInTheDocument();
   });
 
-  it("renders quiet exam schedule line with link to schedule guide", () => {
+  it("renders no countdown inside the panel (pages own their countdowns)", () => {
     const handleSelect = vi.fn();
     render(
       <HeroExamLevelSelector selectedLevel="professional" onSelectLevel={handleSelect} />
     );
 
-    expect(screen.getByText("Exam schedule")).toBeInTheDocument();
-    expect(screen.getByText(/March 14, 2027/i)).toBeInTheDocument();
-    const viewDatesLink = screen.getByRole("link", { name: /View dates/i });
-    expect(viewDatesLink).toBeInTheDocument();
-    expect(viewDatesLink).toHaveAttribute("href", "/cse/exam-guide#schedule");
+    expect(screen.queryByText("Exam schedule")).not.toBeInTheDocument();
   });
 
   it("renders single primary CTA button pointing to selected level and reassurance line", () => {
@@ -46,14 +41,14 @@ describe("HeroExamLevelSelector Component", () => {
     expect(cta).toBeInTheDocument();
     expect(cta).toHaveAttribute("href", "/exams/professional/quick");
 
-    expect(screen.getByText(/10 questions · 10 minutes/i)).toBeInTheDocument();
-    expect(screen.getByText(/No account required/i)).toBeInTheDocument();
+    expect(screen.getByText(/10 questions/i)).toBeInTheDocument();
+    expect(screen.getByText(/instant results/i)).toBeInTheDocument();
 
     // Re-render with subprofessional
     rerender(
       <HeroExamLevelSelector selectedLevel="subprofessional" onSelectLevel={handleSelect} />
     );
-    expect(screen.getByRole("link", { name: /Start Free Diagnostic/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Start free diagnostic/i })).toHaveAttribute(
       "href",
       "/exams/subprofessional/quick"
     );
@@ -74,15 +69,23 @@ describe("HeroExamLevelSelector Component", () => {
     expect(handleSelect).toHaveBeenCalledWith("professional");
   });
 
-  it("renders compare levels helper link pointing to #compare-levels", () => {
+  it("renders compare levels helper link pointing to the default anchor and honors compareHref", () => {
     const handleSelect = vi.fn();
-    render(
+    const { rerender } = render(
       <HeroExamLevelSelector selectedLevel="professional" onSelectLevel={handleSelect} />
     );
 
     const compareLink = screen.getByRole("link", { name: /Not sure which level\? Compare the two levels/i });
     expect(compareLink).toBeInTheDocument();
     expect(compareLink).toHaveAttribute("href", "#compare-levels");
+
+    rerender(
+      <HeroExamLevelSelector selectedLevel="professional" onSelectLevel={handleSelect} compareHref="#choose-your-battle" />
+    );
+    expect(screen.getByRole("link", { name: /Not sure which level\? Compare the two levels/i })).toHaveAttribute(
+      "href",
+      "#choose-your-battle"
+    );
   });
 });
 
