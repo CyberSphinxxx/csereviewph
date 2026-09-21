@@ -68,6 +68,7 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 !.vscode/launch.json
 .idea/
+.freebuff/
 *.sublime-project
 *.sublime-workspace
 *.swp
