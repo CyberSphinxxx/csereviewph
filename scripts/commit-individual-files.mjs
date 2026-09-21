@@ -108,10 +108,49 @@ function generateCommitMessage(file) {
   }
 
   if (filePath === "src/components/home/HeroExamLevelSelector.tsx") {
+    if (diff.includes("ReviewTayoOwl") || diff.includes("pupil")) {
+      return "feat(home): redesign HeroExamLevelSelector with tracking ReviewTayoOwl and clean cards";
+    }
     if (diff.includes("active:scale") || diff.includes("March 14, 2027")) {
       return "feat(home): add tactile touch response and wrap level descriptions cleanly";
     }
     return "feat(home): update hero exam level selector card";
+  }
+
+  if (filePath === "src/components/home/ExamPickerCard.tsx" && file.status.includes("D")) {
+    return "refactor(home): remove obsolete ExamPickerCard component";
+  }
+
+  if (filePath === "src/components/home/HomePageClient.tsx" && file.status.includes("D")) {
+    return "refactor(home): remove unused HomePageClient component";
+  }
+
+  if (filePath === "src/components/home/PeekingOwl.tsx" && file.status.includes("D")) {
+    return "refactor(home): remove legacy PeekingOwl component in favor of ReviewTayoOwl";
+  }
+
+  if (filePath === "src/app/(public)/cse/page.tsx") {
+    return "feat(cse): update /cse page metadata and canonical structure for redesign";
+  }
+
+  if (filePath === "src/components/cse/CSELandingClient.tsx") {
+    return "feat(cse): rebuild CSE landing page with command center hero, track, and urgency band";
+  }
+
+  if (filePath === "src/components/practice/CoachPanel.tsx") {
+    return "feat(practice): implement CoachPanel with reactive owl mascot, speech bubbles, and stats";
+  }
+
+  if (filePath === "src/features/practice/coach.ts") {
+    return "feat(practice): add streak tracking and deterministic Taglish coach reactions";
+  }
+
+  if (filePath === "src/features/practice/examTheme.ts") {
+    return "feat(practice): add examTheme module for coach and exam hall layout styling";
+  }
+
+  if (filePath === "src/features/practice/TestModeBar.tsx") {
+    return "feat(practice): add theme support to TestModeBar for coach and exam hall modes";
   }
 
   if (filePath === "src/components/layout/Header.tsx") {
@@ -126,6 +165,9 @@ function generateCommitMessage(file) {
   }
 
   if (filePath === "src/features/practice/ExamRunner.tsx") {
+    if (diff.includes("CoachPanel") || diff.includes("examTheme") || diff.includes("usesReviewConfirmation")) {
+      return "feat(runner): integrate CoachPanel rationale bubble, clean header, and examTheme layout";
+    }
     if (diff.includes("answers.size > 0") || diff.includes("router.push(\"/\")")) {
       return "refactor(runner): return to origin on unanswered quick test exit and bypass empty draft saves";
     }
@@ -183,11 +225,23 @@ function generateCommitMessage(file) {
   if (filePath === "ARCHIVES/implementation_plan2.md") {
     return "docs(archives): record archived implementation plan 2";
   }
+  if (filePath === "implementation_plan.md") {
+    return "docs(plan): update implementation plan for coach bubble, clean header, and cse redesign";
+  }
   if (filePath.endsWith("PROGRESS.md")) {
-    return "docs(progress): log live review report and foundational performance resolutions";
+    return "docs(progress): record updates 2 through 7 for coach bubble, cse landing, and hero selector";
   }
   if (filePath.endsWith("walkthrough.md")) {
-    return "docs(walkthrough): update verification walkthrough records";
+    return "docs(walkthrough): update verification walkthrough for coach panel and cse redesign";
+  }
+  if (filePath === "reviewtayo-csepage-v1.html") {
+    return "docs(design): add reviewtayo csepage v1 design mockup";
+  }
+  if (filePath === "reviewtayo-csepage-v2-combined.html") {
+    return "docs(design): add reviewtayo csepage v2 combined design mockup";
+  }
+  if (filePath === "reviewtayo-testpage-v1.html") {
+    return "docs(design): add reviewtayo testpage v1 design mockup";
   }
   if (filePath.startsWith(".design/")) {
     const docName = baseName.replace(/\.[^/.]+$/, "");
@@ -215,13 +269,10 @@ function generateCommitMessage(file) {
     return "style(tailwind): refine brand color palette tokens";
   }
   if (filePath === "src/app/globals.css") {
-    return "style(theme): update porcelain and maroon theme styling";
+    return "style(theme): add exam hall and coach background tokens and card shadows";
   }
   if (filePath === "src/app/manifest.ts") {
     return "feat(pwa): register new maskable and brand icons in web app manifest";
-  }
-  if (filePath === "src/components/home/PeekingOwl.tsx") {
-    return "feat(home): implement interactive fullbody peeking owl mascot with gaze tracking";
   }
   if (filePath === "src/components/ui/Logo.tsx") {
     return "feat(ui): add brand Logo component with responsive mascot icon";
@@ -232,13 +283,25 @@ function generateCommitMessage(file) {
 
   // Test Files
   if (filePath === "tests/e2e/exam-flow.spec.ts") {
-    return "test(e2e): update landing page and exam flow test assertions for date and navigation";
+    return "test(e2e): update exam flow tests for coach panel and redesigned hero selector";
   }
   if (filePath === "tests/e2e/exam-guide.spec.ts") {
     return "test(e2e): update exam guide navigation and select option assertions";
   }
   if (filePath === "tests/unit/components/home-components.test.tsx") {
-    return "test(unit): update schedule date and reassurance copy assertions";
+    return "test(unit): update home component tests for redesigned hero selector and pupil tracking";
+  }
+  if (filePath === "tests/unit/components/peeking-owl.test.tsx" && file.status.includes("D")) {
+    return "test(unit): remove tests for deprecated PeekingOwl";
+  }
+  if (filePath === "tests/unit/practice/coach.test.ts") {
+    return "test(unit): add unit tests for coach reactions and streak counter";
+  }
+  if (filePath === "tests/unit/practice/examTheme.test.ts") {
+    return "test(unit): add unit tests for examTheme mode resolution";
+  }
+  if (filePath === "tests/unit/practice/ExamRunner.test.tsx") {
+    return "test(unit): update ExamRunner tests for coach panel and exam theme layout";
   }
   if (filePath === "tests/unit/dashboard/ExamCalendarCard.test.tsx") {
     return "test(unit): update calendar card date assertion to March 14, 2027";
