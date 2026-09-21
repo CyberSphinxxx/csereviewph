@@ -7,19 +7,26 @@ import { getExamBySlug } from "@/config/exams";
 const cseExam = getExamBySlug("cse");
 
 export const metadata: Metadata = {
-  title: "Civil Service Exam Reviewer & Online Mock Tests",
+  title: "CSE Reviewer Philippines: Free Practice Tests and Mock Exams",
   description:
     cseExam?.description ||
-    "Free Philippine Civil Service Exam (CSE-PPT) reviewer and mock tests. Practice Professional and Subprofessional exams with real continuous timers and explanations.",
+    "Free Civil Service Exam reviewer for Professional and Subprofessional levels. Timed subtest drills, full-length mock exams with a continuous timer, and clear explanations for every item.",
   alternates: {
     canonical: cseExam?.href || "/cse",
   },
   openGraph: {
-    title: `${cseExam?.fullName || "Civil Service Exam"} Reviewer & Online Mock Tests`,
+    title: "CSE Reviewer Philippines: Free Practice Tests and Mock Exams | ReviewTayo",
     description:
-      "Pass the Civil Service Exam with free subtest drills, full-length 170-item continuous timer mock exams, and detailed answer rationales.",
+      "Prepare for the Civil Service Exam with free subtest drills, full mock exams, and item-by-item explanations. Choose Professional or Subprofessional and start in minutes.",
     url: cseExam?.href || "/cse",
     type: "website",
+    siteName: "ReviewTayo",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CSE Reviewer Philippines: Free Practice Tests and Mock Exams | ReviewTayo",
+    description:
+      "Free subtest drills, full mock exams, and item-by-item explanations for the Philippine Civil Service Exam.",
   },
 };
 
