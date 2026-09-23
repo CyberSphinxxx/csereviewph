@@ -82,9 +82,9 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     // Render CSE Dashboard
     const { unmount } = render(<DashboardView />);
 
-    // Verification: CSE Title Badge
-    expect(screen.getByText(/Civil Service Exam.*Professional/i)).toBeInTheDocument();
-    expect(screen.getByText("What will you improve today?")).toBeInTheDocument();
+    // Verification: CSE Title Badge (shortName · trackName)
+    expect(screen.getByText(/CSE · Professional/i)).toBeInTheDocument();
+    expect(screen.getByText("Welcome back")).toBeInTheDocument();
 
     // Verification: CSE Subjects
     expect(screen.getByText("Verbal Ability")).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     // Verification: CSE Metrics reflect the attempt
     expect(screen.getByText("90%")).toBeInTheDocument(); // Practice accuracy
     expect(screen.getAllByText("10").length).toBeGreaterThanOrEqual(1); // Items answered
-    expect(screen.getAllByText("1").length).toBeGreaterThanOrEqual(1); // Tests completed
+    expect(screen.getAllByText(/1 test/).length).toBeGreaterThanOrEqual(1); // Tests completed
 
     unmount();
     cleanup();
@@ -113,8 +113,8 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     // Render LET Dashboard
     render(<DashboardView />);
 
-    // Verification: LET Title Badge
-    expect(screen.getByText(/Licensure Examination for Teachers.*Secondary/i)).toBeInTheDocument();
+    // Verification: LET Title Badge (shortName · trackName)
+    expect(screen.getByText(/LET · Secondary/i)).toBeInTheDocument();
 
     // Verification: LET Subjects (from catalog)
     expect(screen.getByText("General Education")).toBeInTheDocument();
@@ -126,11 +126,11 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     expect(screen.queryByText("Clerical Operations")).not.toBeInTheDocument();
 
     // Verification: Metrics Isolation! LET has no attempts yet
-    expect(screen.getAllByText("Not measured yet").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Take a diagnostic first")).toBeInTheDocument();
     expect(screen.queryByText("90%")).not.toBeInTheDocument();
 
-    // Verification: LET Calendar Card
-    expect(screen.getByText("September 2027 LET")).toBeInTheDocument();
+    // Verification: LET countdown hero shows its own exam name
+    expect(screen.getByText(/September 2027 LET/i)).toBeInTheDocument();
 
     cleanup();
 
@@ -139,7 +139,7 @@ describe("Multi-Exam Workspace Dashboard Scalability", () => {
     render(<DashboardView />);
 
     // Verification: CSE state restored with previous metrics
-    expect(screen.getByText(/Civil Service Exam.*Professional/i)).toBeInTheDocument();
+    expect(screen.getByText(/CSE · Professional/i)).toBeInTheDocument();
     expect(screen.getByText("90%")).toBeInTheDocument();
     expect(screen.getAllByText("10").length).toBeGreaterThanOrEqual(1);
   });

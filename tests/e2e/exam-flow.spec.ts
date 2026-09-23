@@ -40,14 +40,14 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
   test("loads landing page with exam preparation options", async ({ page }) => {
     await page.goto("/cse");
-    await expect(page).toHaveTitle(/Civil Service Exam Reviewer/i);
+    await expect(page).toHaveTitle(/CSE Reviewer Philippines/i);
 
-    // Verify simplified hero copy
+    // Verify hero copy
     await expect(page.getByText("PHILIPPINE CIVIL SERVICE EXAM REVIEWER", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Philippine Civil Service Exam/i);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Reviewer & Online Mock Tests/i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Pass the/i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/on your first take/i);
     await expect(
-      page.getByText(/Prepare for the Civil Service Exam \(CSE\) Professional and Subprofessional/i)
+      page.getByText(/Free subtest drills, full-length continuous-timer mock exams/i)
     ).toBeVisible();
 
     // Verify streamlined header navigation for new visitors (no premature dashboard)
@@ -62,36 +62,29 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.getByRole("heading", { name: "Full Mock Exam" })).toBeVisible();
   });
 
-  test("renders simplified hero with outcome study plan preview and navigates to how-it-works", async ({ page }) => {
+  test("renders hero start panel with level chooser, owl mascot, and guided flow sections", async ({ page }) => {
     await page.goto("/cse");
 
-    // Verify quiet exam schedule line aligned above the selector card
-    await expect(page.getByText("Exam schedule")).toBeVisible();
+    // Verify the urgency band owns the page's single countdown
+    await expect(page.getByText("Exam day is coming")).toBeVisible();
     await expect(page.getByText(/March 14, 2027/i).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /View dates/i })).toHaveAttribute("href", "/cse/exam-guide#schedule");
+    await expect(page.getByText(/days left/i).first()).toBeVisible();
+    // The panel itself must not duplicate it
+    await expect(page.getByText("Exam schedule")).toHaveCount(0);
 
-    // Verify outcome evidence cue under supporting copy
-    await expect(page.getByText("Your results include")).toBeVisible();
-    await expect(page.getByText(/Subject breakdown · Answer explanations · Recommended practice/i)).toBeVisible();
-
-    // Verify left-side quiet "See how the review works" link
-    const reviewWorksLink = page.getByRole("link", { name: /See how the review works/i });
-    await expect(reviewWorksLink).toBeVisible();
-
-    // Verify exam-level selection card on the right
-    await expect(page.getByText("START YOUR REVIEW")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Choose your exam level" })).toBeVisible();
+    // Verify the start panel (owl on top, radio chooser, gold CTA)
+    await expect(page.getByRole("heading", { name: "Start your review" })).toBeVisible();
 
     // Verify level options and subtest notes
     const proRadio = page.getByRole("radio", { name: /^Professional\b/i });
     const subproRadio = page.getByRole("radio", { name: /^Subprofessional\b/i });
     await expect(proRadio).toBeVisible();
     await expect(subproRadio).toBeVisible();
-    await expect(page.getByText("Includes Analytical Ability").first()).toBeVisible();
-    await expect(page.getByText("Includes Clerical Ability").first()).toBeVisible();
+    await expect(page.getByText(/includes Analytical Ability/i).first()).toBeVisible();
+    await expect(page.getByText(/includes Clerical Ability/i).first()).toBeVisible();
 
     // By default, Professional is selected
-    const startDiagnosticBtn = page.getByRole("link", { name: /Start Free Diagnostic/i });
+    const startDiagnosticBtn = page.getByRole("link", { name: /Start free diagnostic/i });
     await expect(startDiagnosticBtn).toBeVisible();
     await expect(startDiagnosticBtn).toHaveAttribute("href", "/exams/professional/quick");
 
@@ -100,53 +93,52 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(startDiagnosticBtn).toHaveAttribute("href", "/exams/subprofessional/quick");
 
     // Reassurance line
-    await expect(page.getByText(/10 questions · 10-minute timer/i)).toBeVisible();
-    await expect(page.getByText(/No account required/i)).toBeVisible();
+    await expect(page.getByText(/instant results/i)).toBeVisible();
 
-    // Comparison helper link
+    // Comparison helper link points at the choose-your-battle section
     const compareLink = page.getByRole("link", { name: /Not sure which level\? Compare the two levels/i });
     await expect(compareLink).toBeVisible();
-    await expect(compareLink).toHaveAttribute("href", "#compare-levels");
+    await expect(compareLink).toHaveAttribute("href", "#choose-your-battle");
 
-    // Verify HOW YOUR REVIEW WORKS section
-    await expect(page.getByText("HOW YOUR REVIEW WORKS")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /A short test\. A focused study plan\./i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Take the diagnostic" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Review your results" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Practice the recommended area" })).toBeVisible();
+    // Verify the choose-your-battle section
+    await expect(page.getByRole("heading", { name: "Which CSE are you taking?" })).toBeVisible();
 
-    // Verify WHY STUDY WITH REVIEWTAYO section
+    // Verify the guided track section
+    await expect(page.getByRole("heading", { name: /Five steps to eligibility/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Take the 10-minute diagnostic" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Read your breakdown" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Drill your weakest subtest" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Simulate exam day" })).toBeVisible();
+
+    // Verify trust claims section
     await expect(page.getByText("WHY STUDY WITH REVIEWTAYO")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Original practice questions" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Detailed answer explanations" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Built for both CSE levels" })).toBeVisible();
 
-    // Verify link scrolls to section
-    await reviewWorksLink.click();
-    await expect(page.locator("#how-your-review-works")).toBeVisible();
+    // Verify the guided-track anchor from the hero CTA
+    await page.locator("#guided-track").scrollIntoViewIfNeeded();
+    await expect(page.locator("#guided-track")).toBeVisible();
   });
 
-  test("renders subtle peeking owl on desktop without blocking controls, tracks mouse, and hides on mobile", async ({ page }) => {
+  test("renders owl mascot in the hero panel with tracking pupils, and the chooser stays unobstructed on mobile", async ({ page }) => {
     // 1. Desktop Viewport (1280x800)
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/cse");
     await page.waitForLoadState("networkidle");
 
-    // Locate the peeking owl decoration
-    const peekingOwlSvg = page.locator("svg").filter({ has: page.locator("[data-owl-part='fixed-head']") });
-    await expect(peekingOwlSvg).toBeVisible();
-    await expect(peekingOwlSvg).toHaveAttribute("aria-hidden", "true");
+    // The hero panel owl: ReviewTayoOwl with tracked pupils
+    const panelOwl = page.locator("svg").filter({ has: page.locator("g.pupil") }).first();
+    await expect(panelOwl).toBeVisible();
 
     // Both pupils exist
-    const leftPupil = peekingOwlSvg.locator("[data-owl-pupil='left']");
-    const rightPupil = peekingOwlSvg.locator("[data-owl-pupil='right']");
-    await expect(leftPupil).toBeAttached();
-    await expect(rightPupil).toBeAttached();
+    const leftPupil = panelOwl.locator("g.pupil").first();
+    await expect(panelOwl.locator("g.pupil")).toHaveCount(2);
 
-    // Verify radio buttons and Start Free Diagnostic CTA are completely clickable and unobstructed
+    // Verify radio buttons and Start free diagnostic CTA are completely clickable and unobstructed
     const proRadio = page.getByRole("radio", { name: /^Professional\b/i });
     const subproRadio = page.getByRole("radio", { name: /^Subprofessional\b/i });
-    const ctaBtn = page.getByRole("link", { name: /Start Free Diagnostic/i });
+    const ctaBtn = page.getByRole("link", { name: /Start free diagnostic/i });
 
     await expect(proRadio).toHaveAttribute("aria-checked", "true");
     await subproRadio.click();
@@ -154,18 +146,17 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await proRadio.click();
     await expect(ctaBtn).toHaveAttribute("href", "/exams/professional/quick");
 
-    // Move pointer near card and verify pupil movement
-    const cardBox = await page.getByRole("heading", { name: "Choose your exam level" }).boundingBox();
-    if (cardBox) {
-      await page.mouse.move(cardBox.x + cardBox.width / 2, cardBox.y + cardBox.height / 2);
+    // Move pointer near panel and verify pupil movement
+    const panelBox = await page.getByRole("heading", { name: "Start your review" }).boundingBox();
+    if (panelBox) {
+      await page.mouse.move(panelBox.x + panelBox.width / 2, panelBox.y + panelBox.height / 2);
       await page.waitForTimeout(100);
-      const transform = await leftPupil.getAttribute("transform");
-      expect(transform).toMatch(/translate\(-?\d+/);
+      const transform = await leftPupil.getAttribute("style");
+      expect(transform).toMatch(/translate/);
     }
 
     // 2. Mobile Viewport (375x667)
     await page.setViewportSize({ width: 375, height: 667 });
-    await expect(peekingOwlSvg).toBeHidden();
 
     // Check no horizontal scroll on mobile
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -204,7 +195,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.getByText(/Review Before Submission/i)).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/e4580727-e72d-4085-8b75-221d1cbba244/quick_test_review_submit_modal.png",
+      path: "artifacts/quick_test_review_submit_modal.png",
       fullPage: false,
     });
 
@@ -387,14 +378,14 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
     // Capture simplified test runner view
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/e4580727-e72d-4085-8b75-221d1cbba244/quick_test_simplified_ui.png",
+      path: "artifacts/quick_test_simplified_ui.png",
       fullPage: false,
     });
 
     // Open Display menu and capture
     await page.getByRole("button", { name: /display accessibility settings/i }).click();
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/e4580727-e72d-4085-8b75-221d1cbba244/quick_test_display_menu.png",
+      path: "artifacts/quick_test_display_menu.png",
       fullPage: false,
     });
     await page.keyboard.press("Escape");
@@ -416,7 +407,7 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
 
     // Capture Save & Exit confirmation modal
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/e4580727-e72d-4085-8b75-221d1cbba244/quick_test_save_exit_modal.png",
+      path: "artifacts/quick_test_save_exit_modal.png",
       fullPage: false,
     });
 

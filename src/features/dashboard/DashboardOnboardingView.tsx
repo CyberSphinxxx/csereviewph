@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { getAvailableExams, getAllExams } from "@/config/exams";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 import { ArrowRight, ShieldCheck, Layers } from "lucide-react";
 
-export function DashboardOnboardingView() {
-  const router = useRouter();
+export function DashboardOnboardingView({ embedded = false }: { embedded?: boolean } = {}) {
+  // No router dependency: creating a workspace fires RT_WORKSPACE_CHANGED_EVENT,
+  // which every useExamWorkspace consumer reacts to — no refresh() needed.
   const { createWorkspace } = useExamWorkspace();
   const availableExams = getAvailableExams();
   const allExams = getAllExams();
@@ -32,11 +32,16 @@ export function DashboardOnboardingView() {
       examId,
       levelId,
     });
-    router.refresh();
   };
 
   return (
-    <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10 animate-page-enter">
+    <div
+      className={
+        embedded
+          ? "mt-8 space-y-10"
+          : "py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10 animate-page-enter"
+      }
+    >
       {/* Editorial Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-brand-700 dark:text-brand-300 text-xs font-semibold">

@@ -102,9 +102,10 @@ export interface SubjectReadinessMetric {
 }
 
 import type { ExamWorkspace } from "@/lib/workspace/types";
+import type { StoredNote } from "./notes-service";
 
 export interface GuestBackupPayload {
-  version: 1;
+  version: 1 | 2;
   exportedAt: string;
   history: AttemptSummary[];
   attempts: Record<string, StoredAttemptDetails>;
@@ -114,4 +115,6 @@ export interface GuestBackupPayload {
   targetExam?: TargetExamConfig;
   workspaces?: ExamWorkspace[];
   currentWorkspaceId?: string | null;
+  /** Present in version 2 payloads only. v1 imports skip it gracefully. */
+  notes?: StoredNote[];
 }

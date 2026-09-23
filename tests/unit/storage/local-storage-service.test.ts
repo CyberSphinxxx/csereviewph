@@ -286,7 +286,7 @@ describe("LocalStorageService — Guest Offline Storage", () => {
       expect(typeof json).toBe("string");
 
       const parsed = JSON.parse(json);
-      expect(parsed.version).toBe(1);
+      expect(parsed.version).toBe(2);
       expect(parsed.bookmarks.length).toBe(1);
 
       // Clear local storage
@@ -303,7 +303,7 @@ describe("LocalStorageService — Guest Offline Storage", () => {
       const res1 = LocalStorageService.importDataFromJson("invalid-json");
       expect(res1.success).toBe(false);
 
-      const res2 = LocalStorageService.importDataFromJson(JSON.stringify({ version: 2 }));
+      const res2 = LocalStorageService.importDataFromJson(JSON.stringify({ version: 99 }));
       expect(res2.success).toBe(false);
     });
   });

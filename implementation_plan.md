@@ -1,54 +1,54 @@
-# ReviewTayo Library-to-Exam Journey Redesign
+# Implementation Plan — Exam Hall & Owl Coach themes for the test page
 
 ## Interpretation
 
-ReviewTayo should first read as a library of Philippine examination reviewers. Visitors browse and choose an exam at the platform level, then enter a clearly named exam workspace whose navigation, dashboard, progress, and calls to action are scoped to that exam. Civil Service remains the only live reviewer today, but neither the information architecture nor the shared components should treat it as the platform itself.
+Following the approved mockup (`reviewtayo-testpage-v1.html`), the user picked:
+
+- **Concept A "Exam Hall"** — the landing-page themed, graded assessment chrome — for **long-form exams** (`full`, `medium`: the 170-item / 3h10m Professional mock, 30-item medium test). Calm, formal, no mascot reactions; the owl only watches from the Question Map panel.
+- **Concept C "Owl Coach"** — for **quick practice** (`quick`, `practice`): the owl reacts to each answer (happy / oops), the rationale appears in an owl speech-bubble, a streak counter counts consecutive correct answers, with light Taglish encouragement.
+
+`bookmarks`/`mistakes` modes reuse the Coach presentation (low-stakes drill context).
+
+The mode→theme mapping lives in one pure helper so the engine itself never branches on exam type (AGENTS.md §3.2): the engine consumes `rules.mode`; only the *view layer* asks "which chrome?".
 
 ## Design Arc Direction
 
-Adopt **Library → Exam workspace**.
-
-- Public layer: ReviewTayo brand, Exams, How it works, Study resources, and Sign in.
-- Selection layer: a concise exam library with availability, authority, tracks, and one truthful action per exam.
-- Exam layer: visible “All exams” return, active exam/track identity, and scoped Overview, Practice, Mock exams, Guides, and Exam info navigation.
-- Dashboard: always titled for the active exam and track; new visitors first choose a live exam and track.
-- Authentication: secondary on public pages, available in context, and never required before guest practice.
-
-Alternatives considered but not selected:
-
-1. Send every exam selection directly to a universal dashboard. Faster, but hides exam-specific orientation and makes unavailable exams harder to explain truthfully.
-2. Keep one global header and add more exam tabs. Familiar in the short term, but scales poorly and preserves the current ambiguity between platform and exam context.
+- One exam runner, two presentations, driven by `rules.mode`:
+  - **exam-hall**: paper background, maroon primary, blush chips, Bricolage display headings (`.font-display`), gold flags, owl-on-map, `--shadow-card` card elevation. Coach features hidden; instant feedback rationale keeps its neutral "Educational Concept & Rationale" presentation.
+  - **exam-coach**: everything above plus: persistent owl companion panel (desktop sidebar above the Question Map; mobile: compact bar between toolbar and card), owl mood reaction per answer (`ReviewTayoOwl mood="happy"|"oops"`), speech bubble with the explanation, streak counter, confetti burst on correct (`globals.css` `.conf-particle` already exists).
+- Existing UX is untouched: fonts sizing, high contrast, reduce motion, eliminate/cross-out, flags, scratchpad, report, resume draft, auto-save, continuous timer, auto-submit, keyboard shortcuts, Question Map, review modal.
+- All existing unit/e2e selector texts stay byte-identical ("Question 1 of 2", "Educational Concept & Rationale", "Scratchpad & Arithmetic Canvas", `#exam-timer`, `#flag-question-button`, `#next-question-btn`, `#prev-question-btn`, `#confirm-submit-btn`, `data-testid="choice-card-A"`, `span.rounded-lg`, etc.).
+- `TestModeBar` and `ExamRunner` are shared; theme arrives as a prop so neither imports the mode mapping itself.
 
 ## Implementation
 
-1. Recompose the homepage hero around immediate library comprehension and exam selection.
-2. Replace the dense examination index with a responsive library component that emphasizes availability and next action without making planned exams feel interactive.
-3. Simplify platform navigation and create a distinct exam-workspace navigation state with a clear route back to all exams.
-4. Make workspace context and dashboard destination generic and visible, including exam name and track.
-5. Keep all exam names, tracks, capabilities, routes, and status driven by `EXAM_CATALOG`; do not add exam-specific engine branches.
-6. Update unit and browser tests for the revised labels, routes, keyboard behavior, responsive hierarchy, and library/workspace transition.
-7. Update `walkthrough.md` and `PROGRESS.md` with actual verification evidence.
+1. `src/features/practice/examTheme.ts` — `ExamTheme = "exam-hall" | "exam-coach"`; `getExamTheme(mode: ExamMode): ExamTheme` (coach for `practice|quick|bookmarks|mistakes`, hall otherwise). Pure, unit-tested.
+2. `src/features/practice/coach.ts` — `nextStreak(prev, isCorrect)`, `getCoachQuip(kind, seed)` (deterministic via seed so tests don't flake), Taglish quip banks (correct/oops/idle). Pure, unit-tested.
+3. `src/components/practice/CoachPanel.tsx` — presentational owl companion (owl with mood, speech bubble, streak chip). Variant `panel` (desktop) and `compact` (mobile). No state of its own.
+4. `globals.css` — append `.exam-hall-bg` / `.exam-coach-bg` gradient/backdrop utilities + `@keyframes` reuse of existing `bob/blink/pop/burst`. No existing rule modified.
+5. `TestModeBar.tsx` — add optional `theme?: ExamTheme` prop (default `exam-hall`); keep every text, id and testid; re-skin chrome (blush/paper palette, `.font-display` title, warning pulse kept, exit dialog re-skinned, coach variant adds a compact owl beside the title).
+6. `ExamRunner.tsx` — compute `theme = getExamTheme(rules.mode)`; pass to `TestModeBar`; add `coach` derived state (streak, mood, last feedback) updated inside the existing practice-instant-feedback block (and only there); render `CoachPanel` (desktop) + compact (mobile) when theme is coach; owl-mood rationale panel for coach; confetti particles on correct answers; re-skin card/choices/tools/map/modals to the exam-hall palette with zero behavior or selector changes.
+7. `ResultsView.tsx` — chrome only: replace slate chrome with paper/blush + brand; keep the emerald-pass / dark-fail banner gradient and **every text and id exactly** ("Estimated Score", "Subtest Performance Breakdown", "Detailed Answer Review", "Educational Concept & Rationale", `#print-scorecard-btn`, etc.).
+8. Tests:
+   - New `tests/unit/practice/examTheme.test.ts`, `tests/unit/practice/coach.test.ts`.
+   - Extend `tests/unit/practice/ExamRunner.test.tsx`: coach-mode renders owl panel; streak increments on correct, resets on wrong; rationale still shown; quick mode stays exam-hall (no coach panel).
+9. Docs: `implementation_plan.md` (this file), `walkthrough.md`, `PROGRESS.md`.
 
 ## Verification Plan
 
 ### Automated
-
-- Update and run targeted Vitest component tests for the homepage library, header context, selector, and dashboard onboarding.
-- Run `npm run verify` and require exit code 0.
-- Run the relevant Playwright suites for homepage/navigation/accessibility and the full `npm run test:e2e` because the change affects navigation.
+- New unit tests for `examTheme` + `coach` (pure logic, deterministic quips).
+- Extended `ExamRunner.test.tsx`: coach/hall rendering, streak behavior, rationale preserved.
+- Full `npm run verify` (typecheck → lint → architecture guard → all vitest → build) must exit 0.
+- `npm run test:e2e -- tests/e2e/exam-flow.spec.ts` (AGENTS.md requires e2e for exam-flow changes).
 
 ### Manual / Browser
-
-- Load the homepage at wide and 320px-equivalent viewports.
-- Follow the live CSE path into its exam context and confirm the header changes from platform navigation to exam-scoped navigation.
-- Open the exam switcher and confirm labels, focus, Escape dismissal, and the return-to-library path.
-- Open `/dashboard` with and without a workspace and confirm the destination is unambiguous.
-- Exercise keyboard-only navigation, visible focus, reduced-motion mode, 200% zoom/reflow, and inspect console errors.
+- Dev server: `/exams/professional/quick` shows Exam Hall chrome (no owl panel), `/practice/[topic]` shows Owl Coach (owl panel, streak, mood reactions, confetti), `/exams/professional/full` shows Exam Hall with 170-item header.
+- Answer correctly → owl happy + confetti; answer wrongly → oops; streak text matches; flag/cross-out/scratchpad/map/submit all still work.
 
 ## Constraints
 
-- No external exam questions or copied reviewer content.
-- No new personal-data collection, analytics behavior, or secrets.
-- No CSE-specific branching in the generic exam engine.
-- Planned exams remain truthful, non-actionable roadmap entries.
-- Full-test timing and scoring behavior are unchanged.
+- No engine branching on exam identity; only `rules.mode` → view theme (view-layer helper, unit-tested).
+- No new deps; reuse `ReviewTayoOwl`, existing tokens/keyframes, `conf-particle`.
+- No question content authored; seed data only.
+- No schema changes, no new env vars, no analytics changes.

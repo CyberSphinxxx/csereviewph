@@ -487,3 +487,42 @@ body {
 .dark .fam-school { --bgc: #133a22; --fgc: #c2ebd0; }
 .dark .fam-skills { --bgc: #352152; --fgc: #e1d3f7; }
 
+/* ========================================================================= */
+/* Exam Runner Themes — Exam Hall (graded) & Owl Coach (practice)            */
+/* ========================================================================= */
+
+/* Concept A · Exam Hall: calm paper canvas for long-form graded exams */
+.exam-hall-bg {
+  background:
+    radial-gradient(720px circle at 50% -140px, rgba(249, 224, 229, 0.55) 0, rgba(249, 224, 229, 0) 68%),
+    var(--paper);
+}
+
+/* Concept C · Owl Coach: blush gradient for quick practice & drills */
+.exam-coach-bg {
+  background: linear-gradient(180deg, #fdf8f6 0%, #fbeff0 320px, #f9e2e7 100%);
+}
+
+/* Exam-card elevation shared by both themes */
+.exam-card-shadow {
+  box-shadow:
+    0 30px 60px -36px rgba(90, 15, 35, 0.45),
+    0 0 0 1px rgba(138, 22, 48, 0.07);
+}
+
+/* Timer warning pulse (gold ring / rose text) */
+@keyframes timerWarn {
+  50% { transform: scale(1.05); }
+}
+.timer-warn-pulse {
+  animation: timerWarn 1.2s ease-in-out infinite;
+}
+
+/* Confetti burst origin inside the question card */
+.conf-anchor {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  pointer-events: none;
+  z-index: 8;
+}

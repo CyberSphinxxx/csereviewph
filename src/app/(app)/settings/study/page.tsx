@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePreferences } from "@/lib/preferences";
+import { PLAN_TEMPLATES, type PlanTemplateId } from "@/config/study-plan-templates";
 import {
   Check,
   AlertCircle,
@@ -19,6 +20,7 @@ export default function StudyPlanSettingsPage() {
   const [levelId, setLevelId] = useState("cse-professional");
   const [targetDateType, setTargetDateType] = useState<"verified" | "custom" | "none">("verified");
   const [customDate, setCustomDate] = useState("2027-03-21");
+  const [planTemplate, setPlanTemplate] = useState<PlanTemplateId>("smart");
   const [dailyGoal, setDailyGoal] = useState(25);
   const [showDailyGoal, setShowDailyGoal] = useState(true);
   const [weekStartsOn, setWeekStartsOn] = useState<"monday" | "sunday">("monday");
@@ -32,6 +34,7 @@ export default function StudyPlanSettingsPage() {
     setLevelId(preferences.study.levelId);
     setTargetDateType(preferences.study.targetDateType);
     setCustomDate(preferences.study.targetDate || "2027-03-21");
+    setPlanTemplate(preferences.study.planTemplate ?? "smart");
     setDailyGoal(preferences.study.dailyGoal);
     setShowDailyGoal(preferences.study.showDailyGoal);
     setWeekStartsOn(preferences.study.weekStartsOn);
@@ -82,6 +85,7 @@ export default function StudyPlanSettingsPage() {
       levelId,
       targetDate: effectiveDate,
       targetDateType,
+      planTemplate,
       dailyGoal: clampedGoal,
       showDailyGoal,
       weekStartsOn,
@@ -102,6 +106,7 @@ export default function StudyPlanSettingsPage() {
     setLevelId(preferences.study.levelId);
     setTargetDateType(preferences.study.targetDateType);
     setCustomDate(preferences.study.targetDate || "2027-03-21");
+    setPlanTemplate(preferences.study.planTemplate ?? "smart");
     setDailyGoal(preferences.study.dailyGoal);
     setShowDailyGoal(preferences.study.showDailyGoal);
     setWeekStartsOn(preferences.study.weekStartsOn);
@@ -302,6 +307,50 @@ export default function StudyPlanSettingsPage() {
               </span>
             </div>
           </label>
+        </div>
+      </section>
+
+      {/* 2b. Weekly Plan Template */}
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 space-y-4 shadow-2xs">
+        <div>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Weekly Plan Template</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+            Controls how &ldquo;This week&rdquo; is generated on your Study plan. Every template adapts to your daily goal and subjects.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1" role="radiogroup" aria-label="Weekly plan template">
+          {PLAN_TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={planTemplate === t.id}
+              onClick={() => {
+                setPlanTemplate(t.id);
+                setIsDirty(true);
+              }}
+              className={`p-4 rounded-xl border text-left transition ${
+                planTemplate === t.id
+                  ? "border-brand-600 dark:border-brand-400 bg-highlight dark:bg-brand-950 ring-1 ring-brand-600 dark:ring-brand-400"
+                  : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-bold text-sm text-slate-900 dark:text-white">{t.name}</span>
+                <div
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    planTemplate === t.id
+                      ? "border-brand-600 dark:border-brand-400 bg-brand-600 dark:bg-brand-500 text-white"
+                      : "border-slate-300 dark:border-slate-700"
+                  }`}
+                >
+                  {planTemplate === t.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                </div>
+              </div>
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t.description}</p>
+            </button>
+          ))}
         </div>
       </section>
 

@@ -19,6 +19,10 @@ export function usePreferences() {
 
   useEffect(() => {
     setMounted(true);
+    // One-time legacy seeding. Runs in an effect only: getPreferences() is a
+    // pure read now, and seeding writes + dispatches events, so doing it here
+    // (not during render) is what fixes the "setState during render" warning.
+    PreferencesService.ensureSeeded();
     setPreferences(PreferencesService.getPreferences());
 
     const handlePreferencesChange = (e: Event) => {

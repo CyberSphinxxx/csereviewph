@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Clock, LogOut } from "lucide-react";
 import { formatTimeRemaining } from "@/features/exam-engine";
+import type { ExamTheme } from "@/features/practice/examTheme";
 
 interface TestModeBarProps {
   examName?: string;
@@ -13,6 +14,8 @@ interface TestModeBarProps {
   isWarning?: boolean;
   hasAnswers?: boolean;
   onExit: () => void;
+  /** Presentation chrome: exam-hall (default) or exam-coach. */
+  theme?: ExamTheme;
 }
 
 export function TestModeBar({
@@ -24,8 +27,10 @@ export function TestModeBar({
   isWarning = false,
   hasAnswers = false,
   onExit,
+  theme = "exam-hall",
 }: TestModeBarProps) {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const isCoach = theme === "exam-coach";
 
   const handleConfirmExit = () => {
     setShowExitConfirm(false);
@@ -37,7 +42,7 @@ export function TestModeBar({
       <header
         role="banner"
         aria-label="Exam in progress"
-        className="sticky top-0 z-40 w-full border-b border-border bg-white dark:bg-[#1E191C] px-3 sm:px-6 lg:px-8 py-2.5 shadow-2xs transition-colors"
+        className="sticky top-0 z-40 w-full border-b border-brand-100 bg-white/85 px-3 sm:px-6 lg:px-8 py-2.5 shadow-2xs backdrop-blur-md transition-colors"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 min-h-11">
           {/* Left: Exit Action with Dialog */}
@@ -45,22 +50,22 @@ export function TestModeBar({
             <button
               type="button"
               onClick={() => setShowExitConfirm(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 shadow-2xs group"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-brand-200 bg-white hover:bg-[#faf3f4] text-[#3a2c32] text-xs sm:text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 shadow-2xs group"
               aria-label="Save and Exit exam"
             >
-              <LogOut className="w-3.5 h-3.5 text-slate-500 group-hover:text-rose-600 transition-colors" />
+              <LogOut className="w-3.5 h-3.5 text-[#6d5d63] group-hover:text-rose-600 transition-colors" />
               <span>Exit</span>
             </button>
           </div>
 
           {/* Center: Exam Name + Level & Question Progress */}
           <div className="flex flex-col items-center justify-center text-center min-w-0 px-1 sm:px-2">
-            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-              <span className="truncate">{examName}</span>
-              <span className="text-slate-300 dark:text-slate-600 font-normal">&bull;</span>
-              <span className="text-brand-700 dark:text-brand-400 font-semibold truncate">{levelName}</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-[#1b1216] truncate">
+              <span className="font-display truncate">{examName}</span>
+              <span className="text-[#d8c7cd] font-normal">&bull;</span>
+              <span className="text-brand-700 font-semibold truncate">{levelName}</span>
             </div>
-            <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+            <div className="text-[11px] sm:text-xs text-[#6d5d63] font-medium tracking-wide">
               Item {currentIndex + 1} of {totalQuestions}
             </div>
           </div>
@@ -70,15 +75,17 @@ export function TestModeBar({
             <div
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-mono font-bold tracking-wider shadow-2xs transition-colors ${
                 isWarning
-                  ? "bg-rose-50 dark:bg-rose-950/70 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 animate-pulse"
-                  : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                  ? "bg-[#fdecef] border-[#d1344b]/40 text-[#d1344b] timer-warn-pulse"
+                  : isCoach
+                  ? "bg-[#fbeff0] border-brand-200 text-brand-700"
+                  : "bg-white border-brand-200 text-[#1b1216]"
               }`}
               aria-live="polite"
               aria-atomic="true"
             >
               <Clock
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
-                  isWarning ? "text-rose-600 dark:text-rose-400" : "text-brand-600 dark:text-brand-400"
+                  isWarning ? "text-[#d1344b]" : "text-brand-600"
                 }`}
               />
               <span id="exam-timer">{formatTimeRemaining(remainingSeconds)}</span>
@@ -93,13 +100,13 @@ export function TestModeBar({
           role="dialog"
           aria-modal="true"
           aria-labelledby="exit-dialog-title"
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-100"
+          className="fixed inset-0 z-50 bg-[#2a0a12]/55 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-100"
         >
-          <div className="bg-white dark:bg-[#1E191C] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border">
-            <h3 id="exit-dialog-title" className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-brand-100">
+            <h3 id="exit-dialog-title" className="text-lg font-bold text-[#1b1216] mb-2">
               Leave this test?
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+            <p className="text-sm text-[#5a4a50] mb-6 leading-relaxed">
               {hasAnswers
                 ? "Your progress is saved and you can resume this test later."
                 : "You have not answered any questions yet."}
@@ -109,7 +116,7 @@ export function TestModeBar({
               <button
                 type="button"
                 onClick={() => setShowExitConfirm(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                className="px-4 py-2.5 rounded-xl border border-brand-200 font-semibold text-sm text-[#3a2c32] hover:bg-[#faf3f4] transition"
               >
                 Keep Practicing
               </button>

@@ -108,10 +108,49 @@ function generateCommitMessage(file) {
   }
 
   if (filePath === "src/components/home/HeroExamLevelSelector.tsx") {
+    if (diff.includes("ReviewTayoOwl") || diff.includes("pupil")) {
+      return "feat(home): redesign HeroExamLevelSelector with tracking ReviewTayoOwl and clean cards";
+    }
     if (diff.includes("active:scale") || diff.includes("March 14, 2027")) {
       return "feat(home): add tactile touch response and wrap level descriptions cleanly";
     }
     return "feat(home): update hero exam level selector card";
+  }
+
+  if (filePath === "src/components/home/ExamPickerCard.tsx" && file.status.includes("D")) {
+    return "refactor(home): remove obsolete ExamPickerCard component";
+  }
+
+  if (filePath === "src/components/home/HomePageClient.tsx" && file.status.includes("D")) {
+    return "refactor(home): remove unused HomePageClient component";
+  }
+
+  if (filePath === "src/components/home/PeekingOwl.tsx" && file.status.includes("D")) {
+    return "refactor(home): remove legacy PeekingOwl component in favor of ReviewTayoOwl";
+  }
+
+  if (filePath === "src/app/(public)/cse/page.tsx") {
+    return "feat(cse): update /cse page metadata and canonical structure for redesign";
+  }
+
+  if (filePath === "src/components/cse/CSELandingClient.tsx") {
+    return "feat(cse): rebuild CSE landing page with command center hero, track, and urgency band";
+  }
+
+  if (filePath === "src/components/practice/CoachPanel.tsx") {
+    return "feat(practice): implement CoachPanel with reactive owl mascot, speech bubbles, and stats";
+  }
+
+  if (filePath === "src/features/practice/coach.ts") {
+    return "feat(practice): add streak tracking and deterministic Taglish coach reactions";
+  }
+
+  if (filePath === "src/features/practice/examTheme.ts") {
+    return "feat(practice): add examTheme module for coach and exam hall layout styling";
+  }
+
+  if (filePath === "src/features/practice/TestModeBar.tsx") {
+    return "feat(practice): add theme support to TestModeBar for coach and exam hall modes";
   }
 
   if (filePath === "src/components/layout/Header.tsx") {
@@ -126,6 +165,9 @@ function generateCommitMessage(file) {
   }
 
   if (filePath === "src/features/practice/ExamRunner.tsx") {
+    if (diff.includes("CoachPanel") || diff.includes("examTheme") || diff.includes("usesReviewConfirmation")) {
+      return "feat(runner): integrate CoachPanel rationale bubble, clean header, and examTheme layout";
+    }
     if (diff.includes("answers.size > 0") || diff.includes("router.push(\"/\")")) {
       return "refactor(runner): return to origin on unanswered quick test exit and bypass empty draft saves";
     }
@@ -170,6 +212,138 @@ function generateCommitMessage(file) {
     return "perf(practice): prerender topic practice route with generateStaticParams";
   }
 
+  // Archives & Design Mockups
+  if (filePath.startsWith("ARCHIVES/reviewtayo-") && filePath.endsWith(".html")) {
+    const pageName = baseName.replace(/\.html$/, "");
+    return `docs(design): archive ${pageName} HTML mockup`;
+  }
+  if (filePath.startsWith("reviewtayo-") && filePath.endsWith(".html")) {
+    const pageName = baseName.replace(/\.html$/, "");
+    if (file.status.includes("D")) {
+      return `docs(design): remove unarchived ${pageName} root mockup`;
+    }
+    return `docs(design): add ${pageName} mockup`;
+  }
+
+  // Dashboard Unified Shell & Views
+  if (filePath === "src/features/dashboard/AppShell.tsx") {
+    return "feat(dashboard): create responsive AppShell layout with sidebar and exam switcher";
+  }
+  if (filePath === "src/features/dashboard/DashboardView.tsx") {
+    return "feat(dashboard): connect daily quests, quick actions, and study plan widgets";
+  }
+  if (filePath === "src/features/dashboard/DashboardOnboardingView.tsx") {
+    return "feat(dashboard): adapt onboarding to current workspace exam and target dates";
+  }
+  if (filePath === "src/features/dashboard/useDailyQuests.ts") {
+    return "feat(dashboard): add daily quests hook with progress tracking";
+  }
+  if (filePath === "src/features/dashboard/achievements/AchievementsView.tsx") {
+    return "feat(dashboard): add AchievementsView with milestone badges and progress tracking";
+  }
+  if (filePath === "src/features/dashboard/history/HistoryView.tsx") {
+    return "feat(dashboard): add HistoryView with test filtering and exam switcher";
+  }
+  if (filePath === "src/features/dashboard/notes/NotesView.tsx") {
+    return "feat(dashboard): add NotesView for exam-scoped notes and search";
+  }
+  if (filePath === "src/features/dashboard/plan/StudyPlanView.tsx") {
+    return "feat(dashboard): add StudyPlanView with weekly schedule and milestone checklist";
+  }
+  if (filePath === "src/features/dashboard/practice/PracticeHubView.tsx") {
+    return "feat(dashboard): add PracticeHubView with test mode selection cards";
+  }
+  if (filePath === "src/features/dashboard/review/ReviewView.tsx") {
+    return "feat(dashboard): add ReviewView for SRS flashcard review and mistake bank";
+  }
+
+  // Dashboard Routes
+  if (filePath === "src/app/(app)/dashboard/page.tsx") {
+    return "feat(dashboard): integrate AppShell with primary dashboard landing page";
+  }
+  if (filePath === "src/app/(app)/dashboard/achievements/page.tsx") {
+    return "feat(dashboard): add achievements page route";
+  }
+  if (filePath === "src/app/(app)/dashboard/history/page.tsx") {
+    return "feat(dashboard): integrate HistoryView into dashboard history route";
+  }
+  if (filePath === "src/app/(app)/dashboard/learn/page.tsx") {
+    return "feat(dashboard): add study guides/learn redirect route";
+  }
+  if (filePath === "src/app/(app)/dashboard/notes/page.tsx") {
+    return "feat(dashboard): add exam-scoped personal notes route";
+  }
+  if (filePath === "src/app/(app)/dashboard/plan/page.tsx") {
+    return "feat(dashboard): add study plan route";
+  }
+  if (filePath === "src/app/(app)/dashboard/practice/page.tsx") {
+    return "feat(dashboard): add practice hub route";
+  }
+  if (filePath === "src/app/(app)/dashboard/review/page.tsx") {
+    return "feat(dashboard): add SRS review hub route";
+  }
+  if (filePath === "src/app/(app)/settings/SettingsShell.tsx") {
+    return "feat(settings): support dashboard workspace context in SettingsShell";
+  }
+  if (filePath === "src/app/(app)/settings/study/page.tsx") {
+    return "feat(settings): add target exam and study schedule controls";
+  }
+
+  // Config Files
+  if (filePath === "src/config/achievements.ts") {
+    return "feat(config): define achievement badges and milestone definitions";
+  }
+  if (filePath === "src/config/practice-modes.ts") {
+    return "feat(config): add practice modes catalog and routing configurations";
+  }
+  if (filePath === "src/config/study-plan-templates.ts") {
+    return "feat(config): define study plan milestone templates for CSE, LET, and Nursing";
+  }
+
+  // Libraries & Utilities
+  if (filePath === "src/lib/achievement-engine.ts") {
+    return "feat(achievements): implement achievement evaluation engine";
+  }
+  if (filePath === "src/lib/daily-quests.ts") {
+    return "feat(quests): implement daily quest generation and completion tracker";
+  }
+  if (filePath === "src/lib/study-plan-generator.ts") {
+    return "feat(study-plan): implement auto-generated study plan schedule generator";
+  }
+  if (filePath === "src/lib/study-plan.ts") {
+    return "feat(study-plan): add study plan validation and progress calculation";
+  }
+  if (filePath === "src/lib/workspace/target-exam.ts") {
+    return "feat(workspace): add target exam resolution and active exam helper";
+  }
+  if (filePath === "src/lib/storage/notes-service.ts") {
+    return "feat(storage): implement exam-scoped personal notes service";
+  }
+  if (filePath === "src/lib/storage/safe-storage.ts") {
+    return "feat(storage): add SSR-safe storage abstraction with fallback";
+  }
+  if (filePath === "src/lib/storage/local-storage-service.ts") {
+    return "feat(storage): add multi-exam isolation and safe migration logic";
+  }
+  if (filePath === "src/lib/storage/types.ts") {
+    return "feat(storage): add notes, quests, and study plan storage interfaces";
+  }
+  if (filePath === "src/lib/storage/index.ts") {
+    return "feat(storage): export safeStorage, notesService, and clean slate utilities";
+  }
+  if (filePath === "src/lib/content/types.ts") {
+    return "feat(content): export exam identifiers and subject types";
+  }
+  if (filePath === "src/lib/preferences/types.ts") {
+    return "feat(preferences): add target exam preferences schema";
+  }
+  if (filePath === "src/lib/preferences/preferences-service.ts") {
+    return "feat(preferences): add target exam and schedule preference persistence";
+  }
+  if (filePath === "src/lib/preferences/usePreferences.ts") {
+    return "feat(preferences): expose exam preference hooks and state mutations";
+  }
+
   // Documentation & Logs
   if (filePath === "AGENTS.md") {
     return "docs(agents): update guidelines for token efficiency and rolling progress handoffs";
@@ -183,11 +357,14 @@ function generateCommitMessage(file) {
   if (filePath === "ARCHIVES/implementation_plan2.md") {
     return "docs(archives): record archived implementation plan 2";
   }
+  if (filePath === "implementation_plan.md") {
+    return "docs(plan): update implementation plan for coach bubble, clean header, and cse redesign";
+  }
   if (filePath.endsWith("PROGRESS.md")) {
-    return "docs(progress): log live review report and foundational performance resolutions";
+    return "docs(progress): record unified dashboard app shell, study plan, daily quests, and notes";
   }
   if (filePath.endsWith("walkthrough.md")) {
-    return "docs(walkthrough): update verification walkthrough records";
+    return "docs(walkthrough): update verification walkthrough for unified app shell and dashboard suite";
   }
   if (filePath.startsWith(".design/")) {
     const docName = baseName.replace(/\.[^/.]+$/, "");
@@ -215,13 +392,10 @@ function generateCommitMessage(file) {
     return "style(tailwind): refine brand color palette tokens";
   }
   if (filePath === "src/app/globals.css") {
-    return "style(theme): update porcelain and maroon theme styling";
+    return "style(theme): add exam hall and coach background tokens and card shadows";
   }
   if (filePath === "src/app/manifest.ts") {
     return "feat(pwa): register new maskable and brand icons in web app manifest";
-  }
-  if (filePath === "src/components/home/PeekingOwl.tsx") {
-    return "feat(home): implement interactive fullbody peeking owl mascot with gaze tracking";
   }
   if (filePath === "src/components/ui/Logo.tsx") {
     return "feat(ui): add brand Logo component with responsive mascot icon";
@@ -232,13 +406,25 @@ function generateCommitMessage(file) {
 
   // Test Files
   if (filePath === "tests/e2e/exam-flow.spec.ts") {
-    return "test(e2e): update landing page and exam flow test assertions for date and navigation";
+    return "test(e2e): update exam flow tests for coach panel and redesigned hero selector";
   }
   if (filePath === "tests/e2e/exam-guide.spec.ts") {
     return "test(e2e): update exam guide navigation and select option assertions";
   }
   if (filePath === "tests/unit/components/home-components.test.tsx") {
-    return "test(unit): update schedule date and reassurance copy assertions";
+    return "test(unit): update home component tests for redesigned hero selector and pupil tracking";
+  }
+  if (filePath === "tests/unit/components/peeking-owl.test.tsx" && file.status.includes("D")) {
+    return "test(unit): remove tests for deprecated PeekingOwl";
+  }
+  if (filePath === "tests/unit/practice/coach.test.ts") {
+    return "test(unit): add unit tests for coach reactions and streak counter";
+  }
+  if (filePath === "tests/unit/practice/examTheme.test.ts") {
+    return "test(unit): add unit tests for examTheme mode resolution";
+  }
+  if (filePath === "tests/unit/practice/ExamRunner.test.tsx") {
+    return "test(unit): update ExamRunner tests for coach panel and exam theme layout";
   }
   if (filePath === "tests/unit/dashboard/ExamCalendarCard.test.tsx") {
     return "test(unit): update calendar card date assertion to March 14, 2027";

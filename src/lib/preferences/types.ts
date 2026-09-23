@@ -1,8 +1,14 @@
+import type { PlanTemplateId } from "@/config/study-plan-templates";
+
 export interface StudyPreferences {
   examId: string; // e.g., "cse"
   levelId: string; // e.g., "cse-professional" | "cse-subprofessional"
   targetDate: string; // YYYY-MM-DD or empty
+  /** Display name of the target exam cycle, e.g. "March 2027 CSE-PPT". */
+  targetExamName?: string;
   targetDateType: "verified" | "custom" | "none";
+  /** Weekly plan template: smart (adaptive), balanced, weak-focus, cram. */
+  planTemplate: PlanTemplateId;
   dailyGoal: number; // bounded between 5 and 200
   showDailyGoal: boolean;
   weekStartsOn: "monday" | "sunday";

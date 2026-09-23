@@ -1,6 +1,5 @@
 import { DashboardView } from "@/features/dashboard/DashboardView";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { AppShell } from "@/features/dashboard/AppShell";
 
 export const metadata = {
   title: "My Exam Workspace",
@@ -9,12 +8,8 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#fdf8f6] dark:bg-[#161315]">
-      <Header />
-      <main id="main-content" className="flex-1">
-        <DashboardView />
-      </main>
-      <Footer />
-    </div>
+    <AppShell>
+      <DashboardView />
+    </AppShell>
   );
 }

@@ -8,9 +8,11 @@ import type {
   PreferenceCategory,
 } from "./types";
 import { LocalStorageService } from "@/lib/storage/local-storage-service";
+import { WorkspaceService } from "@/lib/workspace/workspace-service";
 import { getStoredConsent, saveStoredConsent } from "@/components/privacy/CookieConsentBanner";
 
 import { NEXT_UPCOMING_EXAM_DATE } from "@/lib/exam-guide/csc-data";
+import { isPlanTemplateId } from "@/config/study-plan-templates";
 
 export const PREFERENCES_STORAGE_KEY = "csereviewph_user_preferences_v1";
 export const PREFERENCES_CHANGED_EVENT = "csereviewph-preferences-changed";
@@ -20,6 +22,7 @@ export const DEFAULT_STUDY_PREFERENCES: Readonly<StudyPreferences> = {
   levelId: "cse-professional",
   targetDate: NEXT_UPCOMING_EXAM_DATE,
   targetDateType: "verified",
+  planTemplate: "smart",
   dailyGoal: 25,
   showDailyGoal: true,
   weekStartsOn: "monday",
@@ -92,7 +95,9 @@ function sanitizePreferences(raw: unknown): UserPreferences {
     examId: typeof rawStudy.examId === "string" && rawStudy.examId ? rawStudy.examId : "cse",
     levelId,
     targetDate: typeof rawStudy.targetDate === "string" ? rawStudy.targetDate : defaults.study.targetDate,
+    targetExamName: typeof rawStudy.targetExamName === "string" ? rawStudy.targetExamName : defaults.study.targetExamName,
     targetDateType,
+    planTemplate: isPlanTemplateId(rawStudy.planTemplate) ? rawStudy.planTemplate : defaults.study.planTemplate,
     dailyGoal: clampNumber(rawStudy.dailyGoal, 5, 200, defaults.study.dailyGoal),
     showDailyGoal: typeof rawStudy.showDailyGoal === "boolean" ? rawStudy.showDailyGoal : defaults.study.showDailyGoal,
     weekStartsOn: rawStudy.weekStartsOn === "sunday" ? "sunday" : "monday",
@@ -168,7 +173,10 @@ export class PreferencesService {
   }
 
   /**
-   * Retrieves user preferences. Migrates from legacy keys on first run if needed.
+   * Retrieves stored preferences. Pure read: never writes, never dispatches
+   * events, so it is safe to call during render. Returns factory defaults when
+   * nothing is stored yet; call ensureSeeded() from an effect to inherit
+   * legacy values and persist.
    */
   public static getPreferences(): UserPreferences {
     if (!this.isClient()) {
@@ -187,10 +195,22 @@ export class PreferencesService {
       // JSON parse error or localStorage read failure
     }
 
-    // Initial seeding: check legacy keys to preserve learner setup
+    return getDefaultPreferences();
+  }
+
+  /**
+   * One-time seeding: if no stored preferences exist yet, inherit legacy
+   * values (target exam config, cookie consent) and persist them. Writes to
+   * localStorage and dispatches PREFERENCES_CHANGED_EVENT, so it MUST only be
+   * called from an effect or event handler — never during render.
+   */
+  public static ensureSeeded(): void {
+    if (!this.isClient()) return;
+    if (window.localStorage.getItem(PREFERENCES_STORAGE_KEY)) return;
+
     const initial = getDefaultPreferences();
     try {
-      // Check legacy target exam config
+      // Inherit legacy target exam config so an existing learner's setup survives.
       const targetConfig = LocalStorageService.getTargetExamConfig();
       if (targetConfig) {
         if (targetConfig.targetDate) initial.study.targetDate = targetConfig.targetDate;
@@ -199,7 +219,7 @@ export class PreferencesService {
         }
       }
 
-      // Check legacy cookie consent
+      // Inherit legacy cookie consent
       const consent = getStoredConsent();
       if (consent && consent.hasChosen) {
         initial.privacy.analyticsConsent = consent.analytics;
@@ -210,7 +230,6 @@ export class PreferencesService {
     }
 
     this.savePreferences(initial);
-    return initial;
   }
 
   /**
@@ -238,15 +257,23 @@ export class PreferencesService {
       window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(next));
       this.cachedPreferences = next;
 
-      // Synchronize with existing legacy storage helpers to avoid drift
+      // Synchronize with existing legacy storage helpers to avoid drift.
+      // Only mirrors into workspace storage when an exam is actually chosen —
+      // never fabricates a target for a fresh visitor.
       try {
-        LocalStorageService.saveTargetExamConfig({
-          targetDate: next.study.targetDate,
-          examName: next.study.levelId.includes("subprof")
-            ? "CSE-PPT Subprofessional"
-            : "CSE-PPT Professional",
-          dailyGoal: next.study.dailyGoal,
-        });
+        const hasChosenExam =
+          WorkspaceService.getAllWorkspaces().length > 0;
+        if (hasChosenExam) {
+          LocalStorageService.saveTargetExamConfig({
+            targetDate: next.study.targetDate,
+            examName:
+              next.study.targetExamName ||
+              (next.study.levelId.includes("subprof")
+                ? "CSE-PPT Subprofessional"
+                : "CSE-PPT Professional"),
+            dailyGoal: next.study.dailyGoal,
+          });
+        }
 
         const currentConsent = getStoredConsent();
         saveStoredConsent({

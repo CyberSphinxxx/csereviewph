@@ -24,6 +24,33 @@ describe("PreferencesService Unit Tests", () => {
     expect(prefs.privacy.adsConsent).toBe(false);
   });
 
+  it("getPreferences is a pure read: no writes, no events on clean storage", () => {
+    // Regression guard: getPreferences() used to seed-and-save when storage was
+    // empty, dispatching PREFERENCES_CHANGED_EVENT during render (the source of
+    // the "Cannot update ThemeProvider while rendering AppShell" warning).
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
+    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+
+    PreferencesService.getPreferences();
+    PreferencesService.getPreferences();
+
+    expect(setItemSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
+
+    setItemSpy.mockRestore();
+    dispatchSpy.mockRestore();
+  });
+
+  it("ensureSeeded persists once and is a no-op afterwards", () => {
+    PreferencesService.ensureSeeded();
+    expect(window.localStorage.getItem("csereviewph_user_preferences_v1")).toBeTruthy();
+
+    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+    PreferencesService.ensureSeeded();
+    expect(dispatchSpy).not.toHaveBeenCalled();
+    dispatchSpy.mockRestore();
+  });
+
   it("persists updates and validates bounds for dailyGoal", () => {
     const resLow = PreferencesService.savePreferences((prev) => ({
       ...prev,

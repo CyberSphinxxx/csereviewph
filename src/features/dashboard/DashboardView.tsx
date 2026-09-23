@@ -1,324 +1,599 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  Check,
+  Flame,
+  Target,
+  TrendingUp,
+  BookMarked,
+  RotateCcw,
+  ListChecks,
+  CalendarDays,
+} from "lucide-react";
 import {
   LocalStorageService,
   type AttemptSummary,
   type SubjectReadinessMetric,
-  type TargetExamConfig,
-  type StoredMistakeItem,
   type DailyActivityCell,
 } from "@/lib/storage";
 import { usePreferences } from "@/lib/preferences";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 import { getNextBestStepRecommendation } from "./recommendation-engine";
-import { DashboardBento } from "./DashboardBento";
-import { ExamCalendarCard } from "./ExamCalendarCard";
-import { PracticeActivityGrid } from "./PracticeActivityGrid";
-import { DataStorageSection } from "./DataStorageSection";
 import { DashboardOnboardingView } from "./DashboardOnboardingView";
-import { SlidersHorizontal, Clock, BookOpen, Check } from "lucide-react";
-import { useSession } from "@/lib/auth/auth-client";
+import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
+import { daysUntilManila, formatManilaDate, getManilaTodayString, startOfWeekIso, addDaysIso } from "@/lib/study-plan";
+import { generateWeeklyPlan, weeklyPlanSignature } from "@/lib/study-plan-generator";
+import { useDailyQuests } from "./useDailyQuests";
+import { questSummaryLine } from "@/lib/daily-quests";
 
-function computeDaysRemaining(dateStr: string): number {
-  const parts = dateStr.split("-").map(Number);
-  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return 0;
-  const target = new Date(parts[0], parts[1] - 1, parts[2]);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.round((target.getTime() - today.getTime()) / 864e5));
+const TARGET_ACCURACY = 80;
+
+const TILE =
+  "rounded-3xl bg-white dark:bg-[#2b1620] shadow-[0_0_0_1.5px_rgba(138,22,48,0.12),0_18px_36px_-26px_rgba(90,15,35,0.4)] dark:shadow-[0_0_0_1.5px_rgba(255,255,255,0.1)] p-5";
+const LABEL = "block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a80] dark:text-[#a89ba1]";
+const LINK = "text-[13px] font-extrabold text-[#8a1630] dark:text-[#de5572] hover:underline inline-flex items-center gap-1";
+
+function sectionHeader(title: string, href: string, linkLabel: string) {
+  return (
+    <div className="flex items-center justify-between gap-3 mb-3">
+      <h2 className="font-display text-lg font-extrabold tracking-[-0.02em] text-[#1b1216] dark:text-[#f8ecee]">
+        {title}
+      </h2>
+      <Link href={href} className={LINK}>
+        {linkLabel}
+        <ArrowRight className="w-3.5 h-3.5" />
+      </Link>
+    </div>
+  );
 }
 
 export function DashboardView() {
-  const { data: session } = useSession();
-  const { preferences } = usePreferences();
+  const { preferences, mounted } = usePreferences();
   const { currentWorkspace, currentExamConfig, isLoaded } = useExamWorkspace();
 
   const [history, setHistory] = useState<AttemptSummary[]>([]);
-  const [mistakeCount, setMistakeCount] = useState(0);
-  const [dueMistakes, setDueMistakes] = useState<StoredMistakeItem[]>([]);
-  const [allMistakes, setAllMistakes] = useState<StoredMistakeItem[]>([]);
+  const [dueMistakes, setDueMistakes] = useState(0);
+  const [allMistakes, setAllMistakes] = useState(0);
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
-  const [subjectReadiness, setSubjectReadiness] = useState<SubjectReadinessMetric[]>([]);
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-
-  // Target Exam Countdown & Daily Goal State
-  const [targetConfig, setTargetConfig] = useState<TargetExamConfig>({
-    targetDate: "2027-03-14",
-    examName: "March 2027 CSE-PPT",
-    dailyGoal: 25,
-  });
+  const [subjects, setSubjects] = useState<SubjectReadinessMetric[]>([]);
   const [dailyAnswered, setDailyAnswered] = useState(0);
   const [weekCells, setWeekCells] = useState<DailyActivityCell[]>([]);
+  const [heatmapCells, setHeatmapCells] = useState<DailyActivityCell[]>([]);
 
-  const loadDashboardData = useCallback(() => {
-    const wsId = currentWorkspace?.id;
-    const savedHistory = LocalStorageService.getAttemptHistory(wsId);
-    setHistory(savedHistory);
-
-    const savedMistakes = LocalStorageService.getMistakeBank(wsId);
-    setMistakeCount(savedMistakes.length);
-    setAllMistakes(savedMistakes);
-    setDueMistakes(LocalStorageService.getDueMistakes(wsId));
-
-    const savedBookmarks = LocalStorageService.getBookmarks(wsId);
-    setBookmarkCount(savedBookmarks.length);
-
-    const streak = LocalStorageService.getStudyStreak();
-    setStreakDays(streak.currentStreak);
-
-    const readiness = LocalStorageService.getSubjectReadiness(wsId);
-    setSubjectReadiness(readiness);
-
-    const config = LocalStorageService.getTargetExamConfig(wsId);
-    setTargetConfig(config);
-    setDailyAnswered(LocalStorageService.getDailyQuestionsAnswered());
-    setWeekCells(LocalStorageService.getActivityGridData(1));
-  }, [currentWorkspace?.id]);
+  const wsId = currentWorkspace?.id;
 
   useEffect(() => {
-    loadDashboardData();
+    if (!isLoaded) return;
+    const load = () => {
+      setHistory(LocalStorageService.getAttemptHistory(wsId));
+      setAllMistakes(LocalStorageService.getMistakeBank(wsId).length);
+      setDueMistakes(LocalStorageService.getDueMistakes(wsId).length);
+      setBookmarkCount(LocalStorageService.getBookmarks(wsId).length);
+      setStreakDays(LocalStorageService.getStudyStreak().currentStreak);
+      setSubjects(LocalStorageService.getSubjectReadiness(wsId));
+      setDailyAnswered(LocalStorageService.getDailyQuestionsAnswered());
+      setWeekCells(LocalStorageService.getActivityGridData(1));
+      setHeatmapCells(LocalStorageService.getActivityGridData(12));
+    };
+    load();
 
-    // Re-sync dashboard state if user completes an exam or modifies data in another tab
-    const handleStorageChange = (e: StorageEvent) => {
-      if (
-        !e.key ||
-        e.key.startsWith("cse_guest_") ||
-        e.key.startsWith("attempt_") ||
-        e.key.startsWith("rt_ws_")
-      ) {
-        loadDashboardData();
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key || e.key.startsWith("cse_guest_") || e.key.startsWith("rt_ws_") || e.key.startsWith("attempt_")) {
+        load();
       }
     };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [wsId, isLoaded]);
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [loadDashboardData]);
+  const examDate = currentWorkspace?.targetExamDate || "2027-03-14";
+  const examName = currentWorkspace?.targetExamName || "March 2027 CSE-PPT";
+  const dailyGoal = currentWorkspace?.dailyGoal || preferences.study.dailyGoal || 25;
 
-  // If workspaces are loaded and no active workspace exists, render intentional onboarding state
+  const daysLeft = useMemo(() => daysUntilManila(examDate), [examDate]);
+
+  // Recommended next step (existing rule engine, memoized on real inputs)
+  const recommendation = useMemo(() => {
+    const measured = subjects.filter((s) => s.questionsAnswered > 0);
+    return getNextBestStepRecommendation(
+      history,
+      dueMistakes > 0
+        ? [{
+            id: "due-count-sentinel",
+            question: {} as never,
+            attemptId: "",
+            addedAt: "",
+            reviewCount: 0,
+          }]
+        : [],
+      [],
+      measured.map((s) => ({ name: s.subjectName, accuracy: s.accuracyPercentage })),
+      {
+        examShortName: currentExamConfig?.shortName || "Civil Service",
+        trackName: currentWorkspace?.trackName || "Standard",
+        quickDrillHref: currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick",
+        fullMockHref: currentExamConfig?.routes?.fullMockUrl || "/exams/professional/full",
+        practiceHref: currentExamConfig?.routes?.practiceUrl || "/practice",
+        fullMockItems: currentExamConfig?.mockSpecs?.itemCount || 170,
+        fullMockMinutes: currentExamConfig?.mockSpecs?.timeLimitMinutes || 190,
+        passingTarget: currentExamConfig?.mockSpecs?.passingScorePercentage || TARGET_ACCURACY,
+      }
+    );
+  }, [history, dueMistakes, subjects, currentExamConfig, currentWorkspace]);
+
+  // Aggregate stats, computed from real data only
+  const totalTests = history.length;
+  const avgAccuracy = totalTests > 0
+    ? Number((history.reduce((a, h) => a + h.percentage, 0) / totalTests).toFixed(1))
+    : null;
+  const itemsAnswered = history.reduce((a, h) => a + (h.totalQuestions || 10), 0);
+  const measuredSubjects = subjects.filter((s) => s.questionsAnswered > 0);
+  const weakest = measuredSubjects.length
+    ? measuredSubjects.reduce((m, s) => (s.accuracyPercentage < m.accuracyPercentage ? s : m))
+    : null;
+
+  // Weekly plan (this week glance) memoized on its signature
+  const today = getManilaTodayString();
+  const planSubjects = useMemo(
+    () =>
+      subjects.map((s) => ({
+        subjectId: s.subjectId,
+        subjectName: s.subjectName,
+        accuracy: s.accuracyPercentage,
+        questionsAnswered: s.questionsAnswered,
+      })),
+    [subjects]
+  );
+  const planSig = weeklyPlanSignature({
+    today,
+    examDate,
+    dailyGoal,
+    subjects: planSubjects,
+    dueReviewCount: dueMistakes,
+  });
+  const weeklyPlan = useMemo(
+    () =>
+      generateWeeklyPlan({
+        today,
+        examDate,
+        dailyGoal,
+        subjects: planSubjects,
+        dueReviewCount: dueMistakes,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [planSig]
+  );
+  const todayPlan = weeklyPlan.days.find((d) => d.state === "today");
+  const quests = useDailyQuests();
+
   if (isLoaded && !currentWorkspace) {
     return <DashboardOnboardingView />;
   }
 
-  // Weakest measured subject feeds the "Recommended next" tile
-  const measuredSubjects = subjectReadiness.filter((s) => s.questionsAnswered > 0);
-  const weakest =
-    measuredSubjects.length > 0
-      ? measuredSubjects.reduce((m, s) =>
-          s.accuracyPercentage < m.accuracyPercentage ? s : m
-        )
-      : null;
-
-  const examDateLabel = (() => {
-    const d = new Date(`${targetConfig.targetDate}T00:00:00`);
-    return Number.isNaN(d.getTime())
-      ? targetConfig.targetDate
-      : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-  })();
-
-  // Compute aggregate statistics truthfully (D01: No invented numbers!)
-  const totalTests = history.length;
-  const avgAccuracy =
-    totalTests > 0
-      ? Number((history.reduce((acc, h) => acc + h.percentage, 0) / totalTests).toFixed(1))
-      : null;
-
-  const passedTests = history.filter((h) => h.passed).length;
-  const estimatedQuestionsAnswered =
-    totalTests > 0
-      ? history.reduce((acc, h) => acc + (h.totalQuestions || 10), 0)
-      : 0;
-
-  const subtestAccuracies = subjectReadiness
-    .filter((s) => s.questionsAnswered > 0)
-    .map((s) => ({
-      name: s.subjectName,
-      accuracy: s.accuracyPercentage,
-    }));
-
-  const recommendation = getNextBestStepRecommendation(
-    history,
-    dueMistakes,
-    allMistakes,
-    subtestAccuracies,
-    {
-      examShortName: currentExamConfig?.shortName || "Civil Service",
-      trackName: currentWorkspace?.trackName || "Standard",
-      quickDrillHref: currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick",
-      fullMockHref: currentExamConfig?.routes?.fullMockUrl || "/exams/professional/full",
-      practiceHref: currentExamConfig?.routes?.practiceUrl || "/practice",
-      fullMockItems: currentExamConfig?.mockSpecs?.itemCount || 170,
-      fullMockMinutes: currentExamConfig?.mockSpecs?.timeLimitMinutes || 190,
-      passingTarget: currentExamConfig?.mockSpecs?.passingScorePercentage || 80,
-    }
-  );
-
-  const greetingName = session?.user?.name
-    ? `Welcome back, ${session.user.name}`
-    : "What will you improve today?";
-
-  const isCompact = preferences.dashboard.spacing === "compact";
-  const { showExamCalendar, showActivityCalendar, showStreakSummary, showSubjectProgress, showRecentSessions } =
-    preferences.dashboard;
-  const allOptionalHidden =
-    !showExamCalendar && !showActivityCalendar && !showStreakSummary && !showSubjectProgress && !showRecentSessions;
-
-  const badgeExamTitle = currentExamConfig?.fullName || currentExamConfig?.shortName || currentWorkspace?.examId?.toUpperCase() || "Current examination";
-  const badgeTrackTitle = currentWorkspace?.trackName || "Standard";
-
-  const ghostBtn =
-    "inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-[13px] text-[#1b1216] dark:text-[#f5eff1] shadow-[inset_0_0_0_1.5px_rgba(27,18,22,0.24)] dark:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.28)] hover:bg-[rgba(27,18,22,0.05)] dark:hover:bg-white/10 transition-colors";
-  const primaryBtn =
-    "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8a1630] hover:bg-[#701126] text-white text-[13px] font-extrabold shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 transition-all";
+  const goalPct = dailyGoal > 0 ? Math.min(1, dailyAnswered / dailyGoal) : 0;
+  const ringCirc = 2 * Math.PI * 34;
+  const greeting = mounted
+    ? `Welcome back`
+    : "Your study command center";
+  const weekDates = weekCells[weekCells.length - 1];
 
   return (
-    <div className={`animate-page-enter ${isCompact ? "py-4 px-4 sm:px-6 lg:px-8" : "py-7 px-4 sm:px-6 lg:px-8"}`}>
-      <div className={`max-w-7xl mx-auto ${isCompact ? "space-y-4" : "space-y-6"}`}>
-        {/* Top Header: Greeting, Exam Context, and Quick Launch */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <span className="inline-block px-3 py-1 rounded-full bg-[#fbeff0] dark:bg-[#351a22] text-[#8a1630] dark:text-[#fad1da] text-xs font-extrabold">
-              {badgeExamTitle} &bull; {badgeTrackTitle}
+    <div className="animate-page-enter space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <span className="inline-block px-3 py-1 rounded-full bg-[#fbeff0] dark:bg-[#351a22] text-[#8a1630] dark:text-[#fad1da] text-xs font-extrabold">
+            {currentExamConfig?.shortName || "CSE"} · {currentWorkspace?.trackName || "Professional"}
+          </span>
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-[-0.03em] text-[#1b1216] dark:text-[#f5eff1] mt-2">
+            {greeting}
+          </h1>
+          <p className="text-[#5a4a50] dark:text-[#a89ba1] text-sm mt-1">
+            Here is what to do today.
+          </p>
+        </div>
+      </div>
+
+      {/* Countdown hero */}
+      <section
+        aria-label="Exam countdown"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2c0b14] to-[#1c060c] text-white p-6 sm:p-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-6 relative">
+          <div className="flex items-start gap-5">
+            <b className="font-display font-extrabold tracking-[-0.06em] leading-[0.85] text-[clamp(84px,12vw,150px)]">
+              {daysLeft ?? 0}
+            </b>
+            <span className="w-14 shrink-0 hidden sm:block mt-2" aria-hidden="true">
+              <ReviewTayoOwl size={56} withCap bob />
             </span>
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-[-0.03em] text-[#1b1216] dark:text-[#f5eff1] mt-2.5">
-              {greetingName}
-            </h1>
-            <p className="text-[#5a4a50] dark:text-[#a89ba1] text-sm mt-1">
-              Personalized daily study pacing and practice accuracy based on your sessions.
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-[-0.02em]">
+              days until {examName}
+            </h2>
+            <p className="text-[#ecc9d0] text-sm mt-1">
+              {daysLeft !== null ? formatManilaDate(examDate) : "Set your exam date in Settings"}
             </p>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/settings/dashboard"
-              className={ghostBtn}
-              title="Customize dashboard layout"
-            >
-              <SlidersHorizontal className="w-4 h-4 opacity-60" />
-              <span className="hidden sm:inline">Customize View</span>
-            </Link>
-
-            {currentExamConfig?.capabilities?.hasQuickDrill && currentExamConfig.routes?.quickDrillUrl ? (
-              <Link
-                href={currentExamConfig.routes.quickDrillUrl}
-                prefetch={true}
-                className={primaryBtn}
-              >
-                <Clock className="w-4 h-4" />
-                <span>Start Quick Drill</span>
-              </Link>
-            ) : (
-              <Link
-                href={currentExamConfig?.routes?.practiceUrl || "/practice"}
-                prefetch={true}
-                className={primaryBtn}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Practice Drills</span>
-              </Link>
+            {daysLeft !== null && daysLeft > 0 && (
+              <p className="text-[#ecc9d0] text-[13px] mt-3 max-w-[46ch]">
+                At {dailyGoal} items a day, you would answer about{" "}
+                {(daysLeft * dailyGoal).toLocaleString("en-US")} items by exam day.
+              </p>
             )}
+            <div className="flex flex-wrap gap-2.5 mt-4">
+              {todayPlan?.href && (
+                <Link
+                  href={todayPlan.href}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#f6b93b] text-[#2a0a12] text-sm font-extrabold shadow-[0_10px_24px_-12px_rgba(246,185,59,0.8)] hover:-translate-y-0.5 transition-transform"
+                >
+                  Start today: {todayPlan.focus}
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
+              <Link
+                href="/dashboard/plan"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-bold shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.4)] hover:bg-white/10 transition-colors"
+              >
+                <CalendarDays className="w-4 h-4" />
+                See your study plan
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* KPI tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className={`${TILE} min-h-[150px] flex flex-col justify-between`}>
+          <span className={LABEL}>Practice accuracy</span>
+          <div>
+            <b className="block font-display text-4xl font-extrabold tracking-[-0.04em] text-[#8a1630] dark:text-[#de5572]">
+              {avgAccuracy !== null ? `${avgAccuracy}%` : "—"}
+            </b>
+            <div className="h-2 rounded-full bg-[#f4e7e9] dark:bg-white/10 mt-2 overflow-hidden">
+              {avgAccuracy !== null && avgAccuracy >= 1 && (
+                <i
+                  className="block h-full rounded-full bg-[#8a1630] dark:bg-[#de5572] transition-[width] duration-700"
+                  style={{ width: `${avgAccuracy}%` }}
+                />
+              )}
+            </div>
+            <small className="block text-xs font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-1.5">
+              {avgAccuracy !== null ? `Target ${TARGET_ACCURACY}%` : "Take a diagnostic first"}
+            </small>
           </div>
         </div>
 
-        {/* Feedback Alert */}
-        {feedbackMessage && (
-          <div
-            role="alert"
-            className="p-3.5 rounded-2xl bg-[#e9f8ef] border border-[#12a150]/30 text-[#0e5c2f] dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs animate-fade-in"
-          >
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-[#12a150] dark:text-emerald-400" />
-              <span>{feedbackMessage}</span>
+        <div className="rounded-3xl bg-[#f6b93b] text-[#2a0a12] p-5 min-h-[150px] flex flex-col justify-between">
+          <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#6b4300]">
+            Study streak
+          </span>
+          <div>
+            <b className="block font-display text-3xl font-extrabold tracking-[-0.03em]">
+              {streakDays} {streakDays === 1 ? "day" : "days"}
+            </b>
+            <div className="flex gap-1.5 mt-2" aria-hidden="true">
+              {weekCells.map((c) => (
+                <i
+                  key={c.date}
+                  title={c.formattedDate}
+                  className={`w-4 h-4 rounded-full ${
+                    c.questionCount > 0 || c.hasCheckIn ? "bg-[#2a0a12]" : "bg-black/15"
+                  } ${c.isToday ? "ring-2 ring-[#2a0a12] ring-offset-2 ring-offset-[#f6b93b]" : ""}`}
+                />
+              ))}
             </div>
-            <button
-              onClick={() => setFeedbackMessage(null)}
-              className="text-xs text-[#0e7d3d] dark:text-emerald-300 font-extrabold px-1 hover:opacity-70"
-            >
-              ✕
-            </button>
           </div>
-        )}
+        </div>
 
-        {/* All Optional Sections Hidden Banner */}
-        {allOptionalHidden && (
-          <div className="p-3.5 rounded-2xl bg-[#fbeff0] border border-[#8a1630]/20 text-[#6b1226] dark:bg-brand-950/30 dark:border-brand-800 dark:text-brand-200 text-xs font-semibold flex items-center justify-between gap-3">
-            <span>Optional sections are hidden. Your daily study action and progress recording remain active.</span>
-            <Link href="/settings/dashboard" className="font-extrabold underline shrink-0 hover:opacity-80">
-              Restore sections in Settings &rarr;
-            </Link>
-          </div>
-        )}
-
-        {/* Bento workspace grid */}
-        <DashboardBento
-          recommendation={recommendation}
-          mistakeCount={mistakeCount}
-          dueMistakeCount={dueMistakes.length}
-          bookmarkCount={bookmarkCount}
-          dailyAnswered={dailyAnswered}
-          dailyGoal={targetConfig.dailyGoal || 25}
-          daysRemaining={computeDaysRemaining(targetConfig.targetDate)}
-          examName={targetConfig.examName}
-          examDateLabel={examDateLabel}
-          streakDays={streakDays}
-          weekCells={weekCells}
-          avgAccuracy={avgAccuracy}
-          totalTests={totalTests}
-          passedTests={passedTests}
-          itemsAnswered={estimatedQuestionsAnswered}
-          subjects={subjectReadiness}
-          history={history}
-          weakest={
-            weakest
-              ? { name: weakest.subjectName, accuracy: weakest.accuracyPercentage }
-              : null
-          }
-          practiceHref={currentExamConfig?.routes?.practiceUrl || "/practice"}
-          diagnosticHref={currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick"}
-          showExamTile={showExamCalendar}
-          showStreakTile={showStreakSummary}
-          showSubjectTile={showSubjectProgress}
-          showSessionsTile={showRecentSessions}
-        />
-
-        {/* Below the bento: consistency tracker + exam details, then data controls */}
-        <div
-          className={`grid grid-cols-1 ${
-            showActivityCalendar && showExamCalendar ? "lg:grid-cols-2" : ""
-          } ${isCompact ? "gap-4" : "gap-6"} items-start`}
-        >
-          {showActivityCalendar && <PracticeActivityGrid streakDays={streakDays} />}
-
-          {showExamCalendar && (
-            <div id="exam-details" className="min-w-0">
-              <ExamCalendarCard
-                config={targetConfig}
-                dailyAnswered={dailyAnswered}
-                examId={currentWorkspace?.examId}
-                examShortName={currentExamConfig?.shortName}
-                trackName={currentWorkspace?.trackName}
-                workspaceId={currentWorkspace?.id}
-                onConfigChange={(newConfig) => {
-                  setTargetConfig(newConfig);
-                  setFeedbackMessage("Target exam date & daily pacing goal updated!");
-                  setTimeout(() => setFeedbackMessage(null), 4000);
-                }}
+        <div className={`${TILE} min-h-[150px] flex flex-col justify-between`}>
+          <span className={LABEL}>Daily goal</span>
+          <div className="flex items-center gap-3">
+            <svg viewBox="0 0 84 84" className="w-[84px] flex-none" aria-hidden="true">
+              <circle cx="42" cy="42" r="34" fill="none" stroke="#f3dfe3" strokeWidth="9" className="dark:opacity-20" />
+              <circle
+                cx="42"
+                cy="42"
+                r="34"
+                fill="none"
+                stroke={goalPct >= 1 ? "#12a150" : "#8a1630"}
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={`${(goalPct * ringCirc).toFixed(1)} ${ringCirc.toFixed(1)}`}
+                transform="rotate(-90 42 42)"
+                className="transition-all duration-700"
               />
+            </svg>
+            <div>
+              <b className="block font-display text-2xl font-extrabold text-[#8a1630] dark:text-[#de5572] tabular-nums">
+                {dailyAnswered}/{dailyGoal}
+              </b>
+              <small className="text-xs font-semibold text-[#8a7a80] dark:text-[#a89ba1]">
+                {goalPct >= 1 ? "Goal met!" : `${Math.max(0, dailyGoal - dailyAnswered)} to go`}
+              </small>
             </div>
-          )}
+          </div>
         </div>
 
-        {showExamCalendar && (
-          <DataStorageSection
-            onDataChanged={loadDashboardData}
-            onShowMessage={(msg) => {
-              setFeedbackMessage(msg);
-              setTimeout(() => setFeedbackMessage(null), 4000);
-            }}
-          />
-        )}
+        <div className={`${TILE} min-h-[150px] flex flex-col justify-between`}>
+          <span className={LABEL}>Items answered</span>
+          <div>
+            <b className="block font-display text-4xl font-extrabold tracking-[-0.04em]">
+              {itemsAnswered}
+            </b>
+            <small className="block text-xs font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-1">
+              across {totalTests} {totalTests === 1 ? "test" : "tests"}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily quests (shared engine with the Study plan's today card) */}
+      {quests.length > 0 && (
+        <section className={TILE} aria-label="Daily quests">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="font-display text-lg font-extrabold tracking-[-0.02em] text-[#1b1216] dark:text-[#f8ecee]">
+              Today&apos;s quests
+            </h2>
+            <span className="text-[12.5px] font-bold text-[#8a7a80] dark:text-[#a89ba1] tabular-nums">
+              {questSummaryLine(quests, dailyAnswered, dailyGoal)}
+            </span>
+          </div>
+          <ul className="grid gap-2.5">
+            {quests.map((q) => (
+              <li key={q.id}>
+                <Link
+                  href={q.href}
+                  className={`group flex items-center gap-3.5 rounded-2xl p-3.5 transition-shadow ${
+                    q.done
+                      ? "bg-[#e4f7ec] dark:bg-[#133a22]/60 shadow-[inset_0_0_0_1px_rgba(18,161,80,0.35)]"
+                      : "bg-[#fdf8f6] dark:bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(138,22,48,0.10)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)] hover:shadow-[inset_0_0_0_1.5px_rgba(138,22,48,0.4)] dark:hover:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.28)]"
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`w-6 h-6 shrink-0 rounded-full grid place-items-center ${
+                      q.done ? "bg-[#12a150] text-white" : "bg-[#f4e7e9] dark:bg-white/10"
+                    }`}
+                  >
+                    {q.done ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <i className="w-2 h-2 rounded-full bg-[#8a1630] dark:bg-[#de5572]" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <b className="block text-[14.5px] font-bold leading-snug text-[#1b1216] dark:text-[#f8ecee]">
+                      {q.title}
+                    </b>
+                    <small className="block text-[12.5px] font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-0.5">
+                      {q.detail}
+                    </small>
+                  </span>
+                  <span className="shrink-0 text-[12.5px] font-extrabold tabular-nums text-[#8a1630] dark:text-[#de5572]">
+                    {q.kind === "score" && q.done ? "Done" : `${Math.min(q.progress, q.target)}/${q.target}`}
+                  </span>
+                </Link>
+              </li>
+            ))
+            }
+          </ul>
+        </section>
+      )}
+
+      {/* Middle: subjects + action rail */}
+      <div className="grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4 items-start">
+        {/* Subject progress */}
+        <section className={TILE} aria-label="Subject progress">
+          {sectionHeader("Your subject progress", currentExamConfig?.routes?.practiceUrl || "/practice", "All topics")}
+          <p className="text-xs font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-[-6px] mb-3">
+            Accuracy from your sessions. Target {TARGET_ACCURACY}%.
+          </p>
+          {subjects.length === 0 ? (
+            <p className="text-sm font-semibold text-[#8a7a80] dark:text-[#a89ba1] py-4">
+              No subjects configured yet.
+            </p>
+          ) : (
+            subjects.map((s) => {
+              const isWeakest = weakest?.subjectId === s.subjectId && s.questionsAnswered > 0;
+              return (
+                <div
+                  key={s.subjectId}
+                  className="grid grid-cols-[minmax(0,1fr)_44px] sm:grid-cols-[150px_minmax(0,1fr)_44px] gap-x-3 gap-y-1 items-center py-2"
+                >
+                  <span className="text-[13px] font-bold truncate">{s.subjectName}</span>
+                  <div className="relative h-3 rounded-full bg-[#f4e7e9] dark:bg-white/10 col-span-2 sm:col-span-1">
+                    <i
+                      className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700"
+                      style={{
+                        width: `${s.accuracyPercentage}%`,
+                        backgroundColor: isWeakest ? "#f6b93b" : "#8a1630",
+                      }}
+                    />
+                    <u
+                      className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-[#1b1216] dark:bg-white opacity-35"
+                      style={{ left: `${TARGET_ACCURACY}%` }}
+                      title={`Target ${TARGET_ACCURACY}%`}
+                    />
+                  </div>
+                  <b className="text-xs font-extrabold tabular-nums text-right">
+                    {s.questionsAnswered > 0 ? `${s.accuracyPercentage}%` : "—"}
+                  </b>
+                </div>
+              );
+            })
+          )}
+          <div className="flex gap-4 text-[12px] font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-2">
+            <span className="inline-flex items-center gap-1.5">
+              <i className="inline-block w-2.5 h-2.5 rounded-sm bg-[#f6b93b]" /> Weakest
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <i className="inline-block w-0.5 h-2.5 bg-[#1b1216] dark:bg-white opacity-40" /> Target {TARGET_ACCURACY}%
+            </span>
+          </div>
+        </section>
+
+        {/* Action rail: recommended next + due reviews */}
+        <div className="grid gap-4">
+          <section className={TILE} aria-label="Recommended next">
+            <span className="inline-block px-2.5 py-1 rounded-full bg-[#fdeec6] text-[#6b4300] text-[11px] font-extrabold">
+              Recommended next · {recommendation.tag}
+            </span>
+            <h3 className="font-display text-2xl font-extrabold tracking-[-0.02em] mt-2.5 text-[#1b1216] dark:text-[#f8ecee]">
+              {recommendation.title}
+            </h3>
+            <p className="text-[13px] font-semibold text-[#5a4a50] dark:text-[#c9b3b9] mt-1">
+              {recommendation.description}
+            </p>
+            <Link
+              href={recommendation.actionHref}
+              className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8a1630] text-white text-sm font-extrabold shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 transition-transform"
+            >
+              {recommendation.actionLabel}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </section>
+
+          <section className={TILE} aria-label="Due reviews">
+            <span className="inline-block px-2.5 py-1 rounded-full bg-[#fbeff0] dark:bg-[#351a22] text-[#8a1630] dark:text-[#fad1da] text-[11px] font-extrabold">
+              For today
+            </span>
+            <h3 className="font-display text-2xl font-extrabold tracking-[-0.02em] mt-2.5 text-[#1b1216] dark:text-[#f8ecee]">
+              {dueMistakes} {dueMistakes === 1 ? "question" : "questions"} to review
+            </h3>
+            <p className="text-[13px] font-semibold text-[#5a4a50] dark:text-[#c9b3b9] mt-1">
+              Spaced review brings back what you missed just before you forget it. {bookmarkCount}{" "}
+              {bookmarkCount === 1 ? "bookmark" : "bookmarks"} saved.
+            </p>
+            <Link
+              href="/dashboard/review"
+              className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8a1630] text-white text-sm font-extrabold shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] hover:-translate-y-0.5 transition-transform"
+            >
+              Review {dueMistakes} {dueMistakes === 1 ? "question" : "questions"}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </section>
+        </div>
+      </div>
+
+      {/* Bottom: consistency + recent sessions */}
+      <div className="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-4 items-start">
+        <section className={TILE} aria-label="Consistency">
+          {sectionHeader("Consistency", "/dashboard/history", "Details")}
+          <p className="text-xs font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-[-6px] mb-3">
+            {weekCells.filter((c) => c.questionCount > 0 || c.hasCheckIn).length} active{" "}
+            {weekCells.filter((c) => c.questionCount > 0 || c.hasCheckIn).length === 1 ? "day" : "days"} this week ·
+            Longest streak {LocalStorageService.getStudyStreak().longestStreak}{" "}
+            {LocalStorageService.getStudyStreak().longestStreak === 1 ? "day" : "days"}
+          </p>
+          <div
+            className="grid grid-flow-col grid-rows-7 gap-[5px] overflow-x-auto pb-1"
+            role="img"
+            aria-label="Study activity, last 12 weeks"
+          >
+            {heatmapCells.map((c) => {
+              const future = c.isFuture;
+              const cls =
+                c.activityLevel === 3
+                  ? "bg-[#34c98a]"
+                  : c.activityLevel === 2
+                  ? "bg-[#34c98a]/70"
+                  : c.activityLevel === 1
+                  ? "bg-[#34c98a]/40"
+                  : c.hasCheckIn
+                  ? "bg-[#fde3e6] dark:bg-[#4a1a27]"
+                  : "bg-[#f4e7e9] dark:bg-white/10";
+              return (
+                <i
+                  key={c.date}
+                  title={`${c.formattedDate}: ${
+                    c.questionCount > 0
+                      ? `${c.questionCount} questions`
+                      : c.hasCheckIn
+                      ? "check-in only"
+                      : "no activity"
+                  }`}
+                  className={`w-3.5 h-3.5 rounded-[4px] ${cls} ${
+                    c.isToday ? "ring-2 ring-[#1b1216] dark:ring-white" : ""
+                  } ${future ? "opacity-35" : ""}`}
+                />
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap gap-4 text-[12px] font-semibold text-[#8a7a80] dark:text-[#a89ba1] mt-3">
+            <span className="inline-flex items-center gap-1.5">
+              <i className="inline-block w-3 h-3 rounded-sm bg-[#f4e7e9] dark:bg-white/10" /> No activity
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <i className="inline-block w-3 h-3 rounded-sm bg-[#fde3e6] dark:bg-[#4a1a27]" /> Check-in only
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <i className="inline-block w-3 h-3 rounded-sm bg-[#34c98a]" /> Answered questions
+            </span>
+          </div>
+          <p className="text-[12px] text-[#8a7a80] dark:text-[#a89ba1] mt-3 pt-3 border-t border-[#f3e6e9] dark:border-white/10">
+            Answer at least 1 question a day to keep your streak. Opening the dashboard logs a check-in only.
+          </p>
+        </section>
+
+        <section className={TILE} aria-label="Recent sessions">
+          {sectionHeader("Recent sessions", "/dashboard/history", "View full history")}
+          {history.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-sm font-semibold text-[#8a7a80] dark:text-[#a89ba1]">
+                No sessions yet.
+              </p>
+              <Link
+                href={currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick"}
+                className={`${LINK} mt-2`}
+              >
+                Take your first 10-question diagnostic
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          ) : (
+            history.slice(0, 3).map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-2xl bg-[#fbeff0] dark:bg-[#351a22] px-3.5 py-3 mt-2"
+              >
+                <div className="flex-1 min-w-0">
+                  <b className="block text-[13px] leading-snug truncate text-[#1b1216] dark:text-[#f8ecee]">
+                    {item.title}
+                  </b>
+                  <small className="text-[12px] font-semibold text-[#8a7a80] dark:text-[#a89ba1]">
+                    {new Date(item.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}{" "}
+                    · <span className="capitalize">{item.mode}</span>
+                  </small>
+                </div>
+                <span
+                  className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-extrabold ${
+                    item.percentage >= TARGET_ACCURACY
+                      ? "bg-[#e4f7ec] text-[#0a6b35]"
+                      : "bg-[#fde3e6] text-[#9d1a33]"
+                  }`}
+                >
+                  {item.percentage}% · {item.percentage >= TARGET_ACCURACY ? "On target" : "Needs review"}
+                </span>
+                <Link
+                  href={`/results/${item.id}`}
+                  className="shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold text-[#8a1630] dark:text-[#de5572] bg-white dark:bg-white/10 hover:bg-[#f8edef] dark:hover:bg-white/20 transition-colors"
+                >
+                  Review
+                </Link>
+              </div>
+            ))
+          )}
+        </section>
       </div>
     </div>
   );
