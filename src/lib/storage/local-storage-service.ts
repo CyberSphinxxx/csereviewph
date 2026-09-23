@@ -13,6 +13,7 @@ import type {
 } from "./types";
 import { WORKSPACE_STORAGE_KEYS, type ExamWorkspace } from "@/lib/workspace/types";
 import { getExamSubjects } from "@/config/exams";
+import { NotesService, NOTES_STORAGE_KEY, type StoredNote } from "./notes-service";
 
 // Storage Key Constants
 export const STORAGE_KEYS = {
@@ -24,6 +25,7 @@ export const STORAGE_KEYS = {
   DRAFT_PREFIX: "cse_guest_draft_",
   TARGET_EXAM: "cse_guest_target_exam",
   DAILY_ACTIVITY_PREFIX: "cse_guest_daily_activity_",
+  SRS_CLEARED: "cse_guest_srs_last_cleared",
   LEGACY_HISTORY: "attempts_history",
   LEGACY_MISTAKES: "mistake_bank",
   LEGACY_BOOKMARKS: "bookmarked_question_ids",
@@ -209,9 +211,12 @@ export class LocalStorageService {
         const hasBookmarks = Boolean(window.localStorage.getItem(STORAGE_KEYS.BOOKMARKS));
         const hasTarget = Boolean(window.localStorage.getItem(STORAGE_KEYS.TARGET_EXAM));
         const hasStreak = Boolean(window.localStorage.getItem(STORAGE_KEYS.STREAK));
+        // Preferences alone do NOT justify provisioning: a visitor who only
+        // toggled a theme never chose an exam. Only real study history does.
+        // Prefs still inform the LEVEL below once provisioning is justified.
         const hasPrefs = Boolean(window.localStorage.getItem("csereviewph_user_preferences_v1"));
 
-        if (hasHistory || hasMistakes || hasBookmarks || hasTarget || hasStreak || hasPrefs) {
+        if (hasHistory || hasMistakes || hasBookmarks || hasTarget || hasStreak) {
           let targetDate = "2027-03-14";
           let examName = "March 2027 CSE-PPT";
           let dailyGoal = 25;
@@ -484,7 +489,11 @@ export class LocalStorageService {
     this.addDailyQuestionsAnswered(attempt.answers.length);
     this.recordDailyActivity();
 
-    // 5. Clean up active draft for this exam if one exists
+    // 5. If every mistake-bank item is now scheduled in the future, remember
+    //    today as the most recent "clean slate" date (Clean-slate badge).
+    this.markSrsDueCleared(workspaceId);
+
+    // 6. Clean up active draft for this exam if one exists
     const levelSlug = attempt.title.toLowerCase().includes("subprof")
       ? "subprofessional"
       : "professional";
@@ -793,6 +802,12 @@ export class LocalStorageService {
       return current;
     }
 
+    // Cheap guard: a day already marked as active never breaks an existing
+    // streak when a second workspace re-records the same day.
+    if ((current.activeDates || []).includes(today)) {
+      return current;
+    }
+
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(
@@ -826,6 +841,34 @@ export class LocalStorageService {
     const updated = current + count;
     safeSetItem(`${STORAGE_KEYS.DAILY_ACTIVITY_PREFIX}${date}`, updated);
     return updated;
+  }
+
+  /**
+   * Most recent YYYY-MM-DD (device timezone) on which the mistake bank had
+   * zero items due right after a completed session, or null when never.
+   */
+  public static getSrsLastClearedDate(): string | null {
+    return safeGetItem<string | null>(STORAGE_KEYS.SRS_CLEARED, null);
+  }
+
+  /**
+   * Records today as a clean-slate day, but only when the mistake bank has
+   * items and none are due anymore, so the marker always means "had reviews,
+   * cleared them all" and never fires for someone with an empty bank.
+   */
+  public static markSrsDueCleared(workspaceId?: string): void {
+    if (
+      this.getMistakeBank(workspaceId).length > 0 &&
+      this.getDueMistakes(workspaceId).length === 0
+    ) {
+      safeSetItem(STORAGE_KEYS.SRS_CLEARED, getTodayString());
+    }
+  }
+
+  /** True when the most recent clean-slate date is today. */
+  public static isSrsClearedToday(): boolean {
+    const last = this.getSrsLastClearedDate();
+    return last !== null && last === getTodayString();
   }
 
   public static getTargetExamConfig(workspaceId?: string): TargetExamConfig {
@@ -964,7 +1007,7 @@ export class LocalStorageService {
     const currentWorkspaceId = safeGetItem<string | null>(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, null);
 
     return {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       history,
       attempts,
@@ -974,6 +1017,7 @@ export class LocalStorageService {
       targetExam: this.getTargetExamConfig(),
       workspaces,
       currentWorkspaceId,
+      notes: NotesService.exportForBackup(),
     };
   }
 
@@ -1024,7 +1068,7 @@ export class LocalStorageService {
         return { success: false, error: "Backup file is invalid or exceeds 2MB limit." };
       }
       const parsed = JSON.parse(jsonString) as Partial<GuestBackupPayload>;
-      if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.history)) {
+      if (!parsed || (parsed.version !== 1 && parsed.version !== 2) || !Array.isArray(parsed.history)) {
         return { success: false, error: "Invalid backup format or unsupported version." };
       }
 
@@ -1089,6 +1133,11 @@ export class LocalStorageService {
         safeSetItem(STORAGE_KEYS.TARGET_EXAM, parsed.targetExam);
       }
 
+      // Version 2 payloads carry notes; v1 backups import without them.
+      if (parsed.version === 2 && parsed.notes !== undefined) {
+        NotesService.importFromBackup(parsed.notes);
+      }
+
       return { success: true };
     } catch (e) {
       return {
@@ -1110,11 +1159,12 @@ export class LocalStorageService {
             k.startsWith("attempt_") ||
             k.startsWith("rt_workspaces") ||
             k.startsWith("rt_current_workspace") ||
-            k.startsWith("rt_ws_") ||
-            k === "attempts_history" ||
-            k === "mistake_bank" ||
-            k === "bookmarked_question_ids" ||
-            k === "csereviewph_user_preferences_v1")
+          k.startsWith("rt_ws_") ||
+          k === NOTES_STORAGE_KEY ||
+          k === "attempts_history" ||
+          k === "mistake_bank" ||
+          k === "bookmarked_question_ids" ||
+          k === "csereviewph_user_preferences_v1")
         ) {
           toRemove.push(k);
         }
