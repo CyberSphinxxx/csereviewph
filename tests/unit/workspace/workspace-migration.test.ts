@@ -54,7 +54,43 @@ describe("Workspace Idempotent Migration", () => {
     expect(WorkspaceService.getCurrentWorkspace()?.id).toBe("workspace_cse");
   });
 
-  it("infers subprofessional level when user preferences specify subprofessional", () => {
+  it("does NOT provision from preferences alone (an exam must be chosen)", () => {
+    // A visitor who only ever touched Settings (theme, level, goal) never
+    // chose an exam through the picker. Default-valued prefs are
+    // indistinguishable from no choice, so prefs alone must not fabricate one.
+    window.localStorage.setItem(
+      "csereviewph_user_preferences_v1",
+      JSON.stringify({
+        version: 1,
+        study: {
+          levelId: "cse-professional",
+          dailyGoal: 40,
+        },
+      })
+    );
+
+    LocalStorageService.runMigration();
+
+    expect(WorkspaceService.getAllWorkspaces()).toEqual([]);
+    expect(WorkspaceService.getCurrentWorkspace()).toBeNull();
+  });
+
+  it("infers subprofessional level from prefs when real study history justifies provisioning", () => {
+    window.localStorage.setItem(
+      STORAGE_KEYS.HISTORY,
+      JSON.stringify([
+        {
+          id: "att-legacy-sub",
+          title: "Subprofessional Quick Drill",
+          mode: "quick",
+          percentage: 85,
+          rawScore: 8,
+          totalQuestions: 10,
+          passed: true,
+          date: "2026-09-10T12:00:00.000Z",
+        },
+      ])
+    );
     window.localStorage.setItem(
       "csereviewph_user_preferences_v1",
       JSON.stringify({
