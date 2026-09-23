@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 
-const ARTIFACT_DIR = "C:/Users/USER-PC/.gemini/antigravity-ide/brain/89e2bca2-0d67-42d2-9211-553ad3fc1846";
+const ARTIFACT_DIR = "test-results";
 
-test.describe("Peeking Owl Full-Body Visual Verification & Screenshot Captures", () => {
+test.describe.skip("Peeking Owl Full-Body Visual Verification & Screenshot Captures (Deprecated: Replaced by ReviewTayoOwl)", () => {
   test("captures desktop 1920, 1440, 1280, 1024 hidden, and mobile 390 hidden states", async ({ page }) => {
     // 1. Desktop 1920x1080 Light Theme
     await page.setViewportSize({ width: 1920, height: 1080 });

@@ -80,11 +80,11 @@ describe("GlobalHeader & ExamSubNav Two-Layer Navigation IA", () => {
     fireEvent.click(openMenuBtn);
 
     // Mobile drawer should be open with links
-    const mobileNav = screen.getByRole("navigation", { name: "Global mobile navigation" });
+    const mobileNav = screen.getByRole("navigation", { name: /Primary mobile/i });
     expect(mobileNav).toBeInTheDocument();
 
     // Press Escape to dismiss
     fireEvent.keyDown(window, { key: "Escape" });
-    expect(screen.queryByRole("navigation", { name: "Global mobile navigation" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /Primary mobile/i })).not.toBeInTheDocument();
   });
 });

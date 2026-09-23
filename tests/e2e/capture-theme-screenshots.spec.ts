@@ -1,8 +1,5 @@
 import { test, expect } from "@playwright/test";
 import * as fs from "fs";
-import * as path from "path";
-
-const ARTIFACTS_DIR = "C:/Users/USER-PC/.gemini/antigravity-ide/brain/6087c7b2-1d5e-431c-9a07-da74b49c6f9c";
 
 test.describe("Capture Theme & Reviewers Verification Screenshots", () => {
   test.beforeEach(async ({ context }) => {
@@ -20,7 +17,7 @@ test.describe("Capture Theme & Reviewers Verification Screenshots", () => {
     });
   });
 
-  test("captures visual evidence of landing CTAs, reviewers gradient, and dark red theme", async ({ page }) => {
+  test("captures visual evidence of landing CTAs, reviewers gradient, and dark red theme", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 800 });
 
     // 1. Landing Page Light Mode
@@ -28,7 +25,7 @@ test.describe("Capture Theme & Reviewers Verification Screenshots", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    const landingLightPath = path.join(ARTIFACTS_DIR, "landing-hero-light.png");
+    const landingLightPath = testInfo.outputPath("landing-hero-light.png");
     await page.screenshot({ path: landingLightPath, fullPage: false });
 
     // 2. Click "Choose an exam"
@@ -40,7 +37,7 @@ test.describe("Capture Theme & Reviewers Verification Screenshots", () => {
     await expect(page.getByRole("heading", { level: 1, name: /What are you aiming for\?/i })).toBeVisible();
 
     // 3. Reviewers Page Light Mode (with warm blush/pink gradient)
-    const reviewersLightPath = path.join(ARTIFACTS_DIR, "reviewers-gradient-light.png");
+    const reviewersLightPath = testInfo.outputPath("reviewers-gradient-light.png");
     await page.screenshot({ path: reviewersLightPath, fullPage: false });
 
     // 4. Activate Dark Mode on Reviewers Page
@@ -49,7 +46,7 @@ test.describe("Capture Theme & Reviewers Verification Screenshots", () => {
     });
     await page.waitForTimeout(300);
 
-    const reviewersDarkPath = path.join(ARTIFACTS_DIR, "reviewers-dark-red.png");
+    const reviewersDarkPath = testInfo.outputPath("reviewers-dark-red.png");
     await page.screenshot({ path: reviewersDarkPath, fullPage: false });
 
     // 5. Navigate back to Landing Page in Dark Mode
@@ -61,7 +58,7 @@ test.describe("Capture Theme & Reviewers Verification Screenshots", () => {
     });
     await page.waitForTimeout(300);
 
-    const landingDarkPath = path.join(ARTIFACTS_DIR, "landing-dark-red.png");
+    const landingDarkPath = testInfo.outputPath("landing-dark-red.png");
     await page.screenshot({ path: landingDarkPath, fullPage: false });
 
     expect(fs.existsSync(landingLightPath)).toBe(true);

@@ -2,25 +2,21 @@
 
 Full prior status is archived in `ARCHIVES/progress-history.md`.
 
-**Current status: EXAM GATING, DAILY QUESTIONS & README EXPANSION + ACTIONS TIMER FIX COMPLETE (CODE 0)**
+**Current status: PLAYWRIGHT E2E MOBILE NAV, PORTABLE CI SCREENSHOTS & POSTGRES HEALTH CHECK COMPLETE (VERIFY EXIT 0)**
 
 ## Done
 
-- **GitHub Actions Vitest Unhandled Error Fix**:
-  - Resolved `ReferenceError: window is not defined` originating from unhandled timers firing post-test teardown in `OwlFinderSection.tsx`.
-  - Added timer tracking via `useRef` and guaranteed unmount cleanup via `useEffect` in `OwlFinderSection`, `ExamsPageView`, `TryQuestionSection`, and `ExamChooserSection`.
-  - Added test-suite safety hook (`afterEach(() => vi.clearAllTimers())`) in `tests/unit/components/exams-page-view.test.tsx` to eliminate lingering Node timer event triggers.
-- **README.md Comprehensive Overhaul**:
-  - Restructured `README.md` into an authoritative, detailed guide covering project vision, civil service realism, and future licensure multi-exam expansion.
-  - Added **Documentation Map** linking to `PROGRESS.md`, `ARCHIVES/progress-history.md`, `AGENTS.md`, `SETUP_GUIDE.md`, `docs/product-plan.md`, `docs/product-plan-addendum.md`, and `docs/vercel-deployment.md`.
-  - Documented core feature suites: Exam Runner & continuous timer, Reviewers directory with Owl Goal Matcher, Study Resources hub, Learner Dashboard with Mistake Bank, PWA offline capabilities, and RA 10173 data privacy adherence.
-  - Detailed design system aesthetics: Velvet Maroon (`#8a1630`), Rose Blush gradient, Velvety Dark Red theme (`#1a0c11`), and pointer-tracking animated SVG owl mascot.
-  - Documented zero-branching engine architecture and real PostgreSQL integration testing using `@electric-sql/pglite` WASM.
-- **Exam Gating, Learn Scoping, Daily Quests & Render-Purity Fix (from remote)**:
-  - React setState-during-render fixed at root in `PreferencesService` (`getPreferences` is pure read; seeding moved to `ensureSeeded` on mount).
-  - Target exam summary is null when no workspace exists; shell gates all dashboard routes with `DashboardOnboardingView` when no exam is chosen.
-  - Exam switching is safe by construction: global notes, streak, and preferences preserved; history/mistakes/bookmarks isolated per workspace.
-  - Learn section scoped to active workspace exam; daily quests engine generates 1-3 quests per day based on weakest subjects and SRS reviews.
+- **Mobile Navigation Drawer Accessibility**:
+  - Fixed mobile drawer `<nav id="mobile-navigation" aria-label="Primary mobile">` in `src/components/layout/Header.tsx`, resolving the Playwright accessible name matching failure across all public routes.
+  - Aligned unit tests in `tests/unit/components/header-nav.test.tsx` to assert on `Primary mobile`.
+  - Fixed mobile 375px viewport horizontal overflow on `/guides` by adding `overflow-x-hidden` to `<main>`.
+- **Portable CI Screenshots in Playwright**:
+  - Replaced hardcoded Windows absolute paths (`C:/Users/USER-PC/...`) with Playwright's cross-platform `testInfo.outputPath(...)` in `tests/e2e/auth-modal.spec.ts` and `tests/e2e/capture-theme-screenshots.spec.ts`.
+  - Scoped the Sign In trigger locator in `auth-modal.spec.ts` to `header` to avoid strict-mode collision with the hero CTA button.
+  - Marked deprecated `tests/e2e/peeking-owl-visual.spec.ts` as skipped since `PeekingOwl.tsx` was replaced by `ReviewTayoOwl`.
+  - Updated route titles and H1 assertions in `tests/e2e/seo-browser-verification.spec.ts` to reflect the latest site headings.
+- **CI PostgreSQL Service Health Check**:
+  - Updated both PostgreSQL service container health checks in `.github/workflows/ci.yml` from `--health-cmd pg_isready` to `--health-cmd "pg_isready -U test -d test"`, eliminating `FATAL: role "root" does not exist` errors in CI.
 
 ## Verified
 
@@ -28,10 +24,11 @@ Full prior status is archived in `ARCHIVES/progress-history.md`.
   - TypeScript (`tsc --noEmit`): 0 errors
   - ESLint (`eslint .`): 0 errors
   - Architecture Guard: PASS (0 hardcoded exam engine branches)
-  - Vitest Unit & Integration Tests: All tests passing, 0 unhandled errors
-  - Next.js Production Build: Static pages and route handlers compiled successfully, 0 errors
-- Isolated Test Verification:
-  - `npx vitest run tests/unit/components/exams-page-view.test.tsx`: 10/10 passed with 0 unhandled exceptions
+  - Vitest Unit & Integration Tests: **76 files passed (472 tests, 100% pass, 0 unhandled errors)**
+  - Next.js Production Build: **91 static and dynamic pages generated successfully, 0 errors**
+- Playwright E2E Suites Verified:
+  - `npx playwright test tests/e2e/seo-browser-verification.spec.ts`: **31 passed (31 tests, 100% pass)**
+  - `npx playwright test tests/e2e/auth-modal.spec.ts`: **4 passed (4 tests, 100% pass)**
 
 ## Blocked
 

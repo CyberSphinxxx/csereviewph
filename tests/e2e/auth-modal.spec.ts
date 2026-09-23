@@ -1,13 +1,14 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
-  test("opens Sign In modal, verifies fields and toggles, switches to Create Account, and captures screenshots", async ({
-    page,
-  }) => {
+  test("opens Sign In modal, verifies fields and toggles, switches to Create Account, and captures screenshots", async (
+    { page },
+    testInfo
+  ) => {
     await page.goto("/");
 
     // Open Sign In modal from header
-    const signInBtn = page.getByRole("button", { name: "Sign In" });
+    const signInBtn = page.locator("header").getByRole("button", { name: "Sign In" });
     await expect(signInBtn).toBeVisible({ timeout: 15000 });
     await signInBtn.click();
 
@@ -29,9 +30,9 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await toggleBtn.click();
     await expect(passwordInput).toHaveAttribute("type", "text");
 
-    // Capture Sign In Modal screenshot
+    // Capture Sign In Modal screenshot to portable output path
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/auth_modal_signin.png",
+      path: testInfo.outputPath("auth_modal_signin.png"),
     });
 
     // Switch to Create Account mode
@@ -46,9 +47,9 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByText("Use at least 8 characters.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Create Account & Sync" })).toBeVisible();
 
-    // Capture Create Account Modal screenshot
+    // Capture Create Account Modal screenshot to portable output path
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/auth_modal_signup.png",
+      path: testInfo.outputPath("auth_modal_signup.png"),
     });
 
     // Verify closing modal via "Continue without an account"
@@ -56,7 +57,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(modal).not.toBeVisible();
   });
 
-  test("renders dedicated /sign-in page with 2-column layout on desktop", async ({ page }) => {
+  test("renders dedicated /sign-in page with 2-column layout on desktop", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/sign-in");
 
@@ -67,11 +68,11 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/dedicated_signin_desktop.png",
+      path: testInfo.outputPath("dedicated_signin_desktop.png"),
     });
   });
 
-  test("renders dedicated /create-account page with 2-column layout on desktop", async ({ page }) => {
+  test("renders dedicated /create-account page with 2-column layout on desktop", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/create-account");
 
@@ -80,11 +81,11 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByPlaceholder("Juan Dela Cruz")).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/dedicated_signup_desktop.png",
+      path: testInfo.outputPath("dedicated_signup_desktop.png"),
     });
   });
 
-  test("renders dedicated /forgot-password page", async ({ page }) => {
+  test("renders dedicated /forgot-password page", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/forgot-password");
 
@@ -92,7 +93,7 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(page.getByRole("button", { name: "Send Reset Link" })).toBeVisible();
 
     await page.screenshot({
-      path: "C:/Users/USER-PC/.gemini/antigravity-ide/brain/129befee-075d-452a-8d4f-10aaa2d2d61d/dedicated_forgot_password.png",
+      path: testInfo.outputPath("dedicated_forgot_password.png"),
     });
   });
 });

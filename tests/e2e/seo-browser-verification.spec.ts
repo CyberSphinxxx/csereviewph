@@ -19,21 +19,21 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
   const publicRoutes = [
     {
       path: "/",
-      expectedH1: "Choose the exam you’re preparing for.",
+      expectedH1: "Review smarter",
       expectedTitle: "Philippine Exam Reviewer & Mock Tests",
       canonical: "https://www.reviewtayo.online",
     },
     {
       path: "/reviewers",
-      expectedH1: "Philippine Examination Reviewers",
-      expectedTitle: "Philippine Exam Reviewers Directory | ReviewTayo",
+      expectedH1: "What are you aiming for?",
+      expectedTitle: "Philippine Exam Reviewers & Mock Tests | ReviewTayo",
       canonical: "https://www.reviewtayo.online/reviewers",
       hasBreadcrumbs: true,
     },
     {
       path: "/cse",
-      expectedH1: "Philippine Civil Service Exam",
-      expectedTitle: "Civil Service Exam Reviewer & Online Mock Tests | ReviewTayo",
+      expectedH1: "Pass the CSE on your first take.",
+      expectedTitle: "CSE Reviewer Philippines: Free Practice Tests and Mock Exams | ReviewTayo",
       canonical: "https://www.reviewtayo.online/cse",
     },
     {
@@ -77,8 +77,8 @@ test.describe("SEO Public Routes & Mobile Readiness Verification", () => {
     },
     {
       path: "/guides",
-      expectedH1: "Civil Service Subtest Study Guides",
-      expectedTitle: "Civil Service Exam Study Guides by Subtest | ReviewTayo",
+      expectedH1: "Every exam. Every guide.",
+      expectedTitle: "Study Guides & Reviewers for Philippine Exams | ReviewTayo",
       canonical: "https://www.reviewtayo.online/guides",
     },
     {

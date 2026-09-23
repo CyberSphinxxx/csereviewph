@@ -84,7 +84,7 @@ export default function StudyGuidesDirectoryPage() {
       />
       <Header />
 
-      <main id="main-content" className="flex-1 pb-16 sm:pb-20">
+      <main id="main-content" className="flex-1 pb-16 sm:pb-20 overflow-x-hidden">
         {/* Hero */}
         <section className="border-b border-[#8a1630]/10 dark:border-white/10 bg-gradient-to-b from-[#fbeff0]/70 to-transparent dark:from-[#3b1a25]/60">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-11 py-12 sm:py-16 text-center animate-page-enter">

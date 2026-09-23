@@ -123,7 +123,7 @@ export function Header() {
         <nav
           ref={drawerRef}
           id="mobile-navigation"
-          aria-label="Global mobile navigation"
+          aria-label="Primary mobile"
           className="md:hidden border-t border-[#8a1630]/15 dark:border-white/15 bg-white px-4 py-3 shadow-lg dark:bg-[#2b1620] animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="grid gap-1">
