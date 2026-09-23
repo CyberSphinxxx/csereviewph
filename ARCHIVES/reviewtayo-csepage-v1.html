@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ReviewTayo — /cse page redesign mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mr:#8a1630;--mr2:#a81b3b;--wine:#2a0a12;--blush:#fbeff0;--paper:#fdf8f6;--gold:#f6b93b;--ink:#1b1216;--ok:#12a150;--bad:#d1344b;
+  color-scheme:light;box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;background:var(--paper)}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;font-weight:800;letter-spacing:-.035em;line-height:.98;margin:0}
+p{margin:0}
+[hidden]{display:none!important}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 44px}
+section{position:relative}
+.kicker{font:800 12px Figtree,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mr2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:14px;border:0;font:700 16px Figtree,sans-serif;cursor:pointer;text-decoration:none;transition:transform .18s,box-shadow .18s,background .18s}
+.btn-p{background:var(--mr);color:#fff;box-shadow:0 10px 24px -10px rgba(138,22,48,.75)}
+.btn-p:hover{transform:translateY(-2px)}
+.btn-gold{background:var(--gold);color:#2a0a12;box-shadow:0 10px 26px -10px rgba(246,185,59,.7)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-g{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(27,18,22,.24)}
+.btn-dark{background:#221219;color:#fff}
+.btn-sm{padding:9px 14px;font-size:14px;border-radius:11px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;background:var(--blush);color:var(--mr);font-size:12px;font-weight:700}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px}
+
+/* ===== mock site chrome (header + level pill + subnav) ===== */
+.chrome{position:sticky;top:0;z-index:50;background:rgba(253,248,246,.86);backdrop-filter:blur(10px);border-bottom:1px solid rgba(138,22,48,.08)}
+.chrome .top{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:8px;font:400 22px Georgia,serif;color:var(--mr);text-decoration:none}
+.logo .ow{width:26px;border-radius:8px;background:#fff;padding:2px}
+.chrome nav.mainnav{display:flex;gap:20px;font-size:14px;font-weight:600;color:#4d3d43}
+.chrome .signin{border:1px solid rgba(0,0,0,.12);padding:7px 13px;border-radius:10px;font-size:13px;font-weight:600;background:#fff;color:var(--ink)}
+.subnav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid rgba(138,22,48,.07)}
+.lvl{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:11px;background:#fff;border:1.5px solid #efd5db;font:700 13px Figtree,sans-serif;color:var(--mr);cursor:pointer}
+.lvl b{font-weight:800}
+.lvl .car{width:14px;height:14px;transition:transform .2s}
+.lvl[aria-expanded=true] .car{transform:rotate(180deg)}
+.lvl-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:250px;background:#fff;border-radius:14px;box-shadow:0 18px 40px -18px rgba(60,10,25,.5),0 0 0 1.5px #efd5db;padding:6px;z-index:60;text-align:left}
+.lvl-menu button{display:flex;width:100%;align-items:center;gap:10px;padding:10px 12px;border:0;background:transparent;border-radius:10px;cursor:pointer;text-align:left}
+.lvl-menu button:hover{background:var(--blush)}
+.lvl-menu button[aria-checked=true]{background:var(--blush)}
+.lvl-menu .nm{font-weight:800;font-size:14px}
+.lvl-menu .ds{font-size:11.5px;color:#7a6a70}
+.lvl-menu .tick{margin-left:auto;color:var(--ok);font-weight:800}
+.links{display:flex;gap:4px}
+.links a{padding:8px 13px;border-radius:10px;font-size:13.5px;font-weight:700;color:#5a4a50;text-decoration:none}
+.links a.on{background:var(--blush);color:var(--mr)}
+@media (max-width:860px){.chrome nav.mainnav,.chrome .signin{display:none}.links{overflow-x:auto}}
+
+/* ===== concept framework ===== */
+.concept{min-height:calc(100vh - 110px)}
+.cbar{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:#221219;color:#fff;font-size:13.5px;font-weight:600}
+.cbar b{color:var(--gold)}
+
+/* ===== owl ===== */
+.owl{display:block;width:100%;height:auto;overflow:visible}
+.owl .eye{transform-box:fill-box;transform-origin:center;animation:blink 6s infinite}
+.owl .pupil{transition:transform .12s ease-out}
+.bob .owl{animation:bob 4.6s ease-in-out infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== A · command center ===== */
+.a-hero{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;padding:64px 0 72px}
+.a-hero h1{font-size:clamp(38px,5.4vw,72px)}
+.a-hero .accent{color:var(--mr)}
+.a-hero p.lede{font-size:19px;color:#5a4a50;margin:20px 0 26px;max-width:42ch}
+.a-trust{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:14px;font-weight:600;color:#4d3d43;margin-bottom:26px}
+.a-trust span{display:inline-flex;align-items:center;gap:6px}
+.a-trust svg{width:17px;height:17px;stroke:var(--ok);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.a-date{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;background:#fff;box-shadow:0 0 0 1.5px #efd5db;font-weight:700;font-size:14px;margin-bottom:22px}
+.a-date b{color:var(--mr)}
+.a-date .d{font-variant-numeric:tabular-nums;background:var(--blush);padding:2px 9px;border-radius:99px;color:var(--mr)}
+.a-cta{display:flex;gap:12px;flex-wrap:wrap}
+.a-panel{background:#fff;border-radius:26px;padding:22px;box-shadow:0 30px 60px -34px rgba(60,10,25,.5),0 0 0 1.5px #f3d9df;max-width:400px;margin:0 auto}
+.a-panel h3{font-size:21px;margin:4px 0 14px}
+.a-levels{display:grid;gap:10px;margin-bottom:16px}
+.a-levels button{display:flex;gap:12px;align-items:flex-start;width:100%;padding:14px 15px;border-radius:16px;border:2px solid #efe3e5;background:#fff;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+.a-levels button[aria-pressed=true]{border-color:var(--mr);background:var(--blush)}
+.a-levels .rd{width:20px;height:20px;border-radius:50%;border:2px solid #d8c7cd;margin-top:2px;flex:none;position:relative}
+.a-levels button[aria-pressed=true] .rd{border-color:var(--mr)}
+.a-levels button[aria-pressed=true] .rd::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--mr)}
+.a-levels b{font-size:15.5px}
+.a-levels small{display:block;font-size:12.5px;color:#7a6a70;margin-top:2px}
+.a-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:64px 0 72px}
+.a-step{background:#fff;border-radius:24px;padding:24px;box-shadow:0 0 0 1.5px #f6e9ec}
+.a-step .n{font:800 34px/1 "Bricolage Grotesque",sans-serif;color:var(--mr)}
+.a-step h3{font-size:20px;margin:10px 0 8px}
+.a-step p{font-size:14.5px;color:#5a4a50}
+.a-band{background:var(--wine);color:#fff;border-radius:30px;padding:44px;margin:0 0 80px}
+.a-band h2{font-size:clamp(28px,3.6vw,44px);max-width:20ch}
+.a-band p{color:#ecc9d0;margin:12px 0 0;max-width:52ch}
+.a-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:0 0 80px}
+.a-mode{background:#fff;border-radius:24px;padding:24px;box-shadow:0 0 0 1.5px #f6e9ec;display:flex;flex-direction:column;gap:10px}
+.a-mode.hot{background:var(--wine);color:#fff;box-shadow:none}
+.a-mode small{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--mr2)}
+.a-mode.hot small{color:var(--gold)}
+.a-mode h3{font-size:24px}
+.a-mode p{font-size:14px;color:#5a4a50;flex:1}
+.a-mode.hot p{color:#ecc9d0}
+.a-mode .meta{font-size:13px;font-weight:700;color:#8a7a80;display:flex;align-items:center;gap:6px}
+.a-mode .meta svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round}
+@media (max-width:900px){.a-hero{grid-template-columns:1fr;padding:44px 0}.a-steps,.a-modes{grid-template-columns:1fr}.a-band{padding:28px;margin-bottom:56px}}
+
+/* ===== B · choose your battle ===== */
+.b-hero{padding:56px 0 30px;text-align:center}
+.b-hero h1{font-size:clamp(40px,6vw,80px)}
+.b-hero .sub{font-size:19px;color:#5a4a50;margin:16px auto 34px;max-width:44ch}
+.b-cards{display:grid;grid-template-columns:1fr 1fr;gap:22px;text-align:left}
+.b-card{position:relative;border-radius:30px;padding:30px 28px 26px;color:#fff;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;cursor:pointer;border:0;text-align:left;font-family:inherit;display:block;width:100%}
+.b-card:hover{transform:translateY(-8px) rotate(-.6deg);box-shadow:0 34px 60px -30px rgba(60,10,25,.65)}
+.b-card.pro{background:linear-gradient(160deg,var(--mr),#5d0e22)}
+.b-card.sub{background:linear-gradient(160deg,#3c1020,var(--wine))}
+.b-card .tag{display:inline-block;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.16);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.b-card h2{font-size:clamp(26px,3vw,38px);margin:14px 0 8px}
+.b-card p{font-size:15px;color:#f3cbd3;max-width:40ch}
+.b-card .facts{display:flex;gap:8px 18px;flex-wrap:wrap;margin:18px 0 22px;font-size:13.5px;font-weight:700;color:#fff}
+.b-card .facts i{font-style:normal;background:rgba(255,255,255,.14);padding:5px 11px;border-radius:99px}
+.b-card .owlc{position:absolute;right:14px;bottom:0;width:170px;opacity:.96;pointer-events:none}
+.b-card .go{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#2a0a12;font-weight:800;padding:13px 20px;border-radius:14px}
+.b-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:56px 0 70px}
+.b-subtests{padding:0 0 80px}
+.b-subtests h2{font-size:clamp(30px,4vw,52px);margin-bottom:22px}
+.b-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.b-st{background:#fff;border-radius:20px;padding:20px;box-shadow:0 0 0 1.5px #f6e9ec}
+.b-st h3{font-size:19px}
+.b-st p{font-size:13.5px;color:#7a6a70;margin:6px 0 12px}
+.b-st .qs{font:800 13px Figtree,sans-serif;color:var(--mr)}
+@media (max-width:900px){.b-cards,.b-modes,.b-grid{grid-template-columns:1fr}.b-card .owlc{width:120px;opacity:.5}}
+
+/* ===== C · guided track ===== */
+.c-track{padding:52px 0 80px}
+.c-head{text-align:center;margin-bottom:36px}
+.c-head h1{font-size:clamp(36px,5vw,68px)}
+.c-head p{font-size:18px;color:#5a4a50;margin:14px auto 0;max-width:52ch}
+.c-steps{display:grid;gap:16px;max-width:880px;margin:0 auto}
+.c-step{display:grid;grid-template-columns:74px 1fr;gap:20px;background:#fff;border-radius:26px;padding:24px;box-shadow:0 0 0 1.5px #f6e9ec;align-items:start;transition:box-shadow .2s}
+.c-step.now{box-shadow:0 0 0 2.5px var(--mr),0 24px 44px -26px rgba(138,22,48,.45)}
+.c-step .badge{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font:800 22px "Bricolage Grotesque",sans-serif;background:var(--blush);color:var(--mr)}
+.c-step.now .badge{background:var(--mr);color:#fff}
+.c-step.done .badge{background:#e9f8ef;color:var(--ok)}
+.c-step h3{font-size:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.c-step h3 .st{font:800 11px Figtree,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:99px}
+.c-step.now .st{background:var(--gold);color:#2a0a12}
+.c-step.done .st{background:#e9f8ef;color:var(--ok)}
+.c-step p{font-size:15px;color:#5a4a50;margin-top:6px}
+.c-step .act{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.c-step .hint{font-size:13px;color:#8a7a80}
+.c-gate{display:inline-flex;align-items:center;gap:8px;background:var(--blush);color:var(--mr);padding:8px 13px;border-radius:12px;font-weight:700;font-size:13.5px}
+.c-flow{background:var(--wine);color:#fff;border-radius:30px;padding:40px;margin-top:44px}
+.c-flow h2{font-size:clamp(24px,3vw,38px)}
+.c-flow ol{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:10px;counter-reset:fl}
+.c-flow li{counter-increment:fl;display:flex;gap:12px;align-items:baseline;font-size:15px;color:#ecc9d0}
+.c-flow li::before{content:counter(fl);font:800 13px "Bricolage Grotesque",sans-serif;color:var(--gold);background:rgba(246,185,59,.14);padding:4px 10px;border-radius:9px}
+.c-flow b{color:#fff}
+@media (max-width:760px){.c-step{grid-template-columns:1fr}.c-flow{padding:26px}}
+
+/* ===== D · exam-day booth ===== */
+.d-hero{background:linear-gradient(180deg,#4a0f1f,#2a0a12);color:#fff;border-radius:34px;padding:64px 48px;margin:40px 0 26px;position:relative;overflow:hidden}
+.d-hero .spot{position:absolute;inset:0;background:radial-gradient(560px circle at 78% 30%,rgba(150,26,58,.55),transparent 60%);pointer-events:none}
+.d-hero h1{font-size:clamp(38px,5.6vw,76px);max-width:15ch;position:relative}
+.d-hero p{color:#ecc9d0;font-size:18px;margin:16px 0 28px;max-width:48ch;position:relative}
+.d-count{position:absolute;right:40px;bottom:26px;font:800 clamp(70px,10vw,150px)/0.9 "Bricolage Grotesque",sans-serif;letter-spacing:-.05em;color:transparent;-webkit-text-stroke:2px #fbeff0;opacity:.5}
+.d-moon{position:absolute;right:120px;top:50px;width:150px;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 34% 28%,#ffe28f,#f6b93b 58%,#d78d14);box-shadow:0 0 90px 18px rgba(246,185,59,.3);display:grid;place-items:end center;padding-bottom:8%}
+.d-moon .ow{width:60%}
+.d-tickets{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:80px}
+.d-tk{background:#fff;border-radius:22px;padding:22px;box-shadow:0 0 0 1.5px #f6e9ec;position:relative}
+.d-tk::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:5px;border-radius:0 6px 6px 0;background:var(--gold)}
+.d-tk h3{font-size:21px}
+.d-tk small{font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mr2)}
+.d-tk p{font-size:13.5px;color:#5a4a50;margin:8px 0 16px}
+@media (max-width:900px){.d-hero{padding:40px 24px;border-radius:24px}.d-moon{display:none}.d-count{position:static;display:block;margin-top:20px;opacity:.8}.d-tickets{grid-template-columns:1fr}}
+
+/* ===== E · bento hub ===== */
+.e-bento{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(120px,auto);gap:16px;padding:52px 0 80px}
+.e-tile{border-radius:26px;padding:24px;position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;background:#fff;box-shadow:0 0 0 1.5px #f6e9ec}
+.e-tile:hover{transform:translateY(-6px);box-shadow:0 26px 34px -24px rgba(60,10,25,.55)}
+.e-tile small{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.e-tile h3{font-size:23px;margin:6px 0 8px}
+.e-tile p{font-size:14px;color:#5a4a50}
+.t-lvl{grid-column:span 3;background:var(--mr);color:#fff}
+.t-lvl p{color:#f3cbd3}
+.t-lvl .sw{display:flex;gap:8px;margin-top:14px}
+.t-lvl .sw button{flex:1;padding:11px;border-radius:12px;border:0;background:rgba(255,255,255,.14);color:#fff;font:700 14px Figtree,sans-serif;cursor:pointer}
+.t-lvl .sw button[aria-pressed=true]{background:#fff;color:var(--mr)}
+.t-count{grid-column:span 3;background:var(--wine);color:#fff;display:flex;flex-direction:column;justify-content:center}
+.t-count b{font:800 clamp(44px,5vw,66px)/1 "Bricolage Grotesque",sans-serif;letter-spacing:-.04em}
+.t-count span{font-size:13px;color:#ecc9d0;font-weight:600}
+.t-quick{grid-column:span 2}
+.t-med{grid-column:span 2}
+.t-mock{grid-column:span 2;background:var(--gold)}
+.t-mock p{color:#6b4300}
+.t-sub{grid-column:span 4}
+.t-sub .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.t-sub .chips button{padding:9px 14px;border-radius:12px;border:1.5px solid #efd5db;background:#fff;font:700 13.5px Figtree,sans-serif;color:var(--mr);cursor:pointer}
+.t-sub .chips button:hover{background:var(--blush)}
+.t-guide{grid-column:span 2;display:flex;flex-direction:column}
+.t-guide .go{margin-top:auto;align-self:flex-start}
+.e-resume{margin-bottom:70px;background:linear-gradient(120deg,var(--blush),#fff);border:1.5px solid #f3d9df;border-radius:22px;padding:20px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.e-resume b{font-size:15px}
+.e-resume p{font-size:13.5px;color:#7a6a70}
+.e-resume .btn{margin-left:auto}
+@media (max-width:900px){.e-bento{grid-template-columns:repeat(2,1fr)}.t-lvl,.t-count,.t-quick,.t-med,.t-mock,.t-sub,.t-guide{grid-column:span 2}.e-resume .btn{margin-left:0}}
+
+/* ===== shared flow section ===== */
+.flow{padding:70px 0 90px}
+.flow h2{font-size:clamp(30px,4vw,52px);margin-bottom:14px}
+.flow>p{font-size:17px;color:#5a4a50;max-width:70ch;margin-bottom:30px}
+.f-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.f-box{background:#fff;border-radius:18px;padding:18px;box-shadow:0 0 0 1.5px #f6e9ec}
+.f-box b{display:flex;align-items:center;gap:8px;font-size:15px}
+.f-box b i{font-style:normal;width:24px;height:24px;border-radius:8px;background:var(--mr);color:#fff;display:grid;place-items:center;font-size:12px}
+.f-box p{font-size:13px;color:#5a4a50;margin-top:8px}
+@media (max-width:900px){.f-row{grid-template-columns:1fr 1fr}}
+
+/* ===== notes + switcher ===== */
+.note{display:none;position:absolute;left:18px;top:14px;z-index:40;max-width:min(430px,calc(100% - 36px));background:#1b1216;color:#fff;font:600 13px/1.35 Figtree,sans-serif;padding:8px 13px;border-radius:12px;box-shadow:0 8px 20px -8px rgba(0,0,0,.4)}
+.note b{color:var(--gold)}
+body.notes .note{display:block}
+.notes-btn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:80;border:0;border-radius:14px;padding:0 16px;min-height:44px;background:#1b1216;color:#fff;font:700 14px Figtree,sans-serif;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
+.notes-btn[aria-pressed=true]{background:var(--gold);color:#2a0a12}
+.sw-btn{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:80;display:flex;gap:6px;background:#1b1216;padding:7px;border-radius:16px;box-shadow:0 12px 30px -12px rgba(0,0,0,.6)}
+.sw-btn button{border:0;background:transparent;color:#cbb6bd;font:700 13px Figtree,sans-serif;padding:8px 13px;border-radius:11px;cursor:pointer;display:flex;align-items:center;gap:7px}
+.sw-btn button span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.12);font-size:11.5px}
+.sw-btn button[aria-pressed=true]{background:var(--mr);color:#fff}
+@media (max-width:760px){.wrap{padding:0 20px}.sw-btn button span{display:none}}
+</style>
+</head>
+<body>
+
+<!-- mock site chrome shared across concepts; the LEVEL PILL is the flow core -->
+<div class="chrome">
+  <div class="wrap top">
+    <a class="logo" href="#"><span class="ow" data-owl data-cap></span>reviewtayo</a>
+    <nav class="mainnav"><span>Exams</span><span>Study resources</span><span>My dashboard</span></nav>
+    <span class="signin">Sign in</span>
+  </div>
+  <div class="wrap subnav">
+    <div style="position:relative">
+      <button class="lvl" id="lvlbtn" aria-expanded="false" aria-haspopup="listbox">
+        <span class="dot"></span><span>CSE</span><b id="lvllabel">Professional</b>
+        <svg class="car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="lvl-menu" id="lvlmenu" role="listbox" hidden>
+        <button role="option" data-level="professional" aria-checked="true"><span><span class="nm">Professional</span><br><span class="ds">2nd-level eligibility &middot; 170 items &middot; includes Analytical</span></span><span class="tick" hidden>&#10003;</span></button>
+        <button role="option" data-level="subprofessional" aria-checked="false"><span><span class="nm">Subprofessional</span><br><span class="ds">1st-level eligibility &middot; 165 items &middot; includes Clerical</span></span><span class="tick" hidden>&#10003;</span></button>
+      </div>
+    </div>
+    <nav class="links"><a class="on" href="#">Overview</a><a href="#">Practice</a><a href="#">Mock exams</a><a href="#">Guides</a><a href="#">Exam info</a></nav>
+  </div>
+</div>
+
+<div class="cbar">Mockup &mdash; concept <b id="cbname">A</b> &middot; switch below &middot; the <b>level pill</b> is live: switching updates every count on the page</div>
+
+<main>
+
+<!-- A · COMMAND CENTER -->
+<section class="concept" id="cx-a">
+  <span class="note"><b>A &middot; Command center.</b> The current page, re-skinned: everything kept, branded up, level pill drives it. Lowest-risk evolution of what works.</span>
+  <div class="wrap a-hero">
+    <div>
+      <span class="kicker">Philippine Civil Service Exam Reviewer</span>
+      <h1 style="margin-top:10px">Pass the <span class="accent">CSE</span> on your first take.</h1>
+      <p class="lede">Free subtest drills, full-length continuous-timer mock exams, and explanations for every single item &mdash; built for the level you choose.</p>
+      <div class="a-date">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>
+        Exam day <b>March 14, 2027</b> <span class="d" data-days>174</span> days left
+      </div>
+      <div class="a-trust">
+        <span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>No account needed</span>
+        <span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span data-fact-items>170</span>-item mock</span>
+        <span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Rationales included</span>
+      </div>
+      <div class="a-cta">
+        <button class="btn btn-p" type="button">Start free diagnostic</button>
+        <a class="btn btn-g" href="#">Browse formats</a>
+      </div>
+    </div>
+    <div class="a-panel">
+      <div class="bob" style="width:110px;margin:0 auto 6px"><span data-owl data-cap></span></div>
+      <h3>Start your review</h3>
+      <div class="a-levels">
+        <button type="button" data-level="professional" aria-pressed="true"><span class="rd"></span><span><b>Professional</b><small>2nd-level positions &middot; includes Analytical Ability</small></span></button>
+        <button type="button" data-level="subprofessional" aria-pressed="false"><span class="rd"></span><span><b>Subprofessional</b><small>1st-level positions &middot; includes Clerical Operations</small></span></button>
+      </div>
+      <button class="btn btn-gold" style="width:100%" type="button">Start free diagnostic &rarr;</button>
+      <p style="text-align:center;font-size:12.5px;color:#8a7a80;margin-top:10px">10 questions &middot; 10 minutes &middot; no account required</p>
+    </div>
+  </div>
+  <div class="wrap a-steps">
+    <div class="a-step"><span class="n">01</span><span class="chip" style="margin-left:8px">Diagnostic</span><h3>Take the diagnostic</h3><p>Answer a representative sample covering every subtest for your level.</p></div>
+    <div class="a-step"><span class="n">02</span><span class="chip" style="margin-left:8px">Breakdown</span><h3>Review your results</h3><p>Subject-by-subject accuracy with step-by-step rationales for every item.</p></div>
+    <div class="a-step"><span class="n">03</span><span class="chip" style="margin-left:8px">Targeted practice</span><h3>Practice the weak spots</h3><p>Focus directly on your highest-yield improvement areas with drills.</p></div>
+  </div>
+  <div class="wrap"><div class="a-band"><h2>One continuous timer. <span style="color:var(--gold)">67 seconds per item.</span></h2><p>The real CSE gives you a single unhindered timer &mdash; 190 minutes for Professional, 160 for Subprofessional. Our mock exams replicate it exactly, so pacing discipline is trained, not hoped for.</p></div></div>
+  <div class="wrap a-modes">
+    <div class="a-mode"><small>Daily pacing drill</small><h3>Quick Test</h3><p>10 randomized questions with instant diagnostic score and explanations.</p><span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>10 minutes &middot; 10 items</span><button class="btn btn-dark btn-sm" type="button">Launch Quick Test &rarr;</button></div>
+    <div class="a-mode"><small>Targeted review</small><h3>Medium Test</h3><p>30 items across all subtests or one chosen subject. Weekend study sessions.</p><span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 minutes &middot; 30 items</span><button class="btn btn-p btn-sm" type="button">Launch Medium Test &rarr;</button></div>
+    <div class="a-mode hot"><small>Real exam simulation</small><h3>Full Mock Exam</h3><p><span data-fact-items>170</span> items with a continuous single timer, question navigator, and review screen.</p><span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-fact-time>3h 10m</span> &middot; <span data-fact-items>170</span> items</span><button class="btn btn-gold btn-sm" type="button">Start Real Simulation &rarr;</button></div>
+  </div>
+</section>
+
+<!-- B · CHOOSE YOUR BATTLE -->
+<section class="concept" id="cx-b" hidden>
+  <span class="note"><b>B &middot; Choose your battle.</b> The hero IS the level chooser &mdash; two giant cards, one tap to start. Fastest path to action.</span>
+  <div class="wrap b-hero">
+    <span class="kicker">Pick your exam level once &mdash; the whole site follows</span>
+    <h1 style="margin-top:10px">Which CSE are you taking?</h1>
+    <p class="sub">Your choice sets every item count, timer, and subtest on this page &mdash; and everywhere else on ReviewTayo.</p>
+    <div class="b-cards">
+      <button class="b-card pro" type="button" data-level="professional">
+        <span class="tag">2nd-level eligibility</span>
+        <h2>Career Service Professional</h2>
+        <p>For technical, scientific, executive, and managerial roles. The harder track &mdash; and the more common goal.</p>
+        <div class="facts"><i><span data-fact-items>170</span> items</i><i><span data-fact-time>3h 10m</span></i><i>Analytical included</i></div>
+        <span class="go">Start Professional diagnostic &rarr;</span>
+        <span class="owlc bob" data-owl data-cap></span>
+      </button>
+      <button class="b-card sub" type="button" data-level="subprofessional">
+        <span class="tag">1st-level eligibility</span>
+        <h2>Career Service Subprofessional</h2>
+        <p>For first-level clerical, trades, crafts, and custodial positions in government.</p>
+        <div class="facts"><i>165 items</i><i>2h 40m</i><i>Clerical included</i></div>
+        <span class="go">Start Subprofessional diagnostic &rarr;</span>
+        <span class="owlc bob" data-owl data-cap></span>
+      </button>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="b-modes" style="padding-bottom:34px">
+      <div class="a-mode"><small>After you choose</small><h3>Quick Test</h3><p>10 randomized items with instant score and explanations.</p><span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>10 minutes</span></div>
+      <div class="a-mode"><small>After you choose</small><h3>Medium Test</h3><p>30 items across all subtests or one chosen subject.</p><span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 minutes</span></div>
+      <div class="a-mode hot"><small>The real thing</small><h3>Full Mock Exam</h3><p><span data-fact-items>170</span> items, single continuous timer, exact exam-day rules.</p><span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-fact-time>3h 10m</span></span></div>
+    </div>
+    <div class="b-subtests">
+      <h2>What&rsquo;s inside your level</h2>
+      <div class="b-grid">
+        <div class="b-st"><h3>Verbal Ability</h3><p>Grammar, vocabulary, paragraph organization, reading comprehension.</p><span class="qs" data-fact-verbal>50Q</span></div>
+        <div class="b-st"><h3>Numerical Ability</h3><p>Basic operations and word problems.</p><span class="qs">40Q</span></div>
+        <div class="b-st" data-proonly><h3>Analytical Ability</h3><p>Logic, syllogisms, data sufficiency &amp; number analogy. Professional only.</p><span class="qs">40Q</span></div>
+        <div class="b-st"><h3>General Information</h3><p>Constitution, code of conduct, peace &amp; human rights, environment.</p><span class="qs">20Q</span></div>
+        <div class="b-st" data-subonly hidden><h3>Clerical Operations</h3><p>Alphabetizing, office filing procedures &amp; spelling. Subprofessional only.</p><span class="qs">35Q</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- C · GUIDED TRACK -->
+<section class="concept" id="cx-c" hidden>
+  <span class="note"><b>C &middot; Guided track.</b> The page is the flow: numbered steps with done / current / locked states. Directly solves "choose your exam first." My pick.</span>
+  <div class="wrap c-track">
+    <div class="c-head">
+      <span class="kicker">Your review, in order</span>
+      <h1 style="margin-top:10px">Five steps to eligibility.</h1>
+      <p>Every step unlocks the next. The level you pick in the nav &mdash; or right here in step 1 &mdash; flows through everything.</p>
+    </div>
+    <div class="c-steps">
+      <div class="c-step now">
+        <span class="badge">1</span>
+        <div>
+          <h3>Choose your exam level <span class="st">You are here</span></h3>
+          <p>Professional (170 items, includes Analytical) or Subprofessional (165 items, includes Clerical). Saved once, applied everywhere.</p>
+          <div class="act">
+            <span class="c-gate"><span class="dot"></span>Currently: CSE &middot; <span data-lvlname>Professional</span></span>
+            <button class="btn btn-p btn-sm" type="button" onclick="document.getElementById('lvlbtn').click()">Change level</button>
+          </div>
+        </div>
+      </div>
+      <div class="c-step">
+        <span class="badge">2</span>
+        <div>
+          <h3>Take the 10-minute diagnostic</h3>
+          <p>A representative sample across every subtest in your level. No account needed &mdash; results in ten minutes.</p>
+          <div class="act"><button class="btn btn-p btn-sm" type="button">Start diagnostic &rarr;</button><span class="hint">Unlocks step 3</span></div>
+        </div>
+      </div>
+      <div class="c-step">
+        <span class="badge">3</span>
+        <div>
+          <h3>Read your breakdown</h3>
+          <p>Subject-by-subject accuracy with the rationale behind every item &mdash; not just right/wrong.</p>
+          <div class="act"><span class="hint">Unlocks after your first diagnostic</span></div>
+        </div>
+      </div>
+      <div class="c-step">
+        <span class="badge">4</span>
+        <div>
+          <h3>Drill your weakest subtest</h3>
+          <p>Topic practice targets your lowest-accuracy area first. The owl coaches you through each answer.</p>
+          <div class="act"><button class="btn btn-g btn-sm" type="button">See recommended practice</button></div>
+        </div>
+      </div>
+      <div class="c-step">
+        <span class="badge">5</span>
+        <div>
+          <h3>Simulate exam day</h3>
+          <p>The full <span data-fact-items>170</span>-item, <span data-fact-time>3h 10m</span> continuous-timer mock &mdash; taken when your drills say you&rsquo;re ready.</p>
+          <div class="act"><button class="btn btn-dark btn-sm" type="button">Preview the mock exam</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="c-flow">
+      <h2>How the level flows through the site</h2>
+      <ol>
+        <li><span><b>Pick once</b> &mdash; in the nav pill or step 1. Stored on the device, no account needed.</span></li>
+        <li><span><b>Everything follows</b> &mdash; this page, Practice, Mock exams, Guides, and your dashboard all show your level&rsquo;s items and timers.</span></li>
+        <li><span><b>Switch anytime</b> &mdash; the pill is always one tap away; Practice and Mock pages confirm before switching mid-flow.</span></li>
+        <li><span><b>Other exams</b> &mdash; LET, Criminology, NAPOLCOM and more live in <b>Exams</b> with a &ldquo;vote for this exam&rdquo; button while they&rsquo;re built.</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- D · EXAM-DAY BOOTH -->
+<section class="concept" id="cx-d" hidden>
+  <span class="note"><b>D &middot; Exam-day booth.</b> The landing&rsquo;s dark countdown block becomes the hero. Boldest; countdown carries the urgency.</span>
+  <div class="wrap">
+    <div class="d-hero">
+      <span class="spot"></span>
+      <span class="kicker" style="color:var(--gold)">Civil Service Exam &middot; <span data-lvlname>Professional</span> track</span>
+      <h1 style="margin-top:12px">Exam day is <span style="color:var(--gold)">coming.</span><br>Be ready for it.</h1>
+      <p>Free timed drills and the exact exam-day simulation &mdash; single continuous timer, <span data-fact-items>170</span> items, no surprises on March 14.</p>
+      <button class="btn btn-gold" type="button">Start free diagnostic &rarr;</button>
+      <button class="btn btn-g" style="color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)" type="button">Compare levels</button>
+      <span class="d-moon bob"><span class="ow" data-owl data-cap></span></span>
+      <span class="d-count"><span data-days>174</span></span>
+    </div>
+    <div class="d-tickets">
+      <div class="d-tk"><small>Step 01 &middot; Daily</small><h3>Quick Test</h3><p>10 items, instant feedback. The lunchbreak drill that builds the habit.</p><button class="btn btn-p btn-sm" type="button">Launch &rarr;</button></div>
+      <div class="d-tk"><small>Step 02 &middot; Weekly</small><h3>Medium Test</h3><p>30 items across all subtests &mdash; or one chosen subject.</p><button class="btn btn-p btn-sm" type="button">Launch &rarr;</button></div>
+      <div class="d-tk"><small>Final step &middot; When ready</small><h3>Full Mock Exam</h3><p><span data-fact-time>3h 10m</span>, <span data-fact-items>170</span> items, one timer. The real thing, at home.</p><button class="btn btn-dark btn-sm" type="button">Start simulation &rarr;</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- E · BENTO HUB -->
+<section class="concept" id="cx-e" hidden>
+  <span class="note"><b>E &middot; Bento hub.</b> Dashboard-flavored overview: level tile, countdown, modes, subtests, guides. Best for returning users.</span>
+  <div class="wrap">
+    <div class="e-resume" id="e-resume" hidden>
+      <div><b>Welcome back &mdash; resume where you left off</b><p>Diagnostic 6/10 answered &middot; 4 minutes remaining</p></div>
+      <button class="btn btn-p btn-sm" type="button">Resume session</button>
+    </div>
+    <div class="e-bento">
+      <div class="e-tile t-lvl">
+        <small>Your exam</small><h3>CSE &middot; <span data-lvlname>Professional</span></h3>
+        <p>Saved on this device. Switching updates every count on the site.</p>
+        <div class="sw" role="group" aria-label="Switch exam level">
+          <button type="button" data-level="professional" aria-pressed="true">Professional</button>
+          <button type="button" data-level="subprofessional" aria-pressed="false">Subprofessional</button>
+        </div>
+      </div>
+      <div class="e-tile t-count">
+        <small>Until exam day</small>
+        <b><span data-days>174</span></b>
+        <span>days &middot; March 14, 2027 &middot; CSE-PPT</span>
+      </div>
+      <div class="e-tile t-quick"><small>10 min</small><h3>Quick Test</h3><p>Daily diagnostic drill.</p></div>
+      <div class="e-tile t-med"><small>30 min</small><h3>Medium Test</h3><p>Full-subtest check-in.</p></div>
+      <div class="e-tile t-mock"><small>The real thing</small><h3>Full Mock</h3><p><span data-fact-items>170</span> items &middot; one timer.</p></div>
+      <div class="e-tile t-sub">
+        <small>Subtests in your level</small><h3>Practice by subtest</h3>
+        <div class="chips">
+          <button type="button">Verbal &middot; <span data-fact-verbal>50</span>Q</button>
+          <button type="button">Numerical &middot; 40Q</button>
+          <button type="button" data-proonly>Analytical &middot; 40Q</button>
+          <button type="button">Gen. Info &middot; 20Q</button>
+          <button type="button" data-subonly hidden>Clerical &middot; 35Q</button>
+        </div>
+      </div>
+      <div class="e-tile t-guide"><small>Strategy</small><h3>The 67-second rule</h3><p>Pacing the continuous timer without running out.</p><button class="btn btn-g btn-sm go" type="button">Read guide</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- shared flow section -->
+<section class="flow wrap">
+  <span class="kicker">Not a concept &mdash; the UX fix</span>
+  <h2>One level, chosen once, everywhere.</h2>
+  <p>The site change underneath any concept: a single exam-level selection (the pill in the nav) becomes the source of truth. It already persists today &mdash; these are the guarantees we&rsquo;d add around it.</p>
+  <div class="f-row">
+    <div class="f-box"><b><i>1</i>Choose before you practice</b><p>First visit to Practice/Mock with no level chosen shows a lightweight chooser &mdash; not a wall, not a modal trap.</p></div>
+    <div class="f-box"><b><i>2</i>Everything inherits it</b><p>Item counts, timers, subtests, and dashboard stats all read one stored level. No per-page re-asking.</p></div>
+    <div class="f-box"><b><i>3</i>Switch is always one tap</b><p>The pill sits in the subnav on every exam page. Switching mid-session asks once, then updates.</p></div>
+    <div class="f-box"><b><i>4</i>Other exams live in Exams</b><p>The nav pill only lists CSE levels; choosing a different exam routes to the /reviewers catalog.</p></div>
+  </div>
+</section>
+
+</main>
+
+<button class="notes-btn" id="notesbtn" type="button" aria-pressed="false">Design notes: off</button>
+<div class="sw-btn" role="tablist" aria-label="Concept switcher">
+  <button type="button" data-cx="a" aria-pressed="true"><span>A</span>Command center</button>
+  <button type="button" data-cx="b" aria-pressed="false"><span>B</span>Choose battle</button>
+  <button type="button" data-cx="c" aria-pressed="false"><span>C</span>Guided track</button>
+  <button type="button" data-cx="d" aria-pressed="false"><span>D</span>Exam-day booth</button>
+  <button type="button" data-cx="e" aria-pressed="false"><span>E</span>Bento hub</button>
+</div>
+
+<script>
+/* ================= owl mascot (same simplified stand-in as the other mockups) ================= */
+function eye(cx,dy,tracked){
+  return '<g class="eye"><circle cx="'+cx+'" cy="94" r="26" fill="#fff" stroke="#F8DDE2" stroke-width="4"/><g'+(tracked?' class="pupil"':'')+'><circle cx="'+cx+'" cy="'+(94+dy)+'" r="12" fill="#1B0A10"/><circle cx="'+(cx+4)+'" cy="'+(89+dy)+'" r="4" fill="#fff"/></g></g>';
+}
+function owl(cap,mood){
+  mood=mood||'idle';var eyes;
+  if(mood==='happy'){
+    eyes='<path d="M54 100Q74 74 94 100" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M106 100Q126 74 146 100" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="114" r="8" fill="#F26F8A" opacity=".6"/><circle cx="150" cy="114" r="8" fill="#F26F8A" opacity=".6"/>';
+  }else if(mood==='oops'){
+    eyes=eye(74,6,false)+eye(126,6,false)+'<path d="M50 78L90 66" stroke="#F8DDE2" stroke-width="6" stroke-linecap="round"/><path d="M150 78L110 66" stroke="#F8DDE2" stroke-width="6" stroke-linecap="round"/>';
+  }else{eyes=eye(74,0,true)+eye(126,0,true);}
+  return '<svg class="owl" viewBox="0 0 200 236" role="img" aria-label="ReviewTayo owl">'+
+  '<rect x="66" y="208" width="30" height="14" rx="7" fill="#F6B93B"/><rect x="104" y="208" width="30" height="14" rx="7" fill="#F6B93B"/>'+
+  '<path d="M100 34C152 34 180 74 180 132C180 188 150 214 100 214C50 214 20 188 20 132C20 74 48 34 100 34Z" fill="#8A1630"/>'+
+  '<path d="M34 56L54 18L88 44Z" fill="#6B0F25"/><path d="M166 56L146 18L112 44Z" fill="#6B0F25"/>'+
+  '<path d="M22 118C2 150 10 192 44 200C42 172 38 146 22 118Z" fill="#6B0F25"/><path d="M178 118C198 150 190 192 156 200C158 172 162 146 178 118Z" fill="#6B0F25"/>'+
+  '<ellipse cx="100" cy="162" rx="48" ry="50" fill="#F8DDE2"/>'+
+  '<path d="M74 142q13 11 26 0q13 11 26 0M70 166q15 11 30 0q15 11 30 0M78 190q11 9 22 0q11 9 22 0" fill="none" stroke="#DDA3AF" stroke-width="3.5" stroke-linecap="round"/>'+
+  '<ellipse cx="100" cy="94" rx="68" ry="48" fill="#A81B3B"/>'+
+  (cap?'<g><path d="M60 34L100 14L140 34L100 54Z" fill="#221219"/><path d="M80 44V58Q100 68 120 58V44" fill="#33202A"/><path d="M140 34V58" stroke="#F6B93B" stroke-width="3.5" stroke-linecap="round"/><circle cx="140" cy="61" r="5" fill="#F6B93B"/></g>':'')+
+  eyes+'<path d="M91 108L109 108L100 127Z" fill="#F6B93B" stroke="#F6B93B" stroke-width="4" stroke-linejoin="round"/></svg>';
+}
+function setOwl(el,mood){if(el)el.innerHTML=owl(el.hasAttribute('data-cap'),mood)}
+document.querySelectorAll('[data-owl]').forEach(n=>setOwl(n,'idle'));
+
+/* ================= shared state: the chosen level ================= */
+let LEVEL='professional';
+const LEVELS={
+  professional:{name:'Professional',items:170,time:'3h 10m',verbal:'50Q',analytical:true,clerical:false},
+  subprofessional:{name:'Subprofessional',items:165,time:'2h 40m',verbal:'50Q',analytical:false,clerical:true}
+};
+function applyLevel(){
+  const L=LEVELS[LEVEL];
+  document.getElementById('lvllabel').textContent=L.name;
+  document.querySelectorAll('[data-lvlname]').forEach(n=>n.textContent=L.name);
+  document.querySelectorAll('[data-fact-items]').forEach(n=>n.textContent=L.items);
+  document.querySelectorAll('[data-fact-time]').forEach(n=>n.textContent=L.time);
+  document.querySelectorAll('[data-fact-verbal]').forEach(n=>n.textContent=L.verbal);
+  document.querySelectorAll('[data-proonly]').forEach(n=>n.hidden=!L.analytical);
+  document.querySelectorAll('[data-subonly]').forEach(n=>n.hidden=!L.clerical);
+  document.querySelectorAll('.a-levels [data-level],.sw [data-level]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.level===LEVEL));
+  document.querySelectorAll('#lvlmenu [data-level]').forEach(o=>{
+    o.setAttribute('aria-checked',o.dataset.level===LEVEL);
+    o.querySelector('.tick').hidden=o.dataset.level!==LEVEL;
+  });
+}
+
+/* nav pill menu */
+const lvlbtn=document.getElementById('lvlbtn'),lvlmenu=document.getElementById('lvlmenu');
+lvlbtn.addEventListener('click',e=>{e.stopPropagation();const open=lvlmenu.hidden;lvlmenu.hidden=!open;lvlbtn.setAttribute('aria-expanded',open)});
+document.addEventListener('click',e=>{
+  if(!lvlmenu.hidden&&!e.target.closest('.lvl-menu')&&!e.target.closest('#lvlbtn')){lvlmenu.hidden=true;lvlbtn.setAttribute('aria-expanded','false')}
+  const opt=e.target.closest('#lvlmenu [data-level]');
+  if(opt){LEVEL=opt.dataset.level;applyLevel();lvlmenu.hidden=true;lvlbtn.setAttribute('aria-expanded','false')}
+});
+
+/* level buttons inside concepts (A panel, B cards, E bento) */
+document.querySelectorAll('.a-levels [data-level],.b-cards [data-level],.sw [data-level]').forEach(b=>{
+  b.addEventListener('click',()=>{LEVEL=b.dataset.level;applyLevel()});
+});
+
+/* days left (real exam date from the site) */
+const daysLeft=()=>Math.max(0,Math.ceil((new Date('2027-03-14T00:00:00+08:00')-Date.now())/864e5));
+document.querySelectorAll('[data-days]').forEach(el=>el.textContent=daysLeft());
+
+/* concept switcher */
+document.querySelectorAll('.sw-btn button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sw-btn button').forEach(x=>x.setAttribute('aria-pressed',x===btn));
+    document.querySelectorAll('.concept').forEach(s=>s.hidden=s.id!=='cx-'+btn.dataset.cx);
+    document.getElementById('cbname').textContent=btn.dataset.cx.toUpperCase();
+    scrollTo({top:0});
+  });
+});
+
+/* demo resume banner in E */
+setTimeout(()=>{const r=document.getElementById('e-resume');if(r&&!r.closest('.concept').hidden)r.hidden=false},1200);
+
+/* design notes */
+document.getElementById('notesbtn').addEventListener('click',()=>{
+  const on=document.body.classList.toggle('notes');
+  document.getElementById('notesbtn').setAttribute('aria-pressed',on);
+  document.getElementById('notesbtn').textContent='Design notes: '+(on?'on':'off');
+});
+
+applyLevel();
+</script>
+</body>
+</html>
