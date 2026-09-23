@@ -56,6 +56,9 @@ export interface Article {
   sources?: ContentSource[];
   keyHighlights: string[];
   content: string[];
+  /** Exams this article serves. Optional for backward compatibility; an
+   * article without examIds is a legacy CSE article. */
+  examIds?: ContentExamId[];
 }
 
 export interface FAQItem {
@@ -68,4 +71,7 @@ export interface FAQItem {
   question: string;
   answer: string;
   relatedLinks?: Array<{ text: string; href: string }>;
+  /** Exams this FAQ entry serves. Optional for backward compatibility; an
+   * entry without examIds is a legacy CSE entry. */
+  examIds?: ContentExamId[];
 }
