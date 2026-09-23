@@ -1,5 +1,16 @@
 # Walkthrough — Exam Hall & Owl Coach themes for the test page
 
+## Update 8 — Dashboard v2: sidebar shell + five new/changed sections
+
+Implemented from `reviewtayo-dashboard-v2.html` (mockup treated as layout/state spec, not markup):
+
+- **Shell**: `src/features/dashboard/AppShell.tsx` — sticky dark-maroon sidebar (brand chrome, both themes), grouped nav (Study: Dashboard/Plan/Practice/Review; Track: History/Achievements; Resources: Notes/Learn), target-exam quick card, daily-goal mini bar, gold due-count badge on Review, Settings pinned at the bottom. Mobile: top brand bar with streak pill, bottom tab bar (Home/Plan/Practice/Review/More), "More" sheet (role=dialog, aria-modal, Escape to close, focus on open, background inert). Every dashboard route renders inside it.
+- **New algorithms** (pure, unit-tested): `src/lib/study-plan-generator.ts` (`generateWeeklyPlan`: weakest-subject ranking from real subject readiness, daily-goal distribution, rest days, diagnostic-first fallback for new users; recomputes only when inputs change) and `src/lib/achievement-engine.ts` (badge progress over a stats snapshot; `closestAchievement` banner). Badge list lives in `src/config/achievements.ts` (data, not inline UI).
+- **New storage**: `src/lib/storage/notes-service.ts` (pin/search/subject tags, sanitize + cap) wired into backup payload v2, restore, and the reset sweep; v1 backups still import.
+- **New/changed pages**: `/dashboard/plan`, `/dashboard/practice` (setup sheet + feature-flagged coming-soon modes from `src/config/practice-modes.ts`), `/dashboard/review` (due/mistakes/bookmarks on the existing Leitner SRS), `/dashboard/achievements`, `/dashboard/notes`, `/dashboard/learn` (reuses guides/articles/FAQ content), `/dashboard/history` (into shell). Settings shell restyled to the brand palette only — fields, persistence, and tests untouched.
+- **Single source of truth**: `src/lib/workspace/target-exam.ts` feeds the sidebar card, dashboard hero, and plan; countdown math in `src/lib/study-plan.ts` is Asia/Manila-fixed (`daysUntilManila`, `getManilaTodayString`).
+- Tests: 7 new suites (app-shell, new-surfaces, study-plan-generator, achievement-engine, target-exam, practice-modes, notes-service) plus backup-v2 pin. `npm run verify` exit 0: 71 test files, 440 tests, production build.
+
 ## Update 7 — old hero panel replaced
 
 User caught the old owl + panel in the /cse hero. `HeroExamLevelSelector` rewritten to the mockup (owl on top with tracked pupils, "Start your review", radio cards, gold CTA; no peeking owl, no countdown pill). Deleted dead code: `PeekingOwl`, `ExamPickerCard`, `HomePageClient` (unused), `peeking-owl.test.tsx`. Unit + e2e assertions updated. Verify exit 0.
