@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ReviewTayo — Auth redesign: Sign in · Create account · Forgot password</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mr:#8a1630;--mr2:#a81b3b;--wine:#2a0a12;--gold:#f6b93b;--ok:#12a150;--ok2:#0b7a3b;--bad:#9d1a33;
+  --bg:#fdf8f6;--band:#fcf0f1;--surf:#fff;--ink:#1b1216;--mute:#5a4a50;--blush:#fbeff0;--pill:#f6ecee;
+  --line:rgba(138,22,48,.14);--mrt:#8a1630;--focus:#8a1630;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#1a0c11;--band:#22101a;--surf:#2b1620;--ink:#f8ecef;--mute:#d6bcc3;--blush:#38192a;--pill:#3a1f29;--line:rgba(255,255,255,.16);--mrt:#ff9fb5;--focus:#ffd27a}
+}
+:root[data-theme="dark"]{--bg:#1a0c11;--band:#22101a;--surf:#2b1620;--ink:#f8ecef;--mute:#d6bcc3;--blush:#38192a;--pill:#3a1f29;--line:rgba(255,255,255,.16);--mrt:#ff9fb5;--focus:#ffd27a}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+h1,h2,h3{font-family:'Bricolage Grotesque','Figtree',system-ui,sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+svg{display:block}
+:focus-visible{outline:2.5px solid var(--focus);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:40;background:var(--surf);box-shadow:0 0 0 1.5px var(--line);padding:10px 0;padding-top:calc(10px + env(safe-area-inset-top))}
+.topbar .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brandrow{display:flex;align-items:center;gap:9px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:17px}
+.brandrow .ow{width:34px}
+.ctabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.ctabs button{padding:8px 14px;border-radius:999px;font-weight:700;font-size:13.5px;background:var(--pill);color:var(--mute);transition:transform .15s ease}
+.ctabs button:hover{transform:translateY(-2px)}
+.ctabs button[aria-pressed="true"]{background:var(--mr);color:#fff}
+.rec{display:inline-block;margin-left:6px;background:var(--gold);color:#3d2a05;border-radius:999px;font-size:10.5px;padding:1.5px 7px;font-weight:800;letter-spacing:.02em}
+.seg{display:flex;background:var(--pill);border-radius:999px;padding:3px;gap:2px;margin-left:auto}
+.ctabs+.seg{margin-left:0}
+.seg button{padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--surf);color:var(--ink);box-shadow:0 1px 4px rgba(27,10,16,.15)}
+
+main{padding:26px 0 90px}
+.intro h1{font-size:clamp(26px,4vw,34px);letter-spacing:-.04em}
+.intro p{color:var(--mute);margin-top:6px;max-width:640px}
+.gnote{margin-top:16px}
+
+/* design notes */
+.dnote{display:none;background:var(--blush);box-shadow:0 0 0 1.5px var(--line);border-radius:16px;padding:13px 16px;font-size:13.5px;line-height:1.55;color:var(--ink);margin:0 0 16px}
+.dnote b{color:var(--mrt)}
+body.notes .dnote{display:block}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;gap:8px;background:var(--mr);color:#fff;font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:999px;box-shadow:0 10px 26px rgba(138,22,48,.4);transition:transform .15s ease}
+.fab:hover{transform:translateY(-2px)}
+.fab[aria-pressed="true"]{background:var(--ok2)}
+
+/* concept panels + demo stage */
+.cpanel[hidden]{display:none}
+.stage{position:relative;border-radius:26px;background:var(--band);box-shadow:0 0 0 1.5px var(--line);min-height:540px;display:grid;place-items:center;overflow:hidden;margin-top:18px}
+.deco{position:absolute;inset:0;pointer-events:none}
+.bigh{position:absolute;left:50%;top:14%;transform:translateX(-50%);width:90%;text-align:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.05em;font-size:clamp(34px,7vw,64px);color:var(--ink);opacity:.07}
+.gh{position:absolute;width:200px;height:104px;border-radius:18px;background:var(--surf);box-shadow:0 0 0 1.5px var(--line);opacity:.55}
+.gh.tall{height:130px}
+.trig{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:24px}
+.trigh{color:var(--mute);font-size:14px;max-width:420px}
+.tbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* buttons */
+.btn-p,.btn-g,.btn-gold,.btn-danger{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;border-radius:13px;padding:12px 18px;font-size:15px;transition:transform .18s ease,background .18s ease,box-shadow .18s ease}
+.btn-p{background:#8a1630;color:#fff}
+.btn-p:hover{background:#a81b3b;transform:translateY(-2px)}
+.btn-gold{background:#f6b93b;color:#3d2a05}
+.btn-gold:hover{filter:brightness(1.05);transform:translateY(-2px)}
+.btn-g{box-shadow:0 0 0 1.5px var(--line);color:var(--ink);background:var(--surf)}
+.btn-g:hover{transform:translateY(-2px)}
+.btn-danger{box-shadow:0 0 0 1.5px rgba(157,26,51,.4);color:var(--bad)}
+.btn-danger:hover{transform:translateY(-2px)}
+.btn-sm{padding:8px 13px;font-size:13.5px;border-radius:11px}
+.btn-block{width:100%}
+
+/* status + chips */
+.st{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--pill);color:var(--mute)}
+.st .dot{width:7px;height:7px;border-radius:50%}
+.st.live{background:#e5f6ec;color:#0b7a3b}
+.st.live .dot{background:#12a150}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--pill);color:var(--mute)}
+.chip.gold{background:#f6b93b;color:#3d2a05}
+
+/* owl */
+.ow{line-height:0}
+.ow.bob{animation:bob 4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+
+/* modal */
+.mroot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px}
+.mroot[hidden]{display:none}
+.mback{position:absolute;inset:0;background:rgba(27,10,16,.55);backdrop-filter:blur(3px)}
+.modal{position:relative;width:100%;max-width:430px;max-height:min(92dvh,760px);background:var(--surf);border-radius:24px;box-shadow:0 30px 90px rgba(27,10,16,.4),0 0 0 1.5px var(--line);display:grid;overflow:hidden;animation:pop .3s cubic-bezier(.2,.9,.3,1.1)}
+.modal.split{max-width:740px;grid-template-columns:310px 1fr}
+.modal.compact .mbrand{display:none}
+.mclose{position:absolute;top:14px;right:14px;z-index:6;width:36px;height:36px;border-radius:50%;background:var(--pill);color:var(--mute);display:grid;place-items:center}
+.mclose:hover{color:var(--ink)}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.97)}}
+
+/* brand panel (fixed maroon — shell choice, not theme) */
+.mbrand{position:relative;overflow:hidden;background:linear-gradient(165deg,#8a1630 0%,#a81b3b 62%,#c4213f 100%);color:#fff;padding:34px 28px;display:flex;flex-direction:column;gap:16px}
+.mbrand::before{content:'';position:absolute;width:230px;height:230px;border-radius:50%;background:rgba(255,255,255,.06);top:-80px;right:-80px}
+.mbrand::after{content:'';position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(0,0,0,.08);bottom:-60px;left:-60px}
+.mbrand>*{position:relative;z-index:1}
+.mbrand h3{font-size:23px;letter-spacing:-.04em}
+.mbrand .msub{font-size:13.5px;color:rgba(255,255,255,.82);line-height:1.55}
+.benefits{list-style:none;display:flex;flex-direction:column;gap:13px;margin-top:auto}
+.benefits li{display:flex;gap:10px;align-items:flex-start}
+.bcheck{flex:none;width:22px;height:22px;border-radius:50%;background:rgba(246,185,59,.18);color:var(--gold);display:grid;place-items:center;margin-top:1px}
+.benefits b{display:block;font-size:13.5px}
+.benefits span{font-size:12.5px;color:rgba(255,255,255,.75)}
+.mtiny{font-size:11.5px;color:rgba(255,255,255,.6);margin-top:14px}
+
+/* form */
+.mform{padding:30px 26px 26px;overflow:auto;display:flex;flex-direction:column;gap:16px}
+.fhead h2{font-size:23px;letter-spacing:-.04em}
+.fhead .sub{color:var(--mute);font-size:14px;margin-top:5px}
+.switcher{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--pill);padding:4px;border-radius:12px}
+.switcher button{padding:8px;border-radius:9px;font-weight:700;font-size:14px;color:var(--mute)}
+.switcher button[aria-pressed="true"]{background:var(--surf);color:var(--ink);box-shadow:0 1px 4px rgba(27,10,16,.14)}
+.field{display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.field label{font-size:13px;font-weight:700}
+.flink{color:var(--mrt);font-weight:700;font-size:13px;padding:2px 4px;border-radius:6px}
+.inp{position:relative}
+.inp .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mute);pointer-events:none;display:flex}
+.inp input{width:100%;padding:12px 44px 12px 42px;border-radius:12px;border:1.5px solid var(--line);background:transparent;font-size:15px;transition:border-color .15s,box-shadow .15s}
+.inp input::placeholder{color:var(--mute);opacity:.65}
+.inp input:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px rgba(138,22,48,.14)}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--mute)}
+.eye:hover{color:var(--ink)}
+.eye[aria-pressed="true"]{color:var(--mrt)}
+.hint{font-size:12.5px;color:var(--mute)}
+.cnt{font-weight:800}
+.cnt.ok{color:var(--ok2)}
+.err{display:none;font-size:12.5px;font-weight:700;color:var(--bad)}
+.field.invalid .err{display:block}
+.field.invalid input{border-color:var(--bad);box-shadow:0 0 0 3px rgba(157,26,51,.12)}
+.sec{display:flex;flex-direction:column;align-items:center;gap:9px}
+.sec .muted{color:var(--mute);font-size:13.5px}
+.privacy{display:flex;gap:10px;background:var(--pill);border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.55;color:var(--mute)}
+.privacy svg{flex:none;margin-top:2px;color:var(--mrt)}
+.privacy b{color:var(--ink)}
+.sent{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:10px 4px 4px}
+.sent .sub{color:var(--mute);font-size:14px}
+.sent .sub b{color:var(--ink)}
+
+/* concept C — standalone page */
+.page{display:grid;grid-template-columns:1fr 1fr;border-radius:26px;overflow:hidden;box-shadow:0 0 0 1.5px var(--line),0 30px 80px rgba(138,22,48,.12);background:var(--surf);margin-top:18px}
+.pbrand{position:relative;overflow:hidden;background:linear-gradient(165deg,#8a1630 0%,#a81b3b 62%,#c4213f 100%);color:#fff;padding:44px 40px;display:flex;flex-direction:column;gap:18px}
+.pbrand::before{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.06);top:-100px;right:-100px}
+.pbrand>*{position:relative;z-index:1}
+.pbrand h2{font-size:clamp(24px,2.6vw,30px);letter-spacing:-.04em}
+.pbrand .psub{font-size:14.5px;color:rgba(255,255,255,.82);line-height:1.6}
+.pform{padding:38px 36px;display:flex;flex-direction:column;gap:18px;justify-content:center}
+.statechips{display:flex;gap:6px;flex-wrap:wrap}
+.statechips button{padding:7px 13px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--pill);color:var(--mute)}
+.statechips button[aria-pressed="true"]{background:var(--mr);color:#fff}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:#1b1216;color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:80;box-shadow:0 12px 34px rgba(0,0,0,.35);max-width:calc(100vw - 40px);text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* responsive */
+@media (max-width:980px){
+  .ctabs{order:3;width:100%;margin-left:0}
+  .seg{margin-left:auto}
+}
+@media (max-width:820px){
+  .page{grid-template-columns:1fr}
+  .pbrand{padding:28px 26px}
+  .pbrand .benefits{display:none}
+  .pform{padding:28px 24px}
+}
+@media (max-width:640px){
+  .mroot{padding:0;align-items:end}
+  .modal,.modal.split{max-width:none;border-radius:22px 22px 0 0;max-height:92dvh;grid-template-columns:1fr;animation:sheet .32s cubic-bezier(.2,.9,.3,1)}
+  .mbrand{flex-direction:row;align-items:center;gap:14px;padding:14px 56px 14px 18px}
+  .mbrand h3{font-size:16px}
+  .mbrand .chip,.mbrand .msub,.mbrand .benefits,.mbrand .mtiny,.mbrand .ow.bob{display:none}
+  .mbrand .ow{width:44px}
+  .mform{padding:22px 20px calc(20px + env(safe-area-inset-bottom))}
+  .stage{min-height:440px}
+}
+@keyframes sheet{from{transform:translateY(48px);opacity:.5}}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .ow.bob{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandrow"><span class="ow" data-owl data-cap></span>ReviewTayo</div>
+    <nav class="ctabs" aria-label="Concepts">
+      <button aria-pressed="true" data-tab="a">A · Split modal<span class="rec">Rec</span></button>
+      <button aria-pressed="false" data-tab="b">B · Tabbed card</button>
+      <button aria-pressed="false" data-tab="c">C · Standalone page</button>
+    </nav>
+    <div class="seg" role="group" aria-label="Color theme">
+      <button aria-pressed="true" data-th="">Auto</button>
+      <button aria-pressed="false" data-th="light">Light</button>
+      <button aria-pressed="false" data-th="dark">Dark</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <h1>Sign in, Create account &amp; Forgot password</h1>
+    <p>Three switchable concepts. Every state is a working modal/page — click through them, toggle the theme, resize. Copy is taken verbatim from your current modals.</p>
+  </div>
+
+  <div class="gnote dnote"><b>Changes applied to all concepts:</b> the Data Privacy box now appears only on Create account (it's a decision, not a login concern); reset copy no longer confirms whether an email exists; fields carry real <code>autocomplete</code> attributes; errors show inline per field. All owl art and tokens follow the design system.</div>
+
+  <section class="cpanel" id="panel-a" aria-label="Concept A">
+    <div class="dnote"><b>Concept A — Recommended.</b> A fixed-maroon brand panel does the emotional work (owl + the hero line you already use), so the modal feels like ReviewTayo instead of a generic login. Sign in / Create account merge into one surface with a switcher; Forgot password is an inline state, not a third modal. On phones it docks as a bottom sheet and the panel collapses to a slim header.</div>
+    <div class="stage" data-stage="a"></div>
+  </section>
+
+  <section class="cpanel" id="panel-b" hidden aria-label="Concept B">
+    <div class="dnote"><b>Concept B.</b> The lightest option: one compact card, tab switcher, inline reset — same footprint as your current modal, so it drops into the existing landing page with zero layout changes. Same bottom-sheet behavior on mobile. Choose this if you want minimal change, A if you want the brand moment.</div>
+    <div class="stage" data-stage="b"></div>
+  </section>
+
+  <section class="cpanel" id="panel-c" hidden aria-label="Concept C">
+    <div class="dnote"><b>Concept C.</b> A standalone page for places a modal can't go: reset-password links from email (arrive with no page context) and a dedicated <code>/signin</code> route. Full-height split layout; the chips above the form let you preview all five auth states.</div>
+    <div class="page">
+      <div class="pbrand">
+        <span class="st live"><span class="dot"></span>Live · Civil Service Exam</span>
+        <div class="ow bob" data-owl data-cap style="width:130px"></div>
+        <h2>Review smarter.<br>Pass sooner.</h2>
+        <p class="psub">Save your progress and continue reviewing on any device.</p>
+        <ul class="benefits" data-benefits></ul>
+        <p class="mtiny">ReviewTayo · reviewtayo.online</p>
+      </div>
+      <div class="pform">
+        <div class="statechips" role="group" aria-label="Auth state preview" id="cchips"></div>
+        <div id="cbody"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- modal shell (concepts A + B) -->
+<div class="mroot" id="mroot" hidden>
+  <div class="mback" data-close></div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+    <button class="mclose" aria-label="Close" data-close>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="mbrand" id="mbrand">
+      <span class="chip gold">Live · Civil Service Exam</span>
+      <div class="ow bob" data-owl data-cap style="width:118px"></div>
+      <h3>Review smarter.<br>Pass sooner.</h3>
+      <p class="msub">Save your progress and continue reviewing on any device.</p>
+      <ul class="benefits" data-benefits></ul>
+      <p class="mtiny">ReviewTayo · reviewtayo.online</p>
+    </div>
+    <div class="mform" id="mform"></div>
+  </div>
+</div>
+
+<button class="fab" id="notesFab" aria-pressed="false">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.7 1 1.5 1 2.5h6c0-1 .2-1.8 1-2.5A6 6 0 0 0 12 3Z"/></svg>
+  Design notes
+</button>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- owl mascot (verbatim from design system) ---------- */
+function eye(cx,dy,tracked){return '<g class="eye"><circle cx="'+cx+'" cy="94" r="26" fill="#fff" stroke="#F8DDE2" stroke-width="4"/><g'+(tracked?' class="pupil"':'')+'><circle cx="'+cx+'" cy="'+(94+dy)+'" r="12" fill="#1B0A10"/><circle cx="'+(cx+4)+'" cy="'+(89+dy)+'" r="4" fill="#fff"/></g></g>'}
+function owl(cap,mood){
+  mood=mood||'idle';var eyes;
+  if(mood==='happy'){eyes='<path d="M54 100Q74 74 94 100" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M106 100Q126 74 146 100" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>'}
+  else if(mood==='oops'){eyes=eye(74,6,false)+eye(126,6,false)}
+  else{eyes=eye(74,0,true)+eye(126,0,true)}
+  return '<svg class="owl" viewBox="0 0 200 236" role="img" aria-label="ReviewTayo owl">'+
+  '<rect x="66" y="208" width="30" height="14" rx="7" fill="#F6B93B"/><rect x="104" y="208" width="30" height="14" rx="7" fill="#F6B93B"/>'+
+  '<path d="M100 34C152 34 180 74 180 132C180 188 150 214 100 214C50 214 20 188 20 132C20 74 48 34 100 34Z" fill="#8A1630"/>'+
+  '<path d="M34 56L54 18L88 44Z" fill="#6B0F25"/><path d="M166 56L146 18L112 44Z" fill="#6B0F25"/>'+
+  '<ellipse cx="100" cy="162" rx="48" ry="50" fill="#F8DDE2"/>'+
+  '<ellipse cx="100" cy="94" rx="68" ry="48" fill="#A81B3B"/>'+
+  (cap?'<g><path d="M60 34L100 14L140 34L100 54Z" fill="#221219"/><path d="M140 34V58" stroke="#F6B93B" stroke-width="3.5" stroke-linecap="round"/><circle cx="140" cy="61" r="5" fill="#F6B93B"/></g>':'')+
+  eyes+'<path d="M91 108L109 108L100 127Z" fill="#F6B93B" stroke="#F6B93B" stroke-width="4" stroke-linejoin="round"/></svg>';
+}
+function initOwls(){document.querySelectorAll('[data-owl]').forEach(function(el){el.innerHTML=owl(el.hasAttribute('data-cap'),el.dataset.mood||'idle')})}
+/* cursor-tracking pupils */
+var RM=matchMedia('(prefers-reduced-motion: reduce)').matches,mouse={x:0,y:0},raf=null;
+if(!RM){document.addEventListener('mousemove',function(e){mouse={x:e.clientX,y:e.clientY};if(!raf)raf=requestAnimationFrame(trackPupils)})}
+function trackPupils(){raf=null;document.querySelectorAll('.pupil').forEach(function(p){var eye=p.closest('.eye');if(!eye)return;var r=eye.getBoundingClientRect();var dx=Math.max(-1,Math.min(1,(mouse.x-(r.left+r.width/2))/150)),dy=Math.max(-1,Math.min(1,(mouse.y-(r.top+r.height/2))/150));p.style.transform='translate('+(dx*6)+'px,'+(dy*6)+'px)'})}
+
+/* ---------- icons ---------- */
+var I={
+ mail:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg>',
+ lock:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+ user:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>',
+ eye:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>',
+ shield:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6Z"/><path d="m9 11.5 2 2 4-4"/></svg>',
+ check:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>'
+};
+
+/* ---------- data ---------- */
+var FIELDS={
+ signin:[
+  {id:'si-email',label:'Email Address',type:'email',icon:'mail',ph:'juan@example.ph',ac:'email'},
+  {id:'si-pass',label:'Password',type:'password',icon:'lock',ph:'Enter your password',ac:'current-password',eye:true,forgot:true}
+ ],
+ create:[
+  {id:'ca-name',label:'Display Name',type:'text',icon:'user',ph:'Juan Dela Cruz',ac:'name',hint:'This is how your name appears in your reviewer profile.'},
+  {id:'ca-email',label:'Email Address',type:'email',icon:'mail',ph:'juan@example.ph',ac:'email'},
+  {id:'ca-pass',label:'Password',type:'password',icon:'lock',ph:'At least 8 characters',ac:'new-password',eye:true,meter:true}
+ ],
+ reset:[
+  {id:'rs-email',label:'Email Address',type:'email',icon:'mail',ph:'juan@example.ph',ac:'email'}
+ ],
+ newpass:[
+  {id:'np-pass',label:'New password',type:'password',icon:'lock',ph:'At least 8 characters',ac:'new-password',eye:true,meter:true},
+  {id:'np-confirm',label:'Confirm new password',type:'password',icon:'lock',ph:'Re-enter your new password',ac:'new-password',eye:true}
+ ]
+};
+var META={
+ signin:{title:'Welcome back',sub:'Sign in to sync your study progress across devices.',cta:'Sign In'},
+ create:{title:'Create your free account',sub:'Save your study progress and continue reviewing on any device.',cta:'Create Account & Sync'},
+ reset:{title:'Reset your password',sub:"Enter your email address and we'll send you instructions to reset your password.",cta:'Send Reset Link'},
+ newpass:{title:'Set a new password',sub:'Choose a strong password you have not used on ReviewTayo before.',cta:'Update Password'}
+};
+var BENEFITS=[
+ {t:'Sync your study progress',d:'Pick up on any device, right where you left off.'},
+ {t:'Track your readiness',d:'Accuracy and streaks saved as you review.'},
+ {t:'Your data, your call',d:'Export or delete your records anytime.'}
+];
+var CSTATES=[['signin','Sign in'],['create','Create account'],['reset','Forgot password'],['reset-sent','Check inbox'],['newpass','New password']];
+var lastEmail='juan@example.ph';
+
+/* ---------- templates ---------- */
+function fieldHTML(f,p){
+ var id=p+f.id;
+ var eyeBtn=f.eye?'<button type="button" class="eye" data-eye aria-pressed="false" aria-label="Show password">'+I.eye+'</button>':'';
+ var hint=f.meter?'Use at least 8 characters. <span class="cnt" data-cnt>0/8</span>':(f.hint||'');
+ return '<div class="field" data-f="'+f.id+'">'
+  +'<div class="prow"><label for="'+id+'">'+f.label+'</label>'+(f.forgot?'<button type="button" class="flink" data-go="reset">Forgot password?</button>':'')+'</div>'
+  +'<div class="inp"><span class="ic">'+I[f.icon]+'</span><input id="'+id+'" name="'+f.id+'" type="'+f.type+'" placeholder="'+f.ph+'" autocomplete="'+f.ac+'" aria-describedby="'+id+'-hint '+id+'-err">'+eyeBtn+'</div>'
+  +(hint?'<div class="hint" id="'+id+'-hint">'+hint+'</div>':'')
+  +'<div class="err" id="'+id+'-err"></div>'
+  +'</div>';
+}
+function footHTML(mode){
+ if(mode==='signin')return '<div class="sec"><button type="button" class="btn-g btn-block" data-toast="Guest mode — progress stays on this device. (Mockup)">Continue without an account</button><p class="muted">New to CSE Reviewer? <button type="button" class="flink" data-go="create">Create a free account</button></p></div>';
+ if(mode==='create')return '<div class="sec"><button type="button" class="btn-g btn-block" data-toast="Guest mode — progress stays on this device. (Mockup)">Continue without an account</button><p class="muted">Already have an account? <button type="button" class="flink" data-go="signin">Sign in</button></p></div>';
+ return '<div class="sec"><p class="muted"><button type="button" class="flink" data-go="signin">&larr; Back to sign in</button></p></div>';
+}
+function privacyHTML(){return '<div class="privacy">'+I.shield+'<p><b>Data Privacy:</b> Creating an account is optional. We use your email and display name to save and sync your study progress across devices. You can export or delete your records anytime.</p></div>'}
+function formHTML(mode,o){
+ o=o||{};var p=o.pfx||'m-',m=META[mode],fs=FIELDS[mode]||[];
+ var sw=(o.switcher&&mode!=='reset'&&mode!=='newpass')?'<div class="switcher" role="group" aria-label="Sign in or create account">'
+  +'<button type="button" aria-pressed="'+(mode==='signin')+'" data-go="signin">Sign in</button>'
+  +'<button type="button" aria-pressed="'+(mode==='create')+'" data-go="create">Create account</button></div>':'';
+ var fields=fs.map(function(f){return fieldHTML(f,p)}).join('');
+ return sw+'<header class="fhead"><h2 id="'+(o.tid||'mtitle')+'" tabindex="-1">'+m.title+'</h2><p class="sub">'+m.sub+'</p></header>'
+  +'<form data-mode="'+mode+'" novalidate>'+fields+'<button class="btn-p btn-block" type="submit">'+m.cta+'</button></form>'
+  +footHTML(mode)+(o.privacy&&mode==='create'?privacyHTML():'');
+}
+function sentHTML(email,tid){return '<div class="sent"><div class="ow" data-owl data-mood="happy" style="width:88px"></div><h2 id="'+tid+'" tabindex="-1">Check your inbox</h2><p class="sub">If an account matches <b>'+email+'</b>, reset instructions are on their way.</p><button type="button" class="btn-g" data-go="signin">Back to sign in</button></div>'}
+function doneHTML(tid){return '<div class="sent"><div class="ow" data-owl data-mood="happy" style="width:88px"></div><h2 id="'+tid+'" tabindex="-1">Password updated</h2><p class="sub">All set — sign in with your new password.</p><button type="button" class="btn-g" data-go="signin">Back to sign in</button></div>'}
+
+/* ---------- modal (concepts A + B) ---------- */
+var mroot=document.getElementById('mroot'),modal=document.getElementById('modal'),mform=document.getElementById('mform'),mbrand=document.getElementById('mbrand');
+var cur={concept:'a',mode:'signin'},lastFocus=null;
+function renderModal(){
+ var inSent=cur.mode==='reset-sent',done=cur.mode==='newpass-done';
+ mform.innerHTML=inSent?sentHTML(lastEmail,'mtitle'):done?doneHTML('mtitle'):formHTML(cur.mode,{switcher:true,privacy:true,tid:'mtitle',pfx:'m-'});
+ modal.classList.toggle('split',cur.concept==='a');
+ modal.classList.toggle('compact',cur.concept==='b');
+ mbrand.hidden=cur.concept==='b';
+ initOwls();
+}
+function openAuth(concept,mode){
+ cur={concept:concept,mode:mode};lastFocus=document.activeElement;
+ renderModal();mroot.hidden=false;document.body.style.overflow='hidden';
+ document.querySelectorAll('.topbar,main').forEach(function(el){el.inert=true});
+ modal.querySelector('.mclose').focus();
+}
+function closeModal(){
+ mroot.hidden=true;document.body.style.overflow='';
+ document.querySelectorAll('.topbar,main').forEach(function(el){el.inert=false});
+ if(lastFocus)lastFocus.focus();
+}
+mroot.addEventListener('keydown',function(e){
+ if(e.key==='Escape'){closeModal();return}
+ if(e.key!=='Tab')return;
+ var f=[].slice.call(modal.querySelectorAll('button,input')).filter(function(el){return !el.disabled&&el.offsetParent!==null});
+ if(!f.length)return;
+ var first=f[0],last=f[f.length-1];
+ if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+ else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+});
+
+/* ---------- concept C page ---------- */
+var cstate='reset',cchips=document.getElementById('cchips'),cbody=document.getElementById('cbody');
+function renderC(){
+ cchips.innerHTML=CSTATES.map(function(s){return '<button type="button" aria-pressed="'+(cstate===s[0])+'" data-cs="'+s[0]+'">'+s[1]+'</button>'}).join('');
+ cbody.innerHTML=cstate==='reset-sent'?sentHTML(lastEmail,'ptitle'):cstate==='newpass-done'?doneHTML('ptitle'):formHTML(cstate,{privacy:true,tid:'ptitle',pfx:'p-'});
+ initOwls();
+}
+
+/* ---------- shared behaviors ---------- */
+function isEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?'':'Enter a valid email address.'}
+var RULES={
+ 'si-email':isEmail,'ca-email':isEmail,'rs-email':isEmail,
+ 'si-pass':function(v){return v?'':'Enter your password.'},
+ 'ca-name':function(v){return v.trim()?'':'Enter your display name.'},
+ 'ca-pass':function(v){return v.length>=8?'':'Password must be at least 8 characters.'},
+ 'np-pass':function(v){return v.length>=8?'':'Password must be at least 8 characters.'},
+ 'np-confirm':function(v){return v?'':'Re-enter your new password.'}
+};
+function showToast(msg){
+ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+ clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('on')},2800);
+}
+function setMode(m){
+ if(!mroot.hidden){cur.mode=m;renderModal();var h=mform.querySelector('h2');if(h)h.focus()}
+ else{cstate=m;renderC();var h2=cbody.querySelector('h2');if(h2)h2.focus()}
+}
+function onSubmit(form){
+ var mode=form.dataset.mode,ok=true,firstBad=null;
+ form.querySelectorAll('.field').forEach(function(fd){
+  var inp=fd.querySelector('input'),rule=RULES[inp.name],msg=rule?rule(inp.value):'';
+  if(!msg&&inp.name==='np-confirm'&&form.elements['np-pass'].value!==inp.value)msg="Passwords don't match.";
+  fd.classList.toggle('invalid',!!msg);
+  fd.querySelector('.err').textContent=msg;
+  if(msg){inp.setAttribute('aria-invalid','true');if(!firstBad)firstBad=inp}else inp.removeAttribute('aria-invalid');
+ });
+ if(firstBad){firstBad.focus();return}
+ var email=form.elements['si-email']||form.elements['ca-email']||form.elements['rs-email'];
+ if(mode==='signin')showToast('Welcome back, '+(email.value||'Juan')+'! (Mockup — no backend yet.)');
+ else if(mode==='create')showToast('Account ready for '+((form.elements['ca-name'].value)||'Juan')+'! (Mockup — no backend yet.)');
+ else if(mode==='reset'){lastEmail=email.value||lastEmail;setMode('reset-sent');showToast('Reset link sent — illustrative only, no email is actually sent.')}
+ else if(mode==='newpass'){setMode('newpass-done');showToast('Password updated — illustrative only.')}
+}
+function wire(root){
+ root.addEventListener('click',function(e){
+  var go=e.target.closest('[data-go]');if(go){setMode(go.dataset.go);return}
+  var ey=e.target.closest('[data-eye]');
+  if(ey){var inp=ey.parentElement.querySelector('input'),show=inp.type==='password';
+   inp.type=show?'text':'password';ey.setAttribute('aria-pressed',show);
+   ey.setAttribute('aria-label',show?'Hide password':'Show password');return}
+  var tst=e.target.closest('[data-toast]');if(tst)showToast(tst.dataset.toast);
+  var cs=e.target.closest('[data-cs]');if(cs){cstate=cs.dataset.cs;renderC()}
+ });
+ root.addEventListener('submit',function(e){e.preventDefault();onSubmit(e.target)});
+ root.addEventListener('input',function(e){
+  var fd=e.target.closest('.field');if(fd){fd.classList.remove('invalid');e.target.removeAttribute('aria-invalid')}
+  if(e.target.name==='ca-pass'||e.target.name==='np-pass'){
+   var cnt=fd.querySelector('[data-cnt]');if(cnt){cnt.textContent=e.target.value.length+'/8';cnt.classList.toggle('ok',e.target.value.length>=8)}
+  }
+ });
+}
+
+/* ---------- shell wiring ---------- */
+document.querySelectorAll('[data-stage]').forEach(function(st){
+ var c=st.dataset.stage;
+ st.innerHTML='<div class="deco" aria-hidden="true"><span class="bigh">Review smarter.<br>Pass sooner.</span>'
+  +'<div class="gh" style="left:5%;top:16%"></div><div class="gh tall" style="right:6%;top:26%"></div>'
+  +'<div class="gh tall" style="left:9%;bottom:10%"></div><div class="gh" style="right:10%;bottom:7%"></div></div>'
+  +'<div class="trig"><p class="trigh">Live demo — each state opens as a real modal over the page. On a phone width it docks as a bottom sheet.</p>'
+  +'<div class="tbtns"><button class="btn-p" data-open="'+c+':signin">Sign in</button>'
+  +'<button class="btn-g" data-open="'+c+':create">Create account</button>'
+  +'<button class="btn-g" data-open="'+c+':reset">Forgot password</button></div></div>';
+});
+document.addEventListener('click',function(e){
+ var op=e.target.closest('[data-open]');
+ if(op){var parts=op.dataset.open.split(':');openAuth(parts[0],parts[1]);return}
+ if(e.target.closest('[data-close]')){closeModal();return}
+ var tb=e.target.closest('[data-tab]');
+ if(tb){document.querySelectorAll('[data-tab]').forEach(function(b){b.setAttribute('aria-pressed',b===tb)});
+  document.querySelectorAll('.cpanel').forEach(function(p){p.hidden=p.id!=='panel-'+tb.dataset.tab});return}
+ var th=e.target.closest('[data-th]');
+ if(th){if(th.dataset.th)document.documentElement.dataset.theme=th.dataset.th;else delete document.documentElement.dataset.theme;
+  document.querySelectorAll('.seg button').forEach(function(b){b.setAttribute('aria-pressed',b===th)})}
+});
+document.getElementById('notesFab').addEventListener('click',function(){
+ var on=document.body.classList.toggle('notes');this.setAttribute('aria-pressed',on);
+});
+
+/* ---------- init ---------- */
+document.querySelectorAll('[data-benefits]').forEach(function(ul){
+ ul.innerHTML=BENEFITS.map(function(b){return '<li><span class="bcheck">'+I.check+'</span><div><b>'+b.t+'</b><span>'+b.d+'</span></div></li>'}).join('');
+});
+wire(mform);wire(cbody);
+initOwls();renderC();
+</script>
+</body>
+</html>

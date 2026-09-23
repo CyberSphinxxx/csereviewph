@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { ExamsPageView } from "@/components/reviewers/ExamsPageView";
@@ -6,6 +6,10 @@ import { ExamsPageView } from "@/components/reviewers/ExamsPageView";
 // Mock scrollIntoView
 beforeEach(() => {
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
+});
+
+afterEach(() => {
+  vi.clearAllTimers();
 });
 
 describe("ExamsPageView Component (reviewtayo-exams-v2)", () => {

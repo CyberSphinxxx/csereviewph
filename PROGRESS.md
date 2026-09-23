@@ -2,48 +2,31 @@
 
 Full prior status is archived in `ARCHIVES/progress-history.md`.
 
-**Current status: REVIEWTAYO HEADER UNIFICATION, LANDING CTAS, REVIEWERS GRADIENT & DARK RED THEME COMPLETE (CODE 0)**
+**Current status: README COMPREHENSIVE EXPANSION & GITHUB ACTIONS VITEST UNHANDLED TIMER FIX COMPLETE (CODE 0)**
 
 ## Done
 
-- **Browse Exams Navigation**:
-  - Updated all "Browse exams" links across the site (`CountdownCloseSection.tsx`, `HeroSection.tsx`, `LandingFooter.tsx`) to link to `/reviewers`.
-- **Reviewers Background Gradient Harmonization**:
-  - Replaced plain white background on `/reviewers` with `.exams-page-gradient` (`#fdf8f6` -> `#fcf0f1` -> `#f9e2e7` soft rose blush into maroon gradient).
-  - Cards, panels, and questionnaire float with high-contrast surfaces over the warm pink/rose background, exactly matching the attached design screenshot.
-- **Single Unified Header**:
-  - Unified the header across the entire application into a single canonical component (`src/components/layout/Header.tsx`).
-  - Features the canonical `ReviewTayoOwl` (with graduation cap) + Georgia serif `reviewtayo` wordmark.
-  - Active route pill indicator (`bg-[#8a1630] text-white`) for `Exams`, `Study resources`, and `My dashboard`.
-  - Integrated `UserNav` / `Sign in` auth button with accessible mobile navigation drawer.
-- **Single-Exam Support & Dynamic Landing Hero CTAs**:
-  - Logged out (`!session?.user`): Displays *"Choose an exam"* (`/reviewers`) and *"Sign in"* (triggers `AuthModal`).
-  - Logged in (`session?.user`): Displays *"Go to my dashboard &rarr;"* (`/dashboard`) and *"Browse exams"* (`/reviewers`).
-- **Velvety Dark Red Theme**:
-  - Configured dark mode variables and styling matching the user's second screenshot (`image 1.png`).
-  - Background: deep dark red `#1a0c11`.
-  - Cards & Panels: `#2b1620`.
-  - Bubbles & Badges: `#3b1a25` and `#3a1f29`.
-  - High-contrast text: `#f8ecee` with muted details in `#d6bcc3`.
-  - Floating proof cards and SVGs updated with full dark red theme support.
+- **GitHub Actions Vitest Unhandled Error Fix**:
+  - Resolved `ReferenceError: window is not defined` originating from unhandled timers firing post-test teardown in `OwlFinderSection.tsx`.
+  - Added timer tracking via `useRef` and guaranteed unmount cleanup via `useEffect` in `OwlFinderSection`, `ExamsPageView`, `TryQuestionSection`, and `ExamChooserSection`.
+  - Added test-suite safety hook (`afterEach(() => vi.clearAllTimers())`) in `tests/unit/components/exams-page-view.test.tsx` to eliminate lingering Node timer event triggers.
+- **README.md Comprehensive Overhaul**:
+  - Restructured `README.md` into an authoritative, detailed guide covering project vision, civil service realism, and future licensure multi-exam expansion.
+  - Added **Documentation Map** linking to `PROGRESS.md`, `ARCHIVES/progress-history.md`, `AGENTS.md`, `SETUP_GUIDE.md`, `docs/product-plan.md`, `docs/product-plan-addendum.md`, and `docs/vercel-deployment.md`.
+  - Documented core feature suites: Exam Runner & continuous timer, Reviewers directory with Owl Goal Matcher, Study Resources hub, Learner Dashboard with Mistake Bank, PWA offline capabilities, and RA 10173 data privacy adherence.
+  - Detailed design system aesthetics: Velvet Maroon (`#8a1630`), Rose Blush gradient, Velvety Dark Red theme (`#1a0c11`), and pointer-tracking animated SVG owl mascot.
+  - Documented zero-branching engine architecture and real PostgreSQL integration testing using `@electric-sql/pglite` WASM.
 
 ## Verified
 
 - `npm run verify`: **PASS (exit code 0)**
   - TypeScript (`tsc --noEmit`): 0 errors
-  - ESLint (`eslint .`): 0 errors, 0 warnings
+  - ESLint (`eslint .`): 0 errors
   - Architecture Guard: PASS (0 hardcoded exam engine branches)
-  - Vitest Unit & Integration Tests: **61 files passed (364 tests, 100%)**
-  - Next.js Production Build: **79 static pages generated successfully, 0 errors**
-- Playwright E2E Suites:
-  - `tests/e2e/reviewtayo-exams-v2-verification.spec.ts`: PASS (2/2 tests passed)
-  - `tests/e2e/reviewtayo-multiexam-visual.spec.ts`: PASS (1/1 test passed)
-  - `tests/e2e/capture-theme-screenshots.spec.ts`: PASS (1/1 test passed)
-- Screenshots captured and verified:
-  - Light mode reviewers page with warm gradient: `reviewers-gradient-light.png`
-  - Dark mode reviewers page with dark red theme: `reviewers-dark-red.png`
-  - Light mode landing hero with unified header and dynamic CTAs: `landing-hero-light.png`
-  - Dark mode landing page with dark red theme: `landing-dark-red.png`
+  - Vitest Unit & Integration Tests: **62 files passed (371 tests, 100% pass, 0 unhandled errors)**
+  - Next.js Production Build: **85 static and dynamic pages generated successfully, 0 errors**
+- Isolated Test Verification:
+  - `npx vitest run tests/unit/components/exams-page-view.test.tsx`: 10/10 passed with 0 unhandled exceptions
 
 ## Blocked
 

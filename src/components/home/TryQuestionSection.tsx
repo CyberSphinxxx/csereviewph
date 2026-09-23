@@ -43,8 +43,17 @@ export function TryQuestionSection() {
   const [confettiActive, setConfettiActive] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(598);
   const cardRef = useRef<HTMLDivElement>(null);
+  const confettiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentQ = SAMPLE_QUESTIONS[questionIndex];
+
+  useEffect(() => {
+    return () => {
+      if (confettiTimerRef.current) {
+        clearTimeout(confettiTimerRef.current);
+      }
+    };
+  }, []);
 
   // Ticking countdown timer
   useEffect(() => {
@@ -68,7 +77,10 @@ export function TryQuestionSection() {
     if (isCorrect) {
       setOwlMood("happy");
       setConfettiActive(true);
-      setTimeout(() => setConfettiActive(false), 1200);
+      if (confettiTimerRef.current) {
+        clearTimeout(confettiTimerRef.current);
+      }
+      confettiTimerRef.current = setTimeout(() => setConfettiActive(false), 1200);
     } else {
       setOwlMood("oops");
     }

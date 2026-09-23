@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -52,6 +52,15 @@ export function OwlFinderSection({
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [activeField, setActiveField] = useState<string>("all");
   const [owlMood, setOwlMood] = useState<OwlMood>("idle");
+  const moodTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (moodTimerRef.current) {
+        clearTimeout(moodTimerRef.current);
+      }
+    };
+  }, []);
 
   const selectedGoal = EXAM_GOALS.find((g) => g.id === selectedGoalId) || null;
 
@@ -77,7 +86,10 @@ export function OwlFinderSection({
     setSelectedGoalId(goal.id);
     setActiveField("all");
     setOwlMood("happy");
-    setTimeout(() => {
+    if (moodTimerRef.current) {
+      clearTimeout(moodTimerRef.current);
+    }
+    moodTimerRef.current = setTimeout(() => {
       setOwlMood("idle");
     }, 1400);
   };

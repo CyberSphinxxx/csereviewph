@@ -18,8 +18,20 @@ export function ExamsPageView() {
   const catalogRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   // Global Keyboard Shortcut: Pressing '/' focuses search (unless in an input/textarea)
   useEffect(() => {
+    let keydownTimer: ReturnType<typeof setTimeout> | null = null;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         e.key === "/" &&
@@ -29,14 +41,18 @@ export function ExamsPageView() {
       ) {
         e.preventDefault();
         catalogRef.current?.scrollIntoView({ behavior: "smooth" });
-        setTimeout(() => {
+        if (keydownTimer) clearTimeout(keydownTimer);
+        keydownTimer = setTimeout(() => {
           searchInputRef.current?.focus({ preventScroll: true });
         }, 150);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (keydownTimer) clearTimeout(keydownTimer);
+    };
   }, []);
 
   // Universal pointermove listener: pupil tracking on all owls
@@ -78,7 +94,10 @@ export function ExamsPageView() {
 
   const handleGoToSearch = () => {
     catalogRef.current?.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+    searchTimerRef.current = setTimeout(() => {
       searchInputRef.current?.focus({ preventScroll: true });
     }, 450);
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, useMemo } from "react";
+import React, { useState, useTransition, useMemo, useRef, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Search, Sparkles } from "lucide-react";
 import { ExamCard } from "@/components/home/ExamCard";
@@ -28,6 +28,15 @@ export function ExamChooserSection() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [votedExam, setVotedExam] = useState<string | null>(null);
+  const voteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (voteTimerRef.current) {
+        clearTimeout(voteTimerRef.current);
+      }
+    };
+  }, []);
 
   // Read active category from URL (?category=civil-service|licensure|public-safety)
   const currentCategoryParam = searchParams?.get("category")?.toLowerCase() as ExamCategory | undefined;
@@ -97,7 +106,10 @@ export function ExamChooserSection() {
   const handleVote = (exam: ExamCatalogEntry) => {
     // TODO: Connect storage service (Supabase table, Drizzle postgres inquiries, or external form)
     setVotedExam(exam.shortName);
-    setTimeout(() => setVotedExam(null), 3000);
+    if (voteTimerRef.current) {
+      clearTimeout(voteTimerRef.current);
+    }
+    voteTimerRef.current = setTimeout(() => setVotedExam(null), 3000);
   };
 
   const hasSearch = EXAM_CATALOG.length >= SHOW_SEARCH_THRESHOLD;
