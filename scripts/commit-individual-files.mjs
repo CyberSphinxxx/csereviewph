@@ -212,6 +212,138 @@ function generateCommitMessage(file) {
     return "perf(practice): prerender topic practice route with generateStaticParams";
   }
 
+  // Archives & Design Mockups
+  if (filePath.startsWith("ARCHIVES/reviewtayo-") && filePath.endsWith(".html")) {
+    const pageName = baseName.replace(/\.html$/, "");
+    return `docs(design): archive ${pageName} HTML mockup`;
+  }
+  if (filePath.startsWith("reviewtayo-") && filePath.endsWith(".html")) {
+    const pageName = baseName.replace(/\.html$/, "");
+    if (file.status.includes("D")) {
+      return `docs(design): remove unarchived ${pageName} root mockup`;
+    }
+    return `docs(design): add ${pageName} mockup`;
+  }
+
+  // Dashboard Unified Shell & Views
+  if (filePath === "src/features/dashboard/AppShell.tsx") {
+    return "feat(dashboard): create responsive AppShell layout with sidebar and exam switcher";
+  }
+  if (filePath === "src/features/dashboard/DashboardView.tsx") {
+    return "feat(dashboard): connect daily quests, quick actions, and study plan widgets";
+  }
+  if (filePath === "src/features/dashboard/DashboardOnboardingView.tsx") {
+    return "feat(dashboard): adapt onboarding to current workspace exam and target dates";
+  }
+  if (filePath === "src/features/dashboard/useDailyQuests.ts") {
+    return "feat(dashboard): add daily quests hook with progress tracking";
+  }
+  if (filePath === "src/features/dashboard/achievements/AchievementsView.tsx") {
+    return "feat(dashboard): add AchievementsView with milestone badges and progress tracking";
+  }
+  if (filePath === "src/features/dashboard/history/HistoryView.tsx") {
+    return "feat(dashboard): add HistoryView with test filtering and exam switcher";
+  }
+  if (filePath === "src/features/dashboard/notes/NotesView.tsx") {
+    return "feat(dashboard): add NotesView for exam-scoped notes and search";
+  }
+  if (filePath === "src/features/dashboard/plan/StudyPlanView.tsx") {
+    return "feat(dashboard): add StudyPlanView with weekly schedule and milestone checklist";
+  }
+  if (filePath === "src/features/dashboard/practice/PracticeHubView.tsx") {
+    return "feat(dashboard): add PracticeHubView with test mode selection cards";
+  }
+  if (filePath === "src/features/dashboard/review/ReviewView.tsx") {
+    return "feat(dashboard): add ReviewView for SRS flashcard review and mistake bank";
+  }
+
+  // Dashboard Routes
+  if (filePath === "src/app/(app)/dashboard/page.tsx") {
+    return "feat(dashboard): integrate AppShell with primary dashboard landing page";
+  }
+  if (filePath === "src/app/(app)/dashboard/achievements/page.tsx") {
+    return "feat(dashboard): add achievements page route";
+  }
+  if (filePath === "src/app/(app)/dashboard/history/page.tsx") {
+    return "feat(dashboard): integrate HistoryView into dashboard history route";
+  }
+  if (filePath === "src/app/(app)/dashboard/learn/page.tsx") {
+    return "feat(dashboard): add study guides/learn redirect route";
+  }
+  if (filePath === "src/app/(app)/dashboard/notes/page.tsx") {
+    return "feat(dashboard): add exam-scoped personal notes route";
+  }
+  if (filePath === "src/app/(app)/dashboard/plan/page.tsx") {
+    return "feat(dashboard): add study plan route";
+  }
+  if (filePath === "src/app/(app)/dashboard/practice/page.tsx") {
+    return "feat(dashboard): add practice hub route";
+  }
+  if (filePath === "src/app/(app)/dashboard/review/page.tsx") {
+    return "feat(dashboard): add SRS review hub route";
+  }
+  if (filePath === "src/app/(app)/settings/SettingsShell.tsx") {
+    return "feat(settings): support dashboard workspace context in SettingsShell";
+  }
+  if (filePath === "src/app/(app)/settings/study/page.tsx") {
+    return "feat(settings): add target exam and study schedule controls";
+  }
+
+  // Config Files
+  if (filePath === "src/config/achievements.ts") {
+    return "feat(config): define achievement badges and milestone definitions";
+  }
+  if (filePath === "src/config/practice-modes.ts") {
+    return "feat(config): add practice modes catalog and routing configurations";
+  }
+  if (filePath === "src/config/study-plan-templates.ts") {
+    return "feat(config): define study plan milestone templates for CSE, LET, and Nursing";
+  }
+
+  // Libraries & Utilities
+  if (filePath === "src/lib/achievement-engine.ts") {
+    return "feat(achievements): implement achievement evaluation engine";
+  }
+  if (filePath === "src/lib/daily-quests.ts") {
+    return "feat(quests): implement daily quest generation and completion tracker";
+  }
+  if (filePath === "src/lib/study-plan-generator.ts") {
+    return "feat(study-plan): implement auto-generated study plan schedule generator";
+  }
+  if (filePath === "src/lib/study-plan.ts") {
+    return "feat(study-plan): add study plan validation and progress calculation";
+  }
+  if (filePath === "src/lib/workspace/target-exam.ts") {
+    return "feat(workspace): add target exam resolution and active exam helper";
+  }
+  if (filePath === "src/lib/storage/notes-service.ts") {
+    return "feat(storage): implement exam-scoped personal notes service";
+  }
+  if (filePath === "src/lib/storage/safe-storage.ts") {
+    return "feat(storage): add SSR-safe storage abstraction with fallback";
+  }
+  if (filePath === "src/lib/storage/local-storage-service.ts") {
+    return "feat(storage): add multi-exam isolation and safe migration logic";
+  }
+  if (filePath === "src/lib/storage/types.ts") {
+    return "feat(storage): add notes, quests, and study plan storage interfaces";
+  }
+  if (filePath === "src/lib/storage/index.ts") {
+    return "feat(storage): export safeStorage, notesService, and clean slate utilities";
+  }
+  if (filePath === "src/lib/content/types.ts") {
+    return "feat(content): export exam identifiers and subject types";
+  }
+  if (filePath === "src/lib/preferences/types.ts") {
+    return "feat(preferences): add target exam preferences schema";
+  }
+  if (filePath === "src/lib/preferences/preferences-service.ts") {
+    return "feat(preferences): add target exam and schedule preference persistence";
+  }
+  if (filePath === "src/lib/preferences/usePreferences.ts") {
+    return "feat(preferences): expose exam preference hooks and state mutations";
+  }
+
   // Documentation & Logs
   if (filePath === "AGENTS.md") {
     return "docs(agents): update guidelines for token efficiency and rolling progress handoffs";
@@ -229,19 +361,10 @@ function generateCommitMessage(file) {
     return "docs(plan): update implementation plan for coach bubble, clean header, and cse redesign";
   }
   if (filePath.endsWith("PROGRESS.md")) {
-    return "docs(progress): record updates 2 through 7 for coach bubble, cse landing, and hero selector";
+    return "docs(progress): record unified dashboard app shell, study plan, daily quests, and notes";
   }
   if (filePath.endsWith("walkthrough.md")) {
-    return "docs(walkthrough): update verification walkthrough for coach panel and cse redesign";
-  }
-  if (filePath === "reviewtayo-csepage-v1.html") {
-    return "docs(design): add reviewtayo csepage v1 design mockup";
-  }
-  if (filePath === "reviewtayo-csepage-v2-combined.html") {
-    return "docs(design): add reviewtayo csepage v2 combined design mockup";
-  }
-  if (filePath === "reviewtayo-testpage-v1.html") {
-    return "docs(design): add reviewtayo testpage v1 design mockup";
+    return "docs(walkthrough): update verification walkthrough for unified app shell and dashboard suite";
   }
   if (filePath.startsWith(".design/")) {
     const docName = baseName.replace(/\.[^/.]+$/, "");
