@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -70,6 +71,42 @@ interface SetupState {
 /** Modes whose rules already accept a subject/feedback/timer setup. */
 const SETUP_ENABLED = new Set(["quick", "medium", "diagnostic", "srs", "mistakes", "bookmarks", "topics"]);
 
+/**
+ * Marks every direct child of <body> except the dialog itself inert so
+ * pointer and keyboard focus cannot reach the page behind the sheet. Returns
+ * a cleanup that restores each element's previous inert state.
+ *
+ * The sheet and backdrop are rendered through createPortal(document.body):
+ * the hub root uses .animate-page-enter, whose forwards-fill transform makes
+ * Chromium treat it as the containing block for fixed descendants — insetting
+ * the sheet against the content column instead of the viewport and leaving
+ * the dark page background exposed left of a column-wide backdrop. Portaling
+ * past that wrapper fixes both at once.
+ */
+function lockBackground(dialog: HTMLElement): () => void {
+  const touched: { el: HTMLElement; prev: boolean }[] = [];
+  for (const child of Array.from(document.body.children)) {
+    if (!(child instanceof HTMLElement)) continue;
+    if (child === dialog || child.contains(dialog)) continue;
+    if (child.tagName === "SCRIPT" || child.tagName === "STYLE" || child.tagName === "LINK") continue;
+    touched.push({ el: child, prev: child.inert });
+    child.inert = true;
+  }
+  return () => {
+    for (const { el, prev } of touched) el.inert = prev;
+  };
+}
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Focusable elements inside the dialog (skip aria-hidden subtrees). */
+function dialogFocusables(dialog: HTMLElement): HTMLElement[] {
+  return Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.getAttribute("aria-hidden") !== "true" && el.closest("[aria-hidden='true']") === null
+  );
+}
+
 export function PracticeHubView() {
   const router = useRouter();
   const { currentWorkspace, currentExamConfig, isLoaded } = useExamWorkspace();
@@ -80,6 +117,7 @@ export function PracticeHubView() {
   const [weakest, setWeakest] = useState<SubjectReadinessMetric | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -98,13 +136,37 @@ export function PracticeHubView() {
     [subjects]
   );
 
-  // Setup sheet a11y: focus trap essentials, escape to close, inert background handled via overlay
+  // Setup sheet a11y: Escape closes, Tab is trapped inside the dialog, the
+  // page behind is inert, and focus returns to the card that opened it.
   useEffect(() => {
     if (!setup) return;
+    const dialog = sheetRef.current;
+
+    // Remember where focus came from so closing the sheet puts it back.
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const unlock = dialog ? lockBackground(dialog) : () => {};
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         setSetup(null);
+        return;
+      }
+      if (e.key !== "Tab" || !dialog) return;
+      const focusable = dialogFocusables(dialog);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !dialog.contains(active as Node)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !dialog.contains(active as Node)) {
+        e.preventDefault();
+        first.focus();
       }
     };
     document.addEventListener("keydown", onKey);
@@ -114,6 +176,9 @@ export function PracticeHubView() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
       window.clearTimeout(t);
+      unlock();
+      restoreFocusRef.current?.focus?.();
+      restoreFocusRef.current = null;
     };
   }, [setup]);
 
@@ -349,9 +414,12 @@ export function PracticeHubView() {
         </Link>
       </section>
 
-      {/* Setup sheet */}
-      {setup && (
-        <>
+      {/* Setup sheet — portaled to <body>: the hub root's .animate-page-enter
+          transform would otherwise become the containing block for these fixed
+          overlays in Chromium (CTA pushed out of view + exposed dark strip). */}
+      {setup &&
+        createPortal(
+          <>
           <div
             className="fixed inset-0 z-50 bg-[rgba(20,5,10,0.55)]"
             onClick={() => setSetup(null)}
@@ -484,8 +552,9 @@ export function PracticeHubView() {
               </button>
             </div>
           </div>
-        </>
-      )}
+          </>,
+          document.body
+        )}
     </div>
   );
 }
