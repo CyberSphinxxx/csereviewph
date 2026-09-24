@@ -257,20 +257,28 @@ export class PreferencesService {
       window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(next));
       this.cachedPreferences = next;
 
-      // Synchronize with existing legacy storage helpers to avoid drift.
-      // Only mirrors into workspace storage when an exam is actually chosen —
-      // never fabricates a target for a fresh visitor.
+      // Synchronize with the authoritative workspace store so both stores
+      // agree after any preferences save. Only mirrors when an exam is
+      // actually chosen — never fabricates a target for a fresh visitor. The
+      // active workspace's real exam name wins over synthesized labels.
       try {
         const hasChosenExam =
           WorkspaceService.getAllWorkspaces().length > 0;
         if (hasChosenExam) {
+          const active = WorkspaceService.getCurrentWorkspace();
+          const fallbackName =
+            (active?.examId === "cse" && active?.trackName
+              ? `CSE-PPT ${active.trackName}`
+              : undefined) ||
+            (next.study.levelId.includes("subprof")
+              ? "CSE-PPT Subprofessional"
+              : "CSE-PPT Professional");
           LocalStorageService.saveTargetExamConfig({
-            targetDate: next.study.targetDate,
-            examName:
-              next.study.targetExamName ||
-              (next.study.levelId.includes("subprof")
-                ? "CSE-PPT Subprofessional"
-                : "CSE-PPT Professional"),
+            // Never resurrect or re-clear a date behind the user's back: when
+            // preferences carry no date but the active workspace does, keep
+            // the workspace's date. Empty string = "no date set", a real state.
+            targetDate: next.study.targetDate || active?.targetExamDate || "",
+            examName: next.study.targetExamName || fallbackName,
             dailyGoal: next.study.dailyGoal,
           });
         }
