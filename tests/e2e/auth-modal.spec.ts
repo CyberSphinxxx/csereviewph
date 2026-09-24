@@ -57,28 +57,33 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await expect(modal).not.toBeVisible();
   });
 
-  test("renders dedicated /sign-in page with 2-column layout on desktop", async ({ page }, testInfo) => {
+  test("renders dedicated /sign-in standalone page with brand panel on desktop", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/sign-in");
 
-    await expect(page.getByText("Keep your study progress with you.")).toBeVisible();
-    await expect(page.getByText("Save your results, track weak areas, and continue reviewing on any device.")).toBeVisible();
-    await expect(page.getByText("Diagnostic Mock Exam")).toBeVisible();
-    await expect(page.getByText("84.5% Passed")).toBeVisible();
+    // Brand panel (Concept C)
+    await expect(page.getByRole("heading", { name: /Review smarter/i })).toBeVisible();
+    await expect(page.getByText("Live · Civil Service Exam")).toBeVisible();
+    await expect(page.getByText("Sync your study progress")).toBeVisible();
+
+    // Form side
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+    await expect(page.getByPlaceholder("Enter your password")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Back to practice/i })).toBeVisible();
 
     await page.screenshot({
       path: testInfo.outputPath("dedicated_signin_desktop.png"),
     });
   });
 
-  test("renders dedicated /create-account page with 2-column layout on desktop", async ({ page }, testInfo) => {
+  test("renders dedicated /create-account standalone page with privacy notice", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/create-account");
 
-    await expect(page.getByText("Keep your study progress with you.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Review smarter/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Create your free account" })).toBeVisible();
     await expect(page.getByPlaceholder("Juan Dela Cruz")).toBeVisible();
+    await expect(page.getByText("Data Privacy:")).toBeVisible();
 
     await page.screenshot({
       path: testInfo.outputPath("dedicated_signup_desktop.png"),
@@ -95,5 +100,30 @@ test.describe("Auth Modal & Dedicated Pages UI Verification", () => {
     await page.screenshot({
       path: testInfo.outputPath("dedicated_forgot_password.png"),
     });
+  });
+
+  test("renders /reset-password new-password form with token, invalid state without", async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    await page.goto("/reset-password?token=demo-token");
+    await expect(page.getByRole("heading", { name: "Set a new password" })).toBeVisible();
+    await expect(page.getByText("New password", { exact: true })).toBeVisible();
+    await expect(page.getByText("Confirm new password")).toBeVisible();
+
+    await page.screenshot({
+      path: testInfo.outputPath("dedicated_reset_password.png"),
+    });
+
+    await page.goto("/reset-password");
+    await expect(page.getByText("This reset link is not valid")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request a new link" })).toBeVisible();
+  });
+
+  test("inline validation shows on the standalone sign-in page", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/sign-in");
+
+    await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    await expect(page.getByText("Enter a valid email address.")).toBeVisible();
   });
 });
