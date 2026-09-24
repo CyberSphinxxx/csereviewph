@@ -34,11 +34,26 @@ export interface PlanDay {
   href?: string;
 }
 
+/** Per-strategy explanation shown alongside the plan (Part 2A). */
+export interface PlanStrategyExplanation {
+  /** What this strategy optimizes for. */
+  headline: string;
+  /** How this specific plan week was built, mentioning real inputs. */
+  why: string;
+}
+
 export interface WeeklyPlanInput {
   /** YYYY-MM-DD Manila-anchored today; defaults to real today. */
   today?: string;
   /** YYYY-MM-DD exam date, or empty/none when unset. */
   examDate?: string;
+  /**
+   * YYYY-MM-DD first day of the learner's study period (the window start).
+   * Recorded activity lives in separate history records, so regenerating the
+   * plan can never erase it. Currently informational for future windowed
+   * pacing; the week grid itself always covers the current real week.
+   */
+  studyStartDate?: string;
   /** Daily goal in items (already clamped 5-200). */
   dailyGoal: number;
   /** Per-subject accuracy from real sessions. */
@@ -62,18 +77,31 @@ export interface WeeklyPlanInput {
 export interface WeeklyPlan {
   /** True when there is not enough history for accuracy-based ordering. */
   isColdStart: boolean;
-  /** Week window covered (Monday..Sunday per site preference is caller's concern; grid is Sun-Sat). */
+  /** Week window covered (Sunday-start; alignment is the caller's concern). */
   weekStart: string;
   days: PlanDay[];
   /** One-line explanation of how the plan was built, shown in the UI. */
   rationale: string;
+  /** Deeper per-strategy explanation for the "Why this plan" block. */
+  explanation: PlanStrategyExplanation;
+  /**
+   * Factual state changes the caller can surface as "Plan adjusted" feedback
+   * after a regeneration. Derived only from the generated plan itself, never
+   * from internal generator state.
+   */
+  facts: PlanFact[];
+}
+
+export interface PlanFact {
+  kind: "reviews" | "subjects" | "goal" | "window" | "exam";
+  /** Human-readable factual sentence, e.g. "3 review items scheduled first." */
+  text: string;
 }
 
 export const COLD_START_MIN_SESSIONS = 1;
 
 function sortSubjects(subjects: PlanSubjectInput[]): PlanSubjectInput[] {
-  // Weakest first: unmeasured (0 items answered) count as least-known and
-  // come before measured low scores? No: they lack evidence, so they rank
+  // Weakest first: unmeasured (0 items answered) lack evidence, so they rank
   // after measured subjects but before higher accuracies.
   return [...subjects].sort((a, b) => {
     const aMeasured = a.questionsAnswered > 0;
@@ -84,6 +112,10 @@ function sortSubjects(subjects: PlanSubjectInput[]): PlanSubjectInput[] {
   });
 }
 
+function pluralize(n: number, one: string, many: string): string {
+  return n === 1 ? one : many;
+}
+
 /**
  * Generates the 7-day plan for the requested template. Shared behavior:
  * - Cold start (no measured subjects): every template falls back to the same
@@ -92,21 +124,24 @@ function sortSubjects(subjects: PlanSubjectInput[]): PlanSubjectInput[] {
  *   real Done status from recorded activity for that calendar date.
  * - Smart: due SRS items take the first active day, then subjects rotate
  *   weakest-first; a final pre-exam week switches to mixed rehearsal.
- * - Balanced: one subject per weekday (unmeasured subjects included so the
- *   whole library gets exposure), mixed review on the last day of the cycle.
+ * - Balanced: due reviews take the first day when items are due, then one
+ *   subject per weekday (unmeasured subjects included so the whole library
+ *   gets exposure), mixed review closing the cycle.
  * - Weak-focus: the single lowest measured subject fills most days, one mixed
- *   review day. If nothing is measured, cold-start fallback applies.
- * - Cram: timed assessments and full mocks dominate, lighter drilling.
+ *   review day. With zero history it says so explicitly and falls back to a
+ *   diagnostic-led baseline week — it never pretends to know a "weakest".
+ * - Cram: timed assessments and full mocks dominate; due reviews take the
+ *   first day when items are due, lighter drilling fills gaps.
  */
 export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
   const today = input.today ?? getManilaTodayString();
   const weekStart = startOfWeekIso(today) ?? today;
   const goal = Math.min(200, Math.max(5, Math.round(input.dailyGoal) || 25));
   const practiceHref = input.practiceHref ?? "/practice";
-  const quickHref = input.quickDrillHref ?? "/exams/professional/quick";
+  const quickHref = input.quickDrillHref ?? "/practice";
   const reviewHref = input.reviewHref ?? "/dashboard/mistakes";
-  const mediumHref = input.mediumHref ?? "/exams/professional/medium";
-  const fullMockHref = input.fullMockHref ?? "/exams/professional/full";
+  const mediumHref = input.mediumHref ?? practiceHref;
+  const fullMockHref = input.fullMockHref ?? practiceHref;
   const template: PlanTemplateId = input.template ?? "smart";
 
   const measured = input.subjects.filter((s) => s.questionsAnswered > 0);
@@ -124,6 +159,64 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
 
   const days: PlanDay[] = Array.from({ length: 7 }, (_, i) => focusFor(i));
 
+  // Fact helper: only statements derivable from the generated plan itself.
+  const facts: PlanFact[] = [];
+  const dueCount = Math.max(0, Math.round(input.dueReviewCount) || 0);
+  if (dueCount > 0) {
+    facts.push({
+      kind: "reviews",
+      text: `${dueCount} ${pluralize(dueCount, "review item", "review items")} due today moved to the front of the week.`,
+    });
+  }
+
+  const addGoalFact = (target: number) => {
+    facts.push({
+      kind: "goal",
+      text: `Each study day targets about ${target} ${pluralize(target, "item", "items")}.`,
+    });
+  };
+
+  if (input.examDate && daysLeft !== null && daysLeft >= 0) {
+    facts.push({
+      kind: "exam",
+      text: `${daysLeft} ${pluralize(daysLeft, "day", "days")} remain until exam day.`,
+    });
+  }
+
+  // Weak-focus with zero history: say so explicitly instead of inventing a
+  // "weakest" subject. Checked BEFORE the generic cold-start fallback so its
+  // message is not swallowed by the baseline rationale.
+  if (template === "weak-focus" && measured.length === 0) {
+    for (const day of days) {
+      if (day.state === "past") {
+        day.focus = "No activity";
+        day.targetItems = 0;
+      } else if (day.state === "today") {
+        day.focus = "Quick diagnostic drill";
+        day.href = quickHref;
+      } else {
+        day.focus = day.dayOfWeek % 2 === 0 ? "Quick drill" : "Spaced review warm-up";
+        day.href = day.dayOfWeek % 2 === 0 ? quickHref : reviewHref;
+      }
+    }
+    facts.push({
+      kind: "subjects",
+      text: "No measured subjects yet — a diagnostic unlocks weak-subject focus.",
+    });
+    return {
+      isColdStart: true,
+      weekStart,
+      days,
+      rationale:
+        "Weak-subject focus needs at least one measured subject to know what to target. Take a diagnostic and this week will concentrate on your lowest subject.",
+      explanation: {
+        headline: "Not enough data yet",
+        why: "Weak-subject focus concentrates on one subject — but nothing has been measured, so there is no lowest subject to pick. Your first diagnostic session unlocks this strategy; this week falls back to a diagnostic-led baseline.",
+      },
+      facts,
+    };
+  }
+
   if (isColdStart) {
     for (const day of days) {
       if (day.state === "past") {
@@ -137,12 +230,21 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
         day.href = day.dayOfWeek % 2 === 0 ? quickHref : reviewHref;
       }
     }
+    facts.push({
+      kind: "subjects",
+      text: "No measured subjects yet — a diagnostic starts accuracy-based planning.",
+    });
     return {
       isColdStart,
       weekStart,
       days,
       rationale:
         "No measured subjects yet, so this week builds a baseline. Accuracy-based planning starts after your first session.",
+      explanation: {
+        headline: "Building your baseline",
+        why: "Nothing has been measured yet, so every strategy would look identical this week. The fastest way to a real plan is a 10-question diagnostic: after it, Smart, Balanced, Weak-subject focus, and Cram each generate genuinely different weeks.",
+      },
+      facts,
     };
   }
 
@@ -156,13 +258,21 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
 
   if (template === "balanced") {
     // One subject per weekday across the full library, measured or not.
-    const cycle = [...ordered].sort((a, b) =>
-      a.subjectId.localeCompare(b.subjectId)
-    );
+    // Due reviews claim the first active day before the rotation starts.
+    const cycle = [...ordered].sort((a, b) => a.subjectId.localeCompare(b.subjectId));
     const upcomingAndToday = days.filter((d) => d.state !== "past");
+    let startIdx = 0;
+    if (dueCount > 0 && upcomingAndToday.length > 0) {
+      upcomingAndToday[0].focus = "Spaced review";
+      upcomingAndToday[0].href = reviewHref;
+      upcomingAndToday[0].targetItems = Math.min(goal, Math.max(dueCount, 5));
+      startIdx = 1;
+      addGoalFact(Math.min(goal, Math.max(dueCount, 5)));
+    }
+    const rotationSlots = upcomingAndToday.slice(startIdx);
     if (cycle.length > 0) {
-      upcomingAndToday.forEach((day, i) => {
-        if (i === upcomingAndToday.length - 1) {
+      rotationSlots.forEach((day, i) => {
+        if (i === rotationSlots.length - 1 && rotationSlots.length > 1) {
           day.focus = "Mixed review";
           day.href = reviewHref;
         } else {
@@ -172,7 +282,7 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
         }
       });
     } else {
-      upcomingAndToday.forEach((day) => {
+      rotationSlots.forEach((day) => {
         day.focus = "Mixed review";
         day.href = reviewHref;
       });
@@ -185,15 +295,26 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
       isColdStart,
       weekStart,
       days,
-      rationale: `Balanced rotation: one subject a day across ${cycle.length} ${cycle.length === 1 ? "subject" : "subjects"} (${subjectsListed}${cycle.length > 3 ? ", and more" : ""}), with a mixed review day to close the cycle.`,
+      rationale: `Balanced rotation: ${dueCount > 0 ? "spaced review first, then " : ""}one subject a day across ${cycle.length} ${pluralize(cycle.length, "subject", "subjects")} (${subjectsListed}${cycle.length > 3 ? ", and more" : ""}), with a mixed review day to close the cycle.`,
+      explanation: {
+        headline: "Even coverage across every subject",
+        why: `This week gives every subject its own day — measured or not — so no topic quietly drops out of your routine${cycle.length > 0 ? `: ${cycle.slice(0, 3).map((s) => s.subjectName).join(", ")}${cycle.length > 3 ? ", and more" : ""}` : ""}. A mixed review day closes the cycle to keep earlier subjects warm. Choose this when your accuracy is roughly even and you want breadth over depth.`,
+      },
+      facts,
     };
   }
 
   if (template === "weak-focus") {
     const weakest = measured.reduce((m, s) => (s.accuracy < m.accuracy ? s : m));
     const upcomingAndToday = days.filter((d) => d.state !== "past");
-    upcomingAndToday.forEach((day, i) => {
-      if (upcomingAndToday.length > 2 && i === upcomingAndToday.length - 1) {
+    let firstIdx = 0;
+    if (dueCount > 0 && upcomingAndToday.length > 2) {
+      upcomingAndToday[0].focus = "Spaced review";
+      upcomingAndToday[0].href = reviewHref;
+      firstIdx = 1;
+    }
+    upcomingAndToday.slice(firstIdx).forEach((day, i, arr) => {
+      if (arr.length > 2 && i === arr.length - 1) {
         day.focus = "Mixed review";
         day.href = reviewHref;
       } else {
@@ -206,13 +327,25 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
       weekStart,
       days,
       rationale: `Weak-subject focus: this week centers on ${weakest.subjectName} (currently ${weakest.accuracy}%), with one mixed review day to keep everything else warm.`,
+      explanation: {
+        headline: `Concentrated reps on ${weakest.subjectName}`,
+        why: `${weakest.subjectName} is your lowest measured subject at ${weakest.accuracy}%, so most of this week drills it — raising the weakest link lifts your total score fastest. One mixed review day keeps every other subject from cooling off. Choose this when one subject is clearly holding you back.`,
+      },
+      facts,
     };
   }
 
   if (template === "cram") {
     const upcomingAndToday = days.filter((d) => d.state !== "past");
     const daysToExam = isFinalWeek;
-    upcomingAndToday.forEach((day, i) => {
+    let idx = 0;
+    if (dueCount > 0 && upcomingAndToday.length > 0) {
+      upcomingAndToday[0].focus = "Spaced review";
+      upcomingAndToday[0].href = reviewHref;
+      idx = 1;
+    }
+    const rest = upcomingAndToday.slice(idx);
+    rest.forEach((day, i) => {
       if (daysToExam) {
         // Final week: alternate full mocks with light spaced review.
         if (i % 2 === 0) {
@@ -227,7 +360,8 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
       } else {
         // Exam not imminent: assessments lead, drills fill the gaps.
         if (i % 3 === 2) {
-          day.focus = `${measured[i % measured.length].subjectName} drill`;
+          const subject = measured[idx > 0 ? (i + 1) % measured.length : i % measured.length];
+          day.focus = `${subject.subjectName} drill`;
           day.href = practiceHref;
         } else {
           day.focus = "Timed assessment";
@@ -242,6 +376,13 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
       rationale: daysToExam
         ? "Cram mode in the final week: full mock exams alternating with light review days, nothing new, everything warm."
         : "Cram mode: timed assessments lead the week with targeted drills in between.",
+      explanation: {
+        headline: daysToExam ? "Final-week rehearsal" : "Exam-condition training",
+        why: daysToExam
+          ? "With exam day inside seven days, the plan alternates full mock exams with light review days — nothing new, everything warm. Mocks train pacing across the full paper; light days prevent burnout right before the exam."
+          : "Cram mode front-loads timed assessments: full-length timed conditions expose pacing problems early, with targeted drills between assessments to fix exactly what the assessments expose. Choose this when exam day is close or you want pressure training.",
+      },
+      facts,
     };
   }
 
@@ -275,23 +416,46 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): WeeklyPlan {
   const weakest = rotation[0];
   const rationale = isFinalWeek
     ? "Final week before your exam: mixed rehearsal keeps every subject warm without introducing new material."
-    : `Built from your weakest subject first (${weakest.subjectName} at ${weakest.accuracy}%), rotating through the rest, with spaced review slotted first because ${input.dueReviewCount} ${input.dueReviewCount === 1 ? "item is" : "items are"} due.`;
+    : `Built from your weakest subject first (${weakest.subjectName} at ${weakest.accuracy}%), rotating through the rest, with spaced review slotted first because ${input.dueReviewCount} ${pluralize(input.dueReviewCount, "item is", "items are")} due.`;
 
-  return { isColdStart, weekStart, days, rationale };
+  facts.push({
+    kind: "subjects",
+    text: `Leads with ${weakest.subjectName} (${weakest.accuracy}%), your lowest measured subject.`,
+  });
+
+  return {
+    isColdStart,
+    weekStart,
+    days,
+    rationale,
+    explanation: {
+      headline: "Weakest subject first",
+      why: `Your sessions rank ${weakest.subjectName} lowest at ${weakest.accuracy}%, so it drills first and the rotation continues upward from there. Due spaced reviews always take the first slot — recall beats novelty. In the final week before your exam this strategy switches to mixed rehearsal automatically. Choose this as your day-to-day default.`,
+    },
+    facts,
+  };
 }
 
-/** Stable signature for memoization: recompute only when real inputs change. */
+/** Stable signature for memoization: recompute only when real inputs change.
+ *  Route hrefs are included so switching the active exam level (which swaps
+ *  /exams/professional/* for /exams/subprofessional/*) recomputes the plan. */
 export function weeklyPlanSignature(input: WeeklyPlanInput): string {
-  const subj = [...input.subjects]
+  const subj = [...(input.subjects ?? [])]
     .sort((a, b) => a.subjectId.localeCompare(b.subjectId))
     .map((s) => `${s.subjectId}:${s.accuracy}:${s.questionsAnswered}`)
     .join("|");
   return [
     input.today ?? "",
     input.examDate ?? "",
+    input.studyStartDate ?? "",
     input.dailyGoal,
     input.dueReviewCount,
     input.template ?? "smart",
+    input.practiceHref ?? "",
+    input.quickDrillHref ?? "",
+    input.reviewHref ?? "",
+    input.mediumHref ?? "",
+    input.fullMockHref ?? "",
     subj,
   ].join("~");
 }
