@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -18,9 +18,11 @@ import {
   type AttemptSummary,
   type SubjectReadinessMetric,
   type DailyActivityCell,
+  type StoredMistakeItem,
 } from "@/lib/storage";
 import { usePreferences } from "@/lib/preferences";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
+import { getExamMockSpecsForLevel, getExamRoutesForLevel } from "@/config/exams";
 import { getNextBestStepRecommendation } from "./recommendation-engine";
 import { DashboardOnboardingView } from "./DashboardOnboardingView";
 import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
@@ -50,13 +52,88 @@ function sectionHeader(title: string, href: string, linkLabel: string) {
   );
 }
 
+/**
+ * Hero owl wrapper: eases a small translate + tilt toward the pointer (6–12px,
+ * up to 7 degrees) so the mascot leans toward the learner instead of sitting
+ * statically inside the countdown block. rAF-throttled, neutral on leave,
+ * fine-pointer only, and inert under prefers-reduced-motion — same guards the
+ * owl's own pupil tracking uses.
+ */
+function TiltOwl() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
+    if (!window.matchMedia?.("(hover: hover) and (pointer: fine)")?.matches) return;
+
+    let rafId: number | null = null;
+    let currentX = 0;
+    let currentY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const apply = () => {
+      rafId = null;
+      // Ease 12% of the remaining gap per frame: settles quickly, never snaps.
+      currentX += (targetX - currentX) * 0.12;
+      currentY += (targetY - currentY) * 0.12;
+      el.style.transform = `translate(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px) rotate(${(
+        currentX * 0.55
+      ).toFixed(2)}deg)`;
+      if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
+        rafId = requestAnimationFrame(apply);
+      }
+    };
+
+    const schedule = () => {
+      if (rafId === null) rafId = requestAnimationFrame(apply);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const d = Math.hypot(dx, dy) || 1;
+      const k = Math.min(1, d / 320);
+      targetX = Math.max(-1, Math.min(1, dx / 320)) * k * 12;
+      targetY = Math.max(-1, Math.min(1, dy / 320)) * k * 7;
+      schedule();
+    };
+
+    const onLeave = () => {
+      targetX = 0;
+      targetY = 0;
+      schedule();
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerleave", onLeave);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerleave", onLeave);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} aria-hidden="true" className="will-change-transform">
+      <ReviewTayoOwl size={96} withCap bob />
+    </div>
+  );
+}
+
 export function DashboardView() {
   const { preferences, mounted } = usePreferences();
   const { currentWorkspace, currentExamConfig, isLoaded } = useExamWorkspace();
 
   const [history, setHistory] = useState<AttemptSummary[]>([]);
-  const [dueMistakes, setDueMistakes] = useState(0);
-  const [allMistakes, setAllMistakes] = useState(0);
+  const [dueMistakeItems, setDueMistakeItems] = useState<StoredMistakeItem[]>([]);
+  const [allMistakeItems, setAllMistakeItems] = useState<StoredMistakeItem[]>([]);
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [subjects, setSubjects] = useState<SubjectReadinessMetric[]>([]);
@@ -70,8 +147,8 @@ export function DashboardView() {
     if (!isLoaded) return;
     const load = () => {
       setHistory(LocalStorageService.getAttemptHistory(wsId));
-      setAllMistakes(LocalStorageService.getMistakeBank(wsId).length);
-      setDueMistakes(LocalStorageService.getDueMistakes(wsId).length);
+      setAllMistakeItems(LocalStorageService.getMistakeBank(wsId));
+      setDueMistakeItems(LocalStorageService.getDueMistakes(wsId));
       setBookmarkCount(LocalStorageService.getBookmarks(wsId).length);
       setStreakDays(LocalStorageService.getStudyStreak().currentStreak);
       setSubjects(LocalStorageService.getSubjectReadiness(wsId));
@@ -90,40 +167,48 @@ export function DashboardView() {
     return () => window.removeEventListener("storage", onStorage);
   }, [wsId, isLoaded]);
 
-  const examDate = currentWorkspace?.targetExamDate || "2027-03-14";
-  const examName = currentWorkspace?.targetExamName || "March 2027 CSE-PPT";
+  // The workspace is the authoritative store: no fabricated exam name, date,
+  // or track here. An unset date is a real state and renders its own copy.
+  const examDate = currentWorkspace?.targetExamDate || "";
+  const examName = currentWorkspace?.targetExamName;
   const dailyGoal = currentWorkspace?.dailyGoal || preferences.study.dailyGoal || 25;
 
-  const daysLeft = useMemo(() => daysUntilManila(examDate), [examDate]);
+  const daysLeft = useMemo(() => (examDate ? daysUntilManila(examDate) : null), [examDate]);
+  const dueMistakes = dueMistakeItems.length;
+
+  // Level-aware runner routes: derives from the ACTIVE level, never the
+  // catalog's professional default.
+  const levelRoutes = useMemo(
+    () =>
+      getExamRoutesForLevel(currentWorkspace?.examId || "cse", currentWorkspace?.levelId),
+    [currentWorkspace?.examId, currentWorkspace?.levelId]
+  );
+  const mockSpecs = useMemo(
+    () =>
+      getExamMockSpecsForLevel(currentWorkspace?.examId || "cse", currentWorkspace?.levelId),
+    [currentWorkspace?.examId, currentWorkspace?.levelId]
+  );
 
   // Recommended next step (existing rule engine, memoized on real inputs)
   const recommendation = useMemo(() => {
     const measured = subjects.filter((s) => s.questionsAnswered > 0);
     return getNextBestStepRecommendation(
       history,
-      dueMistakes > 0
-        ? [{
-            id: "due-count-sentinel",
-            question: {} as never,
-            attemptId: "",
-            addedAt: "",
-            reviewCount: 0,
-          }]
-        : [],
-      [],
+      dueMistakeItems,
+      allMistakeItems,
       measured.map((s) => ({ name: s.subjectName, accuracy: s.accuracyPercentage })),
       {
         examShortName: currentExamConfig?.shortName || "Civil Service",
         trackName: currentWorkspace?.trackName || "Standard",
-        quickDrillHref: currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick",
-        fullMockHref: currentExamConfig?.routes?.fullMockUrl || "/exams/professional/full",
-        practiceHref: currentExamConfig?.routes?.practiceUrl || "/practice",
-        fullMockItems: currentExamConfig?.mockSpecs?.itemCount || 170,
-        fullMockMinutes: currentExamConfig?.mockSpecs?.timeLimitMinutes || 190,
-        passingTarget: currentExamConfig?.mockSpecs?.passingScorePercentage || TARGET_ACCURACY,
+        quickDrillHref: levelRoutes.quickDrillUrl,
+        fullMockHref: levelRoutes.fullMockUrl,
+        practiceHref: levelRoutes.practiceUrl,
+        fullMockItems: mockSpecs?.itemCount,
+        fullMockMinutes: mockSpecs?.timeLimitMinutes,
+        passingTarget: mockSpecs?.passingScorePercentage || TARGET_ACCURACY,
       }
     );
-  }, [history, dueMistakes, subjects, currentExamConfig, currentWorkspace]);
+  }, [history, dueMistakeItems, allMistakeItems, subjects, currentExamConfig, currentWorkspace, levelRoutes, mockSpecs]);
 
   // Aggregate stats, computed from real data only
   const totalTests = history.length;
@@ -163,6 +248,10 @@ export function DashboardView() {
         dailyGoal,
         subjects: planSubjects,
         dueReviewCount: dueMistakes,
+        practiceHref: levelRoutes.practiceUrl || "/practice",
+        quickDrillHref: levelRoutes.quickDrillUrl,
+        mediumHref: levelRoutes.quickDrillUrl?.replace("/quick", "/medium"),
+        fullMockHref: levelRoutes.fullMockUrl,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [planSig]
@@ -204,20 +293,26 @@ export function DashboardView() {
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2c0b14] to-[#1c060c] text-white p-6 sm:p-8"
       >
         <div className="flex flex-col md:flex-row md:items-center gap-6 relative">
-          <div className="flex items-start gap-5">
-            <b className="font-display font-extrabold tracking-[-0.06em] leading-[0.85] text-[clamp(84px,12vw,150px)]">
-              {daysLeft ?? 0}
-            </b>
-            <span className="w-14 shrink-0 hidden sm:block mt-2" aria-hidden="true">
-              <ReviewTayoOwl size={56} withCap bob />
-            </span>
-          </div>
+          <b className="font-display font-extrabold tracking-[-0.06em] leading-[0.85] text-[clamp(84px,12vw,150px)]">
+            {daysLeft ?? "—"}
+            {daysLeft !== null && (
+              <span className="sr-only"> days until exam day</span>
+            )}
+          </b>
           <div className="min-w-0">
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-[-0.02em]">
-              days until {examName}
+              {daysLeft !== null
+                ? `days until ${examName ?? "your exam"}`
+                : daysLeft === null && !examDate
+                ? "no exam date set"
+                : "exam day has passed"}
             </h2>
             <p className="text-[#ecc9d0] text-sm mt-1">
-              {daysLeft !== null ? formatManilaDate(examDate) : "Set your exam date in Settings"}
+              {daysLeft !== null
+                ? formatManilaDate(examDate)
+                : !examDate
+                ? "Set one in Settings → Study plan to pace your review."
+                : `Scheduled for ${formatManilaDate(examDate)}. Update the date when your new schedule is released.`}
             </p>
             {daysLeft !== null && daysLeft > 0 && (
               <p className="text-[#ecc9d0] text-[13px] mt-3 max-w-[46ch]">
@@ -243,6 +338,10 @@ export function DashboardView() {
                 See your study plan
               </Link>
             </div>
+          </div>
+          {/* Owl occupies the hero's far-right slot on ≥sm; hidden on phones to keep the hero compact */}
+          <div className="hidden sm:block shrink-0 self-center md:self-auto">
+            <TiltOwl />
           </div>
         </div>
       </section>
@@ -549,7 +648,7 @@ export function DashboardView() {
                 No sessions yet.
               </p>
               <Link
-                href={currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick"}
+                href={levelRoutes.quickDrillUrl || "/practice"}
                 className={`${LINK} mt-2`}
               >
                 Take your first 10-question diagnostic
