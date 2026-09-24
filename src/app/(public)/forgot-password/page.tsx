@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { AuthPageLayout } from "@/components/auth/AuthPageLayout";
+import { AuthStandaloneLayout } from "@/components/auth/AuthStandaloneLayout";
 
 export const metadata: Metadata = {
-  title: "Reset Password",
+  title: "Forgot Password",
   description:
-    "Reset your Philippine Civil Service Exam reviewer password. Receive secure instructions by email to regain access to your account.",
+    "Request password reset instructions for your Philippine Civil Service Exam reviewer account.",
   robots: {
     index: false,
     follow: false,
@@ -12,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function ForgotPasswordPage() {
-  return <AuthPageLayout mode="forgot-password" />;
+  return <AuthStandaloneLayout initialState="reset" />;
 }
