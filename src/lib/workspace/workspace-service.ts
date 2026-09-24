@@ -1,4 +1,5 @@
 import { getExamConfig, getExamTrack } from "@/config/exams";
+import { getManilaTodayString } from "@/lib/study-plan";
 import {
   type ExamWorkspace,
   WORKSPACE_STORAGE_KEYS,
@@ -93,6 +94,7 @@ export class WorkspaceService {
     targetExamDate?: string;
     targetExamName?: string;
     dailyGoal?: number;
+    studyStartDate?: string;
   }): ExamWorkspace {
     const workspaces = this.getAllWorkspaces();
     const exam = getExamConfig(input.examId);
@@ -114,6 +116,7 @@ export class WorkspaceService {
         targetExamDate: input.targetExamDate ?? existing.targetExamDate,
         targetExamName: input.targetExamName ?? existing.targetExamName,
         dailyGoal: input.dailyGoal ?? existing.dailyGoal,
+        studyStartDate: input.studyStartDate ?? existing.studyStartDate,
         lastAccessedAt: now,
       };
 
@@ -135,6 +138,9 @@ export class WorkspaceService {
       targetExamDate: input.targetExamDate || exam?.defaultTargetDate || "2027-03-14",
       targetExamName: input.targetExamName || exam?.defaultTargetName || `${exam?.shortName || "Exam"} Preparation`,
       dailyGoal: input.dailyGoal || 25,
+      // Data default for a brand-new workspace only (documented decision, not
+      // a fabricated fallback for missing state).
+      studyStartDate: input.studyStartDate || getManilaTodayString(),
       createdAt: now,
       lastAccessedAt: now,
     };
@@ -145,6 +151,29 @@ export class WorkspaceService {
 
     notifyWorkspaceChange(newWs);
     return newWs;
+  }
+
+  /**
+   * Returns the learner's study period start for this workspace (YYYY-MM-DD),
+   * defaulting to Manila-today when never set. Pure read — call sites may use
+   * it during render; the default is only persisted via setStudyStartDate.
+   */
+  public static getStudyStartDate(workspaceId?: string): string {
+    const workspaces = this.getAllWorkspaces();
+    const currentId = workspaceId ?? safeGet<string | null>(WORKSPACE_STORAGE_KEYS.CURRENT_WORKSPACE_ID, null);
+    const ws = workspaces.find((w) => w.id === currentId);
+    return ws?.studyStartDate || getManilaTodayString();
+  }
+
+  /**
+   * Persists the study period start. Regeneration-safe: completed activity is
+   * stored in separate streak/history records keyed by ISO date, so moving
+   * the window start never erases recorded work.
+   */
+  public static setStudyStartDate(iso: string, workspaceId?: string): ExamWorkspace | null {
+    const currentId = workspaceId ?? this.getCurrentWorkspace()?.id;
+    if (!currentId) return null;
+    return this.updateWorkspace(currentId, { studyStartDate: iso });
   }
 
   /**
