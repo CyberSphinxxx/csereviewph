@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, ChevronRight, Lightbulb, Sparkles } from "lucide-react";
 import {
   LocalStorageService,
   type SubjectReadinessMetric,
@@ -10,6 +10,7 @@ import {
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 import { usePreferences } from "@/lib/preferences";
 import { PLAN_TEMPLATES, type PlanTemplateId } from "@/config/study-plan-templates";
+import { getExamMockSpecsForLevel, getExamRoutesForLevel } from "@/config/exams";
 import {
   addDaysIso,
   daysUntilManila,
@@ -17,6 +18,7 @@ import {
   getManilaTodayString,
   parseManilaDate,
 } from "@/lib/study-plan";
+import { WorkspaceService } from "@/lib/workspace/workspace-service";
 import {
   generateWeeklyPlan,
   weeklyPlanSignature,
@@ -104,7 +106,7 @@ function buildMilestones(examDate: string | undefined, historyCount: number, avg
 }
 
 export function StudyPlanView() {
-  const { currentWorkspace, currentExamConfig, isLoaded } = useExamWorkspace();
+  const { currentWorkspace, isLoaded } = useExamWorkspace();
   const { preferences, updateCategory } = usePreferences();
 
   const [subjects, setSubjects] = useState<SubjectReadinessMetric[]>([]);
@@ -114,12 +116,31 @@ export function StudyPlanView() {
   const [calMonth, setCalMonth] = useState<{ y: number; m: number } | null>(null);
   const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
   const [checkinDates, setCheckinDates] = useState<Set<string>>(new Set());
+  const [studyStartDraft, setStudyStartDraft] = useState<string>("");
+  const [studyStartError, setStudyStartError] = useState<string | null>(null);
+  // Factual diff surfaced as "Plan adjusted" feedback after a regeneration.
+  const prevSigRef = useRef<string>("");
+  const [adjustedNote, setAdjustedNote] = useState<string | null>(null);
 
-  const examDate = currentWorkspace?.targetExamDate || "2027-03-14";
+  // The workspace is the authoritative store: no fabricated date fallback.
+  // An unset date is a real state and gets its own empty-state copy below.
+  const examDate = currentWorkspace?.targetExamDate || "";
   const dailyGoal = currentWorkspace?.dailyGoal || preferences.study.dailyGoal || 25;
   const quests = useDailyQuests();
   const template = preferences.study.planTemplate ?? "smart";
-  const target = currentExamConfig?.mockSpecs?.passingScorePercentage || 80;
+
+  // Level-aware routes and specs derived from the ACTIVE level.
+  const levelRoutes = useMemo(
+    () =>
+      getExamRoutesForLevel(currentWorkspace?.examId || "cse", currentWorkspace?.levelId),
+    [currentWorkspace?.examId, currentWorkspace?.levelId]
+  );
+  const mockSpecs = useMemo(
+    () =>
+      getExamMockSpecsForLevel(currentWorkspace?.examId || "cse", currentWorkspace?.levelId),
+    [currentWorkspace?.examId, currentWorkspace?.levelId]
+  );
+  const target = mockSpecs?.passingScorePercentage || 80;
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -135,6 +156,10 @@ export function StudyPlanView() {
 
   const today = getManilaTodayString();
 
+  // Study period start: the workspace is the authoritative store; default to
+  // Manila-today when never set. Pure read in render, persisted on commit.
+  const studyStartDate = currentWorkspace?.studyStartDate || today;
+
   // Plan memoized on its input signature: recomputes only when real inputs change
   const planSubjects = useMemo(
     () =>
@@ -149,28 +174,61 @@ export function StudyPlanView() {
   const sig = weeklyPlanSignature({
     today,
     examDate,
+    studyStartDate,
     dailyGoal,
     subjects: planSubjects,
     dueReviewCount: dueCount,
     template,
+    practiceHref: levelRoutes.practiceUrl || "",
+    quickDrillHref: levelRoutes.quickDrillUrl || "",
+    mediumHref: levelRoutes.quickDrillUrl?.replace("/quick", "/medium") || "",
+    fullMockHref: levelRoutes.fullMockUrl || "",
   });
+
   const plan: WeeklyPlan = useMemo(
     () =>
       generateWeeklyPlan({
         today,
         examDate,
+        studyStartDate,
         dailyGoal,
         subjects: planSubjects,
         dueReviewCount: dueCount,
         template,
-        practiceHref: currentExamConfig?.routes?.practiceUrl || "/practice",
-        quickDrillHref: currentExamConfig?.routes?.quickDrillUrl || "/exams/professional/quick",
-        mediumHref: currentExamConfig?.routes?.quickDrillUrl?.replace("/quick", "/medium") || "/exams/professional/medium",
-        fullMockHref: currentExamConfig?.routes?.fullMockUrl || "/exams/professional/full",
+        practiceHref: levelRoutes.practiceUrl || "/practice",
+        quickDrillHref: levelRoutes.quickDrillUrl,
+        mediumHref: levelRoutes.quickDrillUrl?.replace("/quick", "/medium"),
+        fullMockHref: levelRoutes.fullMockUrl,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sig]
   );
+
+  // "Plan adjusted" feedback: when the plan regenerates for a reason other
+  // than the page load itself, state the factual change derived from the new
+  // plan. Never speculative — only what the generated plan actually shows.
+  useEffect(() => {
+    if (!prevSigRef.current) {
+      prevSigRef.current = sig;
+      return;
+    }
+    if (sig === prevSigRef.current) return;
+    prevSigRef.current = sig;
+    const parts: string[] = [];
+    if (plan.facts.some((f) => f.kind === "reviews")) parts.push("spaced review moved to the front of the week");
+    if (plan.isColdStart) {
+      parts.push("no measured subjects yet — baseline week generated");
+    } else {
+      const firstDrill = plan.days.find((d) => d.state === "today" && d.href);
+      if (firstDrill) parts.push(`today now targets “${firstDrill.focus}”`);
+    }
+    if (parts.length > 0) {
+      setAdjustedNote(`Plan adjusted: ${parts.join(" · ")}.`);
+      const t = window.setTimeout(() => setAdjustedNote(null), 6000);
+      return () => window.clearTimeout(t);
+    }
+    setAdjustedNote(null);
+  }, [sig, plan]);
 
   // One source of truth for day status: real recorded activity per date.
   const dayActivity = useMemo(() => {
@@ -185,19 +243,43 @@ export function StudyPlanView() {
     }
   };
 
-  // Calendar month state: default to exam month
-  useEffect(() => {
-    const target = parseManilaDate(examDate);
-    const now = parseManilaDate(today);
-    if (target && now) {
-      const targetKey = target.getUTCFullYear() * 12 + target.getUTCMonth();
-      const nowKey = now.getUTCFullYear() * 12 + now.getUTCMonth();
-      setCalMonth({
-        y: Math.floor(Math.max(targetKey, nowKey) / 12),
-        m: Math.max(targetKey, nowKey) % 12,
-      });
+  // Study period commit with start ≤ exam validation.
+  const commitStudyStart = () => {
+    const next = studyStartDraft;
+    setStudyStartDraft("");
+    if (!next) return;
+    const parsed = parseManilaDate(next);
+    if (!parsed) {
+      setStudyStartError("Enter a valid date.");
+      return;
     }
-  }, [examDate, today]);
+    if (examDate && next > examDate) {
+      setStudyStartError("Study start must be on or before the exam date.");
+      return;
+    }
+    setStudyStartError(null);
+    if (next !== studyStartDate && currentWorkspace) {
+      WorkspaceService.setStudyStartDate(next, currentWorkspace.id);
+    }
+  };
+
+  // Calendar opens on today's month — never auto-jumps to the exam month.
+  // Once the visitor navigates manually, the view stops following the exam
+  // date; the Today button brings them back.
+  useEffect(() => {
+    const now = parseManilaDate(today);
+    if (!now) return;
+    setCalMonth((prev) => {
+      if (prev) return prev;
+      return { y: now.getUTCFullYear(), m: now.getUTCMonth() };
+    });
+  }, [today]);
+
+  const goToday = () => {
+    const now = parseManilaDate(today);
+    if (!now) return;
+    setCalMonth({ y: now.getUTCFullYear(), m: now.getUTCMonth() });
+  };
 
   const daysLeft = daysUntilManila(examDate);
   const milestones = useMemo(
@@ -271,6 +353,16 @@ export function StudyPlanView() {
             {MONTHS[calMonth.m]} {calMonth.y}
           </h3>
           <div className="flex gap-1.5">
+            {curKey !== minKey && (
+              <button
+                type="button"
+                onClick={goToday}
+                aria-label="Back to today's month"
+                className="px-3 h-9 rounded-full bg-[#fbeff0] dark:bg-[#351a22] text-[#8a1630] dark:text-[#fad1da] text-[12px] font-extrabold"
+              >
+                Today
+              </button>
+            )}
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
@@ -339,6 +431,46 @@ export function StudyPlanView() {
           </span>
         </div>
 
+        {/* Study period: persisted start date, editable, start ≤ exam date */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4 rounded-2xl bg-[#fdf8f6] dark:bg-white/[0.04] px-4 py-3 shadow-[inset_0_0_0_1px_rgba(138,22,48,0.10)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]">
+          <span className="text-[13px] font-bold text-[#1b1216] dark:text-[#f8ecee]">Study period</span>
+          <span className="text-[12.5px] font-semibold text-[#8a7a80] dark:text-[#a89ba1]">
+            {formatManilaDate(studyStartDate, false)}
+            {examDate ? ` → ${formatManilaDate(examDate, false)}` : " → no exam date set"}
+          </span>
+          <label className="ml-auto inline-flex items-center gap-2 text-[12px] font-bold text-[#8a7a80] dark:text-[#a89ba1]">
+            <span className="sr-only">Change study start date</span>
+            <input
+              type="date"
+              aria-label="Study start date"
+              value={studyStartDraft || studyStartDate}
+              max={examDate || undefined}
+              onChange={(e) => {
+                setStudyStartDraft(e.target.value);
+                setStudyStartError(null);
+              }}
+              onBlur={commitStudyStart}
+              className="px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#2b1620] shadow-[inset_0_0_0_1.5px_rgba(138,22,48,0.18)] dark:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.18)] text-[12.5px] font-bold text-[#1b1216] dark:text-[#f8ecee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6b93b]"
+            />
+          </label>
+          {studyStartError && (
+            <p role="alert" className="w-full flex items-center gap-1.5 text-[12.5px] font-bold text-[#d1344b] dark:text-[#ff9fb5]">
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+              {studyStartError}
+            </p>
+          )}
+        </div>
+
+        {/* Factual regeneration feedback (auto-dismisses; only real changes) */}
+        {adjustedNote && (
+          <p
+            role="status"
+            className="mb-3 rounded-2xl bg-[#fbeff0] dark:bg-[#351a22] px-4 py-2.5 text-[13px] font-bold text-[#8a1630] dark:text-[#fad1da]"
+          >
+            {adjustedNote}
+          </p>
+        )}
+
         {/* Template picker: writes preferences.study.planTemplate; Settings mirrors it */}
         <div className="flex flex-wrap items-center gap-2 mb-4" role="radiogroup" aria-label="Weekly plan template">
           {PLAN_TEMPLATES.map((t) => (
@@ -358,6 +490,27 @@ export function StudyPlanView() {
               {t.name}
             </button>
           ))}
+        </div>
+
+        {/* Why this plan: per-strategy explanation built from real inputs */}
+        <div className="mb-4 rounded-2xl bg-[#fdf8f6] dark:bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(138,22,48,0.10)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]">
+          <h3 className="flex items-center gap-2 text-[13px] font-extrabold text-[#8a1630] dark:text-[#ff9fb5]">
+            <Lightbulb className="w-4 h-4 shrink-0" aria-hidden="true" />
+            Why this plan: {plan.explanation.headline}
+          </h3>
+          <p className="text-[13px] font-semibold leading-relaxed text-[#5a4a50] dark:text-[#c9b3b9] mt-1.5">
+            {plan.explanation.why}
+          </p>
+          {plan.facts.length > 0 && (
+            <ul className="mt-2.5 grid gap-1">
+              {plan.facts.map((f, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-[12.5px] font-semibold text-[#8a7a80] dark:text-[#a89ba1]">
+                  <Check className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#34c98a]" aria-hidden="true" />
+                  {f.text}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
