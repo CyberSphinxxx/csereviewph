@@ -6,6 +6,8 @@ export interface ExamWorkspace {
   targetExamDate?: string; // YYYY-MM-DD
   targetExamName?: string; // e.g., "March 2027 CSE-PPT"
   dailyGoal?: number; // e.g., 25
+  /** YYYY-MM-DD first day of the learner's study period (plan window start). */
+  studyStartDate?: string;
   createdAt: string; // ISO date
   lastAccessedAt: string; // ISO date
 }
