@@ -4,6 +4,17 @@ import React, { useState, useEffect } from "react";
 import { usePreferences } from "@/lib/preferences";
 import { PLAN_TEMPLATES, type PlanTemplateId } from "@/config/study-plan-templates";
 import {
+  useExamWorkspace,
+} from "@/lib/workspace/useExamWorkspace";
+import {
+  saveTargetExamSummary,
+} from "@/lib/workspace/target-exam";
+import {
+  NEXT_UPCOMING_EXAM_LABEL,
+  NEXT_UPCOMING_EXAM_DATE,
+} from "@/lib/exam-guide/csc-data";
+import { WorkspaceService } from "@/lib/workspace/workspace-service";
+import {
   Check,
   AlertCircle,
   Clock,
@@ -16,10 +27,14 @@ import {
 export default function StudyPlanSettingsPage() {
   const { preferences, mounted, updateCategory, resetCategory } = usePreferences();
 
+  // The active workspace is the authoritative exam store; Settings edits it
+  // through saveTargetExamSummary (one transactional write) on Save.
+  const { currentWorkspace } = useExamWorkspace();
+
   // Local draft state for grouped Save/Cancel form contract
   const [levelId, setLevelId] = useState("cse-professional");
   const [targetDateType, setTargetDateType] = useState<"verified" | "custom" | "none">("verified");
-  const [customDate, setCustomDate] = useState("2027-03-21");
+  const [customDate, setCustomDate] = useState(NEXT_UPCOMING_EXAM_DATE);
   const [planTemplate, setPlanTemplate] = useState<PlanTemplateId>("smart");
   const [dailyGoal, setDailyGoal] = useState(25);
   const [showDailyGoal, setShowDailyGoal] = useState(true);
@@ -33,7 +48,7 @@ export default function StudyPlanSettingsPage() {
     if (!mounted) return;
     setLevelId(preferences.study.levelId);
     setTargetDateType(preferences.study.targetDateType);
-    setCustomDate(preferences.study.targetDate || "2027-03-21");
+    setCustomDate(preferences.study.targetDate || NEXT_UPCOMING_EXAM_DATE);
     setPlanTemplate(preferences.study.planTemplate ?? "smart");
     setDailyGoal(preferences.study.dailyGoal);
     setShowDailyGoal(preferences.study.showDailyGoal);
@@ -66,10 +81,11 @@ export default function StudyPlanSettingsPage() {
   };
 
   const handleSave = () => {
-    // Validate target date
+    // Validate target date. The verified option always uses the CSC-sourced
+    // canonical constant — never a page-local literal.
     let effectiveDate = "";
     if (targetDateType === "verified") {
-      effectiveDate = "2027-03-21";
+      effectiveDate = NEXT_UPCOMING_EXAM_DATE;
     } else if (targetDateType === "custom") {
       if (!customDate) {
         setFeedback({ type: "error", message: "Please select a valid custom target exam date." });
@@ -81,6 +97,38 @@ export default function StudyPlanSettingsPage() {
     // Clamp daily goal
     const clampedGoal = Math.min(Math.max(dailyGoal, 5), 200);
 
+    // 1) Authoritative write: the active workspace gets the chosen level and
+    //    target date, so Dashboard/plan/practice react to this save instantly
+    //    via the workspace-changed event.
+    // A track-derived name ("CSE-PPT Professional") goes stale when the
+    // track changes; clear it in both stores so the display regenerates
+    // from the exam's neutral default name instead of resurrecting the
+    // old track through the preferences mirror.
+    const nameUpdate =
+      currentWorkspace?.targetExamName &&
+      /professional/i.test(currentWorkspace.targetExamName)
+        ? { targetExamName: undefined }
+        : {};
+
+    if (currentWorkspace) {
+      const track = currentWorkspace.examId === "cse"
+        ? levelId === "cse-subprofessional" ? "Subprofessional" : "Professional"
+        : undefined;
+      saveTargetExamSummary({
+        targetDate: effectiveDate || undefined,
+        dailyGoal: clampedGoal,
+      });
+      WorkspaceService.updateWorkspace(currentWorkspace.id, {
+        levelId: levelId === "cse-subprofessional" ? "subprofessional" : "professional",
+        ...(track ? { trackName: track } : {}),
+        ...nameUpdate,
+      });
+    }
+
+    // 2) Preference-style settings (templates, toggles, view prefs) stay in
+    //    the preferences store; the study mirror block re-syncs the rest. A
+    //    stale track-derived name in preferences would keep resurrecting the
+    //    old track through saveTargetExamSummary, so clear it here too.
     const res = updateCategory("study", {
       levelId,
       targetDate: effectiveDate,
@@ -91,6 +139,7 @@ export default function StudyPlanSettingsPage() {
       weekStartsOn,
       studyTimeZone: "Asia/Manila",
       showStreak,
+      ...nameUpdate,
     });
 
     if (res.success) {
@@ -105,7 +154,7 @@ export default function StudyPlanSettingsPage() {
   const handleCancel = () => {
     setLevelId(preferences.study.levelId);
     setTargetDateType(preferences.study.targetDateType);
-    setCustomDate(preferences.study.targetDate || "2027-03-21");
+    setCustomDate(preferences.study.targetDate || NEXT_UPCOMING_EXAM_DATE);
     setPlanTemplate(preferences.study.planTemplate ?? "smart");
     setDailyGoal(preferences.study.dailyGoal);
     setShowDailyGoal(preferences.study.showDailyGoal);
@@ -247,7 +296,7 @@ export default function StudyPlanSettingsPage() {
             />
             <div>
               <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block">
-                March 21, 2027 (Official Nationwide CSE-PPT)
+                {NEXT_UPCOMING_EXAM_LABEL} (Official Nationwide CSE-PPT)
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 block mt-0.5">
                 Verified schedule sourced from Civil Service Commission examination calendar.
