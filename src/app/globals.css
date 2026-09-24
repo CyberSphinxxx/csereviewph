@@ -113,6 +113,51 @@
 
 html {
   scroll-behavior: smooth;
+  /* Reserve the scrollbar column even when a page doesn't scroll, so
+     centered layouts don't jump sideways on navigation. */
+  scrollbar-gutter: stable;
+}
+
+/* Themed page scrollbar (WebKit) — tokened so light and dark stay in sync. */
+:root {
+  --scrollbar-thumb: #d8c6cb;
+  --scrollbar-thumb-hover: #c3a8b0;
+  --scrollbar-track: transparent;
+}
+
+.dark {
+  --scrollbar-thumb: #4a2a35;
+  --scrollbar-thumb-hover: #5e3644;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox: slim, themed scrollbar on every scroll container */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* Reduced motion preference from OS or site setting */
