@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthPageLayout } from "@/components/auth/AuthPageLayout";
+import { AuthStandaloneLayout } from "@/components/auth/AuthStandaloneLayout";
 
 export const metadata: Metadata = {
   title: "Create Free Account",
@@ -12,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function CreateAccountPage() {
-  return <AuthPageLayout mode="create-account" />;
+  return <AuthStandaloneLayout initialState="create" />;
 }
