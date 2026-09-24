@@ -57,24 +57,14 @@ export function HeaderExamSwitcher() {
     );
   }
 
-  // Active workspace with fallback for contextual routes
-  const activeWorkspace =
-    currentWorkspace ||
-    (pathname?.startsWith("/cse") || pathname?.startsWith("/practice")
-      ? {
-          id: "workspace_cse",
-          examId: "cse",
-          trackName: "Professional",
-          targetDate: "2027-03-14",
-          targetExamName: "March 2027 CSE-PPT",
-          createdAt: "",
-          updatedAt: "",
-        }
-      : null);
+  // "No exam chosen" is a real state: never fabricate a workspace for
+  // contextual routes like /cse or /practice. The header falls back to a
+  // plain "Choose an exam" entry point instead of a phantom CSE workspace.
+  const activeWorkspace = currentWorkspace;
 
   const examConfig = activeWorkspace ? getExamConfig(activeWorkspace.examId) : undefined;
   const shortName = examConfig?.shortName || activeWorkspace?.examId?.toUpperCase() || "Exam";
-  const trackName = activeWorkspace?.trackName || "Professional";
+  const trackName = activeWorkspace?.trackName || "Standard";
 
   return (
     <>
