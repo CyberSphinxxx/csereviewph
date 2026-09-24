@@ -491,3 +491,54 @@ export function getFeaturedExam(): ExamCatalogEntry {
   }
   return cse;
 }
+
+/**
+ * Level-aware route bundle for the ACTIVE workspace.
+ *
+ * EXAM_CATALOG.routes stays the documented marketing/default routes, but any
+ * surface tied to what the learner is actually studying must derive its runner
+ * links from the active workspace's level — otherwise a subprofessional
+ * learner gets professional question pools. Falls back to the exam's catalog
+ * routes when the level is missing or has no catalog entry.
+ */
+export function getExamRoutesForLevel(
+  examId: string,
+  levelId?: string
+): ExamRoutes {
+  const exam = getExamConfig(examId);
+  const routes: ExamRoutes = exam?.routes ?? {
+    infoUrl: "/cse/exam-guide",
+    practiceUrl: "/practice",
+  };
+  if (!exam || !levelId) return routes;
+
+  const levelSlug = levelId.startsWith("cse-") ? levelId.slice(4) : levelId;
+  if (!exam.levels.some((lvl) => lvl.id === levelSlug)) return routes;
+
+  return {
+    ...routes,
+    quickDrillUrl: routes.quickDrillUrl
+      ? routes.quickDrillUrl.replace("/professional/", `/${levelSlug}/`)
+      : `/exams/${levelSlug}/quick`,
+    fullMockUrl: routes.fullMockUrl
+      ? routes.fullMockUrl.replace("/professional/", `/${levelSlug}/`)
+      : `/exams/${levelSlug}/full`,
+  };
+}
+
+/** Level-aware runner specs (items, duration, passing score) for a workspace. */
+export function getExamMockSpecsForLevel(
+  examId: string,
+  levelId?: string
+): ExamMockSpecs | undefined {
+  const exam = getExamConfig(examId);
+  if (!exam?.mockSpecs) return undefined;
+  const levelSlug = levelId?.startsWith("cse-") ? levelId.slice(4) : levelId;
+  const level = exam.levels.find((lvl) => lvl.id === levelSlug);
+  if (!level) return exam.mockSpecs;
+  return {
+    itemCount: level.itemCount ?? level.items,
+    timeLimitMinutes: level.durationMinutes ?? level.timeLimitMinutes,
+    passingScorePercentage: exam.mockSpecs.passingScorePercentage,
+  };
+}
