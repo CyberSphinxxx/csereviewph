@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Check, Plus, Settings } from "lucide-react";
-import { getExamConfig, type ExamCatalogEntry } from "@/config/exams";
+import { getExamConfig, getExamRoutesForLevel, type ExamCatalogEntry } from "@/config/exams";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
 import { useExamLevel } from "@/lib/hooks/useExamLevel";
 import { MyExamsDialog } from "@/components/workspace/MyExamsDialog";
@@ -24,7 +24,10 @@ export function ExamSubNav({
   const router = useRouter();
   const { currentWorkspace, allWorkspaces, switchWorkspace, updateWorkspace } = useExamWorkspace();
 
-  const [sharedLevel, setSharedLevel] = useExamLevel<"professional" | "subprofessional">(examId);
+  // Public-page preview hint (CSE landing / exam-guide browsing). The WORKSPACE
+  // is the authoritative level store; this hint only matters when the visitor
+  // is previewing levels without having chosen an exam yet.
+  const [previewLevel, setPreviewLevel] = useExamLevel<"professional" | "subprofessional">(examId);
 
   const [isOpen, setIsOpen] = useState(false);
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
@@ -36,8 +39,16 @@ export function ExamSubNav({
   const examConfig: ExamCatalogEntry | undefined = getExamConfig(examId) || getExamConfig("cse");
   const levels = examConfig?.levels || [];
 
-  // Determine current active level: propLevel || sharedLevel
-  const activeLevelSlug = propLevel || sharedLevel;
+  // Authoritative level: explicit prop → the active workspace's levelId →
+  // public-page preview hint → catalog default. Everything below derives its
+  // routes from THIS value, so a subprofessional learner never lands on
+  // professional question pools.
+  const activeLevelSlug =
+    propLevel ||
+    currentWorkspace?.levelId ||
+    previewLevel ||
+    levels[0]?.id ||
+    "professional";
 
   const currentLevelObj = levels.find((lvl) => lvl.id === activeLevelSlug) || levels[0];
   const shortName = examConfig?.shortName || "CSE";
@@ -77,20 +88,20 @@ export function ExamSubNav({
   const handleSelectLevel = (levelId: string) => {
     setIsOpen(false);
     const typedLevel = levelId === "subprofessional" ? "subprofessional" : "professional";
-
-    // Update shared level (updates localStorage, URL replaceState, and broadcasts)
-    setSharedLevel(typedLevel);
+    const trackName = typedLevel === "subprofessional" ? "Subprofessional" : "Professional";
 
     // If callback provided, notify parent
     if (onLevelChange) {
       onLevelChange(typedLevel);
     }
 
-    // Update workspace state if available
+    // The workspace is the single write path for the chosen level. When no
+    // exam has been chosen yet (public browsing), fall back to the preview
+    // hint so the page still agrees with itself.
     if (currentWorkspace) {
-      updateWorkspace(currentWorkspace.id, {
-        trackName: typedLevel === "subprofessional" ? "Subprofessional" : "Professional",
-      });
+      updateWorkspace(currentWorkspace.id, { levelId: typedLevel, trackName });
+    } else {
+      setPreviewLevel(typedLevel);
     }
   };
 
@@ -104,11 +115,9 @@ export function ExamSubNav({
 
   // Sub-nav link definitions
   const overviewHref = "/cse";
-  const practiceHref = examConfig?.routes?.practiceUrl || "/practice";
-  const mockHref =
-    activeLevelSlug === "subprofessional"
-      ? "/exams/subprofessional/full"
-      : examConfig?.routes?.fullMockUrl || "/exams/professional/full";
+  const levelRoutes = getExamRoutesForLevel(examId, activeLevelSlug);
+  const practiceHref = levelRoutes.practiceUrl || "/practice";
+  const mockHref = levelRoutes.fullMockUrl || "/exams/professional/full";
   const guidesHref = "/guides";
   const infoHref = examConfig?.routes?.infoUrl || "/cse/exam-guide";
 
