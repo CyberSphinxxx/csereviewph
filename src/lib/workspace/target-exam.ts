@@ -61,6 +61,11 @@ export function getTargetExamSummary(): TargetExamSummary | null {
  * every reader sees the same values immediately. Returns null (and changes
  * nothing) when no exam has been chosen yet — target settings only exist
  * inside a workspace.
+ *
+ * An EXPLICIT empty-string targetDate clears the date: "no exam date set" is
+ * a real state, distinct from leaving the stored value untouched. The empty
+ * state also clears the date in preferences and workspace metadata so no
+ * reader can resurrect a stale countdown.
  */
 export function saveTargetExamSummary(update: {
   targetDate?: string;
@@ -70,13 +75,23 @@ export function saveTargetExamSummary(update: {
   const current = getTargetExamSummary();
   if (!current) return null;
 
+  const clearsDate = update.targetDate === "";
   const next: TargetExamConfig = {
-    targetDate: update.targetDate ?? current.targetDate,
+    targetDate: clearsDate ? "" : update.targetDate ?? current.targetDate,
     examName: update.examName ?? current.examName,
     dailyGoal: Math.min(200, Math.max(5, update.dailyGoal ?? current.dailyGoal)),
   };
 
   LocalStorageService.saveTargetExamConfig(next, current.workspaceId);
+
+  // Workspace metadata mirrors the target BEFORE the preferences save, so the
+  // preferences mirror block (which re-reads the active workspace) observes
+  // the already-updated workspace and cannot resurrect a cleared date.
+  WorkspaceService.updateWorkspace(current.workspaceId, {
+    targetExamDate: next.targetDate || undefined,
+    targetExamName: next.examName,
+    dailyGoal: next.dailyGoal,
+  });
 
   if (PreferencesService.isClient()) {
     PreferencesService.savePreferences((prev) => ({
@@ -84,6 +99,7 @@ export function saveTargetExamSummary(update: {
       study: {
         ...prev.study,
         targetDate: next.targetDate,
+        targetDateType: clearsDate ? "none" : prev.study.targetDateType,
         targetExamName: next.examName,
         dailyGoal: next.dailyGoal,
       },
