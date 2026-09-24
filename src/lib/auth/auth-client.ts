@@ -5,7 +5,7 @@ export const authClient = createAuthClient({
   baseURL: typeof window !== "undefined" ? window.location.origin : getBaseUrl(),
 });
 
-export const { signIn, signUp, signOut, useSession } = authClient;
+export const { signIn, signUp, signOut, resetPassword, useSession } = authClient;
 
 export async function requestPasswordReset({ email }: { email: string }) {
   try {
