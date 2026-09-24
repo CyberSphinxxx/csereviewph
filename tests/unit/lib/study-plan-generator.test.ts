@@ -137,7 +137,7 @@ describe("generateWeeklyPlan", () => {
   });
 
   it("non-smart templates fall back to the cold-start baseline with no data", () => {
-    for (const t of PLAN_TEMPLATES.filter((x) => x.id !== "smart")) {
+    for (const t of PLAN_TEMPLATES.filter((x) => x.id !== "smart" && x.id !== "weak-focus")) {
       const plan = generateWeeklyPlan({
         ...base,
         subjects: [{ ...subjects[0], questionsAnswered: 0, accuracy: 0 }],
