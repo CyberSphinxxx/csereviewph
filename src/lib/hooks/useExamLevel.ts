@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import { getExamConfig } from "@/config/exams";
 
 const RT_LEVEL_EVENT = "rt:exam-level-change";
@@ -12,26 +11,23 @@ export interface ExamLevelChangeEventDetail {
 }
 
 /**
- * Single source of truth for exam level selection.
- * Priority:
- * 1. URL search param `?level=...`
- * 2. Client-side localStorage `rt_level_${examSlug}` (safely wrapped in try/catch)
- * 3. Exam catalog default level (e.g. "professional")
+ * PUBLIC-PAGE VIEW HINT — not the app's exam state.
  *
- * Changes update state, localStorage, and update the URL query using window.history.replaceState
- * (without page reload or history push spam), syncing all mounted subscribers immediately.
+ * The workspace is the single authoritative store for which exam level a
+ * learner is preparing for (see useExamWorkspace / WorkspaceService). This
+ * hook only remembers which level a visitor is *previewing* on public pages
+ * (CSE landing, exam picker cards) so their cards agree while browsing. It:
+ * - never writes to workspace storage,
+ * - no longer rewrites the URL query string (that leaked state into every
+ *   subsequent route and fought with workspace-derived links),
+ * - is ignored everywhere except the public components that opt into it.
+ *
+ * Priority: broadcast event on the page → localStorage preview hint →
+ * catalog default level.
  */
 export function useExamLevel<T extends string = "professional" | "subprofessional">(
   examSlug: string = "cse"
 ): [T, (newLevel: T) => void] {
-  let searchParams: ReturnType<typeof useSearchParams> | null = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    searchParams = useSearchParams?.() || null;
-  } catch {
-    searchParams = null;
-  }
-
   const getValidLevels = useCallback((): string[] => {
     const config = getExamConfig(examSlug);
     if (config?.levels && config.levels.length > 0) {
@@ -48,13 +44,7 @@ export function useExamLevel<T extends string = "professional" | "subprofessiona
   const resolveCurrentLevel = useCallback((): T => {
     const valid = getValidLevels();
 
-    // 1. URL query param
-    const paramLevel = searchParams?.get("level")?.toLowerCase();
-    if (paramLevel && valid.includes(paramLevel)) {
-      return paramLevel as T;
-    }
-
-    // 2. LocalStorage
+    // 1. LocalStorage preview hint (scoped to public-page browsing)
     if (typeof window !== "undefined") {
       try {
         const stored = window.localStorage.getItem(`rt_level_${examSlug}`)?.toLowerCase();
@@ -66,19 +56,13 @@ export function useExamLevel<T extends string = "professional" | "subprofessiona
       }
     }
 
-    // 3. Fallback default
+    // 2. Catalog default
     return getDefaultLevel();
-  }, [searchParams, examSlug, getValidLevels, getDefaultLevel]);
+  }, [examSlug, getValidLevels, getDefaultLevel]);
 
   const [level, setLevelState] = useState<T>(resolveCurrentLevel);
 
-  // Keep state in sync with URL searchParams if URL changes externally
-  useEffect(() => {
-    const nextLevel = resolveCurrentLevel();
-    setLevelState(nextLevel);
-  }, [resolveCurrentLevel]);
-
-  // Listen for broadcasted changes across components on the same page
+  // Keep state in sync when another component on the page changes the hint
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -107,7 +91,7 @@ export function useExamLevel<T extends string = "professional" | "subprofessiona
 
       setLevelState(newLevel);
 
-      // Persist to localStorage safely
+      // Persist the public-page preview hint only
       if (typeof window !== "undefined") {
         try {
           window.localStorage.setItem(`rt_level_${examSlug}`, newLevel);
@@ -115,16 +99,7 @@ export function useExamLevel<T extends string = "professional" | "subprofessiona
           // Ignore private mode or blocked storage exceptions
         }
 
-        // Update URL search query using replaceState (never history push)
-        try {
-          const url = new URL(window.location.href);
-          url.searchParams.set("level", newLevel);
-          window.history.replaceState(null, "", url.toString());
-        } catch {
-          // Ignore URL construction errors in non-browser environments
-        }
-
-        // Broadcast to all mounted components (e.g. pill & card)
+        // Broadcast to all mounted components on this page (e.g. pill & card)
         try {
           const evt = new CustomEvent<ExamLevelChangeEventDetail>(RT_LEVEL_EVENT, {
             detail: { examSlug, level: newLevel },
