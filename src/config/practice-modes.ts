@@ -12,6 +12,9 @@ import type { ExamMode } from "@/features/exam-engine";
 
 export type PracticeModeGroup = "tests" | "review" | "focus" | "memorize" | "challenge";
 
+/** Exam-runner level slugs the routes are templated against. */
+export type ExamRunnerLevel = "professional" | "subprofessional";
+
 export interface PracticeModeDef {
   id: string;
   group: PracticeModeGroup;
@@ -20,7 +23,11 @@ export interface PracticeModeDef {
   icon: string; // lucide icon name consumed by the UI layer
   /** Real exam-engine mode driving the session, when enabled. */
   engineMode?: ExamMode;
-  /** Route or href this mode opens, when enabled. */
+  /**
+   * Route template this mode opens, when enabled. `{level}` is substituted
+   * with the active level slug, so one entry serves both CSE tracks and the
+   * active level can never drift from the workspace that declares it.
+   */
   href?: string;
   enabled: boolean;
   /** Short fact chips shown on the card, e.g. ["170 items", "3h 10m"]. */
@@ -43,7 +50,7 @@ export const PRACTICE_MODES: PracticeModeDef[] = [
     description: "10 mixed questions to warm up.",
     icon: "zap",
     engineMode: "quick",
-    href: "/exams/professional/quick",
+    href: "/exams/{level}/quick",
     enabled: true,
     facts: ["10 items", "~10 min"],
   },
@@ -54,7 +61,7 @@ export const PRACTICE_MODES: PracticeModeDef[] = [
     description: "A 30-item check across all subjects.",
     icon: "list-checks",
     engineMode: "medium",
-    href: "/exams/professional/medium",
+    href: "/exams/{level}/medium",
     enabled: true,
     facts: ["30 items", "~30 min"],
   },
@@ -65,7 +72,7 @@ export const PRACTICE_MODES: PracticeModeDef[] = [
     description: "The complete exam under one continuous countdown.",
     icon: "target",
     engineMode: "full",
-    href: "/exams/professional/full",
+    href: "/exams/{level}/full",
     enabled: true,
     facts: ["Level length", "Exam conditions"],
   },
@@ -76,7 +83,7 @@ export const PRACTICE_MODES: PracticeModeDef[] = [
     description: "A short check that shows where you stand.",
     icon: "gauge",
     engineMode: "quick",
-    href: "/exams/professional/quick",
+    href: "/exams/{level}/quick",
     enabled: true,
     facts: ["All subjects"],
   },
@@ -188,6 +195,20 @@ export const PRACTICE_MODES: PracticeModeDef[] = [
     facts: ["5 items"],
   },
 ];
+
+/** Substitutes `{level}` (and tolerates legacy literal routes) for a level. */
+export function resolvePracticeModeHref(
+  href: string | undefined,
+  level: string
+): string {
+  if (!href) return "/practice";
+  return href.replace(/\{level\}/g, level);
+}
+
+/** Resolves a mode's href for the given level. */
+export function getPracticeModeHref(mode: PracticeModeDef, level: string): string {
+  return resolvePracticeModeHref(mode.href, level);
+}
 
 export function getEnabledPracticeModes(): PracticeModeDef[] {
   return PRACTICE_MODES.filter((m) => m.enabled);
