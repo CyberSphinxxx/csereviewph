@@ -178,16 +178,101 @@ function generateCommitMessage(file) {
     return "fix(exam-guide): reconcile 2027 CSE-PPT schedule date to March 14, 2027";
   }
 
+  // Auth Standalone Pages & Components
+  if (filePath === "src/components/auth/AuthPageLayout.tsx" && file.status.includes("D")) {
+    return "refactor(auth): remove deprecated AuthPageLayout in favor of AuthStandaloneLayout";
+  }
+  if (filePath === "src/components/auth/AuthStandaloneForm.tsx") {
+    return "feat(auth): implement AuthStandaloneForm component for standalone auth pages";
+  }
+  if (filePath === "src/components/auth/AuthStandaloneLayout.tsx") {
+    return "feat(auth): implement AuthStandaloneLayout with brand illustration and responsive container";
+  }
+  if (filePath === "src/app/(public)/create-account/page.tsx") {
+    return "refactor(auth): switch create-account page to AuthStandaloneLayout";
+  }
+  if (filePath === "src/app/(public)/forgot-password/page.tsx") {
+    return "refactor(auth): switch forgot-password page to AuthStandaloneLayout";
+  }
+  if (filePath === "src/app/(public)/sign-in/page.tsx") {
+    return "refactor(auth): switch sign-in page to AuthStandaloneLayout";
+  }
+  if (filePath === "src/app/(public)/reset-password/page.tsx") {
+    return "feat(auth): add standalone reset-password page with AuthStandaloneLayout";
+  }
+  if (filePath === "src/lib/auth/auth-client.ts") {
+    return "feat(auth): export resetPassword method on authClient";
+  }
+
+  // Navigation & Workspace Level Sync
+  if (filePath === "src/components/layout/ExamSubNav.tsx") {
+    return "feat(layout): use workspace as authoritative level store in ExamSubNav";
+  }
+  if (filePath === "src/components/layout/HeaderExamSwitcher.tsx") {
+    return "refactor(header): remove fabricated workspace fallback in HeaderExamSwitcher";
+  }
+  if (filePath === "src/config/exams.ts") {
+    return "feat(config): add getExamRoutesForLevel and getExamMockSpecsForLevel helpers";
+  }
+  if (filePath === "src/config/practice-modes.ts") {
+    return "feat(config): parameterize practice modes hrefs with active level template";
+  }
+  if (filePath === "src/lib/hooks/useExamLevel.ts") {
+    return "refactor(hooks): demote useExamLevel to public-page view hint without URL query rewriting";
+  }
+  if (filePath === "src/lib/workspace/target-exam.ts") {
+    return "feat(workspace): support clearing target exam date in saveTargetExamSummary";
+  }
+  if (filePath === "src/lib/workspace/types.ts") {
+    return "feat(workspace): add optional studyStartDate field to ExamWorkspace type";
+  }
+  if (filePath === "src/lib/workspace/workspace-service.ts") {
+    return "feat(workspace): add studyStartDate getters and persistence in WorkspaceService";
+  }
+  if (filePath === "src/app/(app)/settings/study/page.tsx") {
+    return "feat(settings): write authoritative level and target date to workspace in study settings";
+  }
+
   if (filePath === "src/lib/preferences/preferences-service.ts") {
+    if (diff.includes("hasChosenExam") || diff.includes("fallbackName") || diff.includes("targetExamName")) {
+      return "fix(preferences): preserve workspace target date and avoid resurrecting cleared dates";
+    }
     return "fix(preferences): update default target date to March 14, 2027";
   }
 
   if (filePath === "src/lib/storage/local-storage-service.ts") {
+    if (diff.includes("defaultDate = workspace?.targetExamDate || \"\"")) {
+      return "fix(storage): stop fabricating default target date when workspace date is empty";
+    }
     return "fix(storage): align default target exam date to March 14, 2027";
   }
 
   if (filePath === "src/features/dashboard/DashboardView.tsx") {
+    if (diff.includes("TiltOwl") || diff.includes("levelRoutes")) {
+      return "feat(dashboard): integrate interactive tilt owl, level-aware routes, and real due mistakes";
+    }
     return "fix(dashboard): update fallback target date to March 14, 2027";
+  }
+
+  if (filePath === "src/features/dashboard/plan/StudyPlanView.tsx") {
+    if (diff.includes("studyStartDate") || diff.includes("Why this plan")) {
+      return "feat(dashboard): add strategy explanation, study start period, and calendar today reset in StudyPlanView";
+    }
+    return "feat(dashboard): add StudyPlanView with weekly schedule and milestone checklist";
+  }
+
+  if (filePath === "src/features/dashboard/practice/PracticeHubView.tsx") {
+    if (diff.includes("createPortal") || diff.includes("lockBackground")) {
+      return "feat(dashboard): portal practice setup sheet to body with focus trap and background lock";
+    }
+    return "feat(dashboard): add PracticeHubView with test mode selection cards";
+  }
+
+  if (filePath === "src/lib/study-plan-generator.ts") {
+    if (diff.includes("studyStartDate") || diff.includes("dueReviewCount")) {
+      return "feat(study-plan): add studyStartDate support, due review blocks, and why-this-plan rationale";
+    }
+    return "feat(study-plan): implement auto-generated study plan schedule generator";
   }
 
   if (filePath === "src/features/dashboard/ExamCalendarCard.tsx") {
@@ -349,7 +434,7 @@ function generateCommitMessage(file) {
     return "docs(agents): update guidelines for token efficiency and rolling progress handoffs";
   }
   if (filePath === "ARCHIVES/progress-history.md") {
-    return "docs(archives): update progress history archive";
+    return "docs(archives): update progress history archive with fix and improve round details";
   }
   if (filePath === "ARCHIVES/README.md") {
     return "docs(archives): update archives directory documentation";
@@ -361,7 +446,7 @@ function generateCommitMessage(file) {
     return "docs(plan): update implementation plan for coach bubble, clean header, and cse redesign";
   }
   if (filePath.endsWith("PROGRESS.md")) {
-    return "docs(progress): record unified dashboard app shell, study plan, daily quests, and notes";
+    return "docs(progress): record fix and improve round completion across sheet, workspace, and study strategies";
   }
   if (filePath.endsWith("walkthrough.md")) {
     return "docs(walkthrough): update verification walkthrough for unified app shell and dashboard suite";
@@ -392,6 +477,9 @@ function generateCommitMessage(file) {
     return "style(tailwind): refine brand color palette tokens";
   }
   if (filePath === "src/app/globals.css") {
+    if (diff.includes("scrollbar-gutter") || diff.includes("::-webkit-scrollbar")) {
+      return "style(theme): add scrollbar-gutter stable and themed scrollbar styling";
+    }
     return "style(theme): add exam hall and coach background tokens and card shadows";
   }
   if (filePath === "src/app/manifest.ts") {
@@ -405,6 +493,24 @@ function generateCommitMessage(file) {
   }
 
   // Test Files
+  if (filePath === "tests/e2e/auth-modal.spec.ts") {
+    return "test(e2e): update auth modal specifications for standalone layout integration";
+  }
+  if (filePath === "tests/unit/components/auth-pages.test.tsx") {
+    return "test(unit): update auth pages tests for AuthStandaloneLayout and reset password";
+  }
+  if (filePath === "tests/unit/lib/study-plan-generator.test.ts") {
+    return "test(unit): update study plan generator tests for study window and due reviews";
+  }
+  if (filePath === "tests/unit/dashboard/exam-state-regression.test.tsx") {
+    return "test(unit): add exam state regression tests for level, target date, and name propagation";
+  }
+  if (filePath === "tests/unit/dashboard/practice-sheet.test.tsx") {
+    return "test(unit): add unit tests for practice setup sheet portal geometry and a11y focus trap";
+  }
+  if (filePath === "tests/unit/lib/study-plan-strategies.test.ts") {
+    return "test(unit): add unit tests for study plan strategy divergence and signature recomputation";
+  }
   if (filePath === "tests/e2e/exam-flow.spec.ts") {
     return "test(e2e): update exam flow tests for coach panel and redesigned hero selector";
   }
