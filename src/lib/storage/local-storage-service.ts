@@ -878,7 +878,7 @@ export class LocalStorageService {
     const workspaces = safeGetItem<ExamWorkspace[]>(WORKSPACE_STORAGE_KEYS.WORKSPACES, []);
     const workspace = workspaces.find((w) => w.id === wsId);
 
-    const defaultDate = workspace?.targetExamDate || "2027-03-14";
+    const defaultDate = workspace?.targetExamDate || "";
     const defaultName = workspace?.targetExamName || (workspace?.examId === "cse" ? "March 2027 CSE-PPT" : `${workspace?.trackName || "Target"} Exam`);
     const defaultGoal = workspace?.dailyGoal || 25;
 
