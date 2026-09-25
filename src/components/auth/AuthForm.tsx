@@ -1,8 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+/**
+ * Modal-side auth form. Renders from the shared field specs in auth-fields.ts
+ * and keeps the exact same props contract and auth calls (signIn.email,
+ * signUp.email, requestPasswordReset) as before the redesign.
+ */
+
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { signIn, signUp, requestPasswordReset } from "@/lib/auth/auth-client";
+import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
+import {
+  FIELD_SETS,
+  META,
+  RULES,
+  GENERIC_ERROR,
+  type FieldSpec,
+  type FieldMetaKey,
+} from "./auth-fields";
 import {
   Mail,
   Lock,
@@ -10,12 +25,35 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  AlertCircle,
-  CheckCircle2,
   Loader2,
 } from "lucide-react";
 
 export type AuthMode = "sign-in" | "create-account" | "forgot-password";
+
+const FIELD_ICON: Record<FieldSpec["icon"], React.ComponentType<{ className?: string }>> = {
+  mail: Mail,
+  lock: Lock,
+  user: User,
+};
+
+const STATE_FOR_MODE: Record<AuthMode, FieldMetaKey> = {
+  "sign-in": "signin",
+  "create-account": "create",
+  "forgot-password": "reset",
+};
+
+const MODE_FOR_STATE: Record<FieldMetaKey, AuthMode> = {
+  signin: "sign-in",
+  create: "create-account",
+  reset: "forgot-password",
+  newpass: "sign-in",
+};
+
+const FOCUS =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#86152d] dark:focus-visible:outline-[#ffd27a]";
+const INK = "text-[color:var(--brand-text)]";
+const MUTED = "text-[color:var(--brand-muted)]";
+const LINE = "border-[color:var(--brand-border)]";
 
 interface AuthFormProps {
   initialMode?: AuthMode;
@@ -34,373 +72,358 @@ export function AuthForm({
 }: AuthFormProps) {
   const [internalMode, setInternalMode] = useState<AuthMode>(initialMode);
   const currentMode = controlledMode ?? internalMode;
+  const state = STATE_FOR_MODE[currentMode];
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Enter inside an input fires the form submit event even while the submit
+  // button is disabled, so `disabled={loading}` alone cannot prevent a second
+  // submission during an in-flight request. This ref closes that gap.
+  const inFlightRef = useRef(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
+  const [sentEmail, setSentEmail] = useState("");
 
-  const handleModeChange = (newMode: AuthMode) => {
-    setError(null);
+  const activeFields = FIELD_SETS[state];
+  const meta = META[state];
+
+  const handleModeChange = (nextMode: AuthMode) => {
+    setErrors({});
+    setFormError(null);
     setResetSent(false);
     if (onModeChange) {
-      onModeChange(newMode);
+      onModeChange(nextMode);
     } else {
-      setInternalMode(newMode);
+      setInternalMode(nextMode);
     }
   };
 
-  const validateEmail = (val: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+  const handleChange = (id: string, value: string) => {
+    setValues((v) => ({ ...v, [id]: value }));
+    setErrors((e) => (e[id] ? { ...e, [id]: null } : e));
+  };
+
+  const validateAll = () => {
+    const next: Record<string, string | null> = {};
+    let firstBad: string | null = null;
+    for (const f of activeFields) {
+      const msg = RULES[f.id] ? RULES[f.id](values[f.id] ?? "") : "";
+      next[f.id] = msg || null;
+      if (msg && !firstBad) firstBad = f.id;
+    }
+    setErrors(next);
+    if (firstBad) {
+      const el = document.getElementById(`${state}-${firstBad}`) as HTMLInputElement | null;
+      el?.focus();
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    if (inFlightRef.current) return;
+    setFormError(null);
+    if (!validateAll()) return;
 
-    // Validate email
-    if (!validateEmail(email)) {
-      setError("Enter a valid email address.");
-      return;
-    }
-
-    if (currentMode === "forgot-password") {
-      setLoading(true);
-      try {
-        const res = await requestPasswordReset({ email: email.trim() });
-        if (res.error) {
-          setError(res.error.message || "Something went wrong. Please check your connection and try again.");
-        } else {
-          setResetSent(true);
-        }
-      } catch {
-        setError("Something went wrong. Please check your connection and try again.");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    if (currentMode === "create-account") {
-      if (!name.trim()) {
-        setError("Please enter your display name.");
-        return;
-      }
-      if (password.length < 8) {
-        setError("Password must be at least 8 characters.");
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await signUp.email({
-          email: email.trim(),
-          password,
-          name: name.trim(),
-        });
-
-        if (res.error) {
-          const msg = res.error.message?.toLowerCase() || "";
-          if (msg.includes("already") || msg.includes("exist") || msg.includes("registered")) {
-            setError("An account with this email already exists. Sign in instead.");
-          } else {
-            setError(res.error.message || "Something went wrong. Please check your connection and try again.");
-          }
-          setLoading(false);
-          return;
-        }
-
-        setLoading(false);
-        if (onSuccess) onSuccess();
-      } catch {
-        setError("Something went wrong. Please check your connection and try again.");
-        setLoading(false);
-      }
-      return;
-    }
-
-    // Sign In Mode
-    if (!password) {
-      setError("The email or password is incorrect.");
-      return;
-    }
-
+    inFlightRef.current = true;
     setLoading(true);
     try {
-      const res = await signIn.email({
-        email: email.trim(),
-        password,
-      });
-
-      if (res.error) {
-        setError("The email or password is incorrect.");
-        setLoading(false);
+      if (state === "reset") {
+        const email = (values["rs-email"] ?? "").trim();
+        const res = await requestPasswordReset({ email });
+        if (res.error) {
+          setFormError(res.error.message || GENERIC_ERROR);
+        } else {
+          setSentEmail(email);
+          setResetSent(true);
+        }
         return;
       }
 
-      setLoading(false);
+      if (state === "create") {
+        const res = await signUp.email({
+          email: (values["ca-email"] ?? "").trim(),
+          password: values["ca-pass"] ?? "",
+          name: (values["ca-name"] ?? "").trim(),
+        });
+        if (res.error) {
+          const msg = res.error.message?.toLowerCase() ?? "";
+          if (msg.includes("already") || msg.includes("exist") || msg.includes("registered")) {
+            setErrors({ "ca-email": "An account with this email already exists. Sign in instead." });
+          } else {
+            setFormError(res.error.message || GENERIC_ERROR);
+          }
+          return;
+        }
+        if (onSuccess) onSuccess();
+        return;
+      }
+
+      // Sign in
+      const res = await signIn.email({
+        email: (values["si-email"] ?? "").trim(),
+        password: values["si-pass"] ?? "",
+      });
+      if (res.error) {
+        setFormError("The email or password is incorrect.");
+        return;
+      }
       if (onSuccess) onSuccess();
     } catch {
-      setError("Something went wrong. Please check your connection and try again.");
+      setFormError(GENERIC_ERROR);
+    } finally {
+      inFlightRef.current = false;
       setLoading(false);
     }
   };
 
+  /* ---------- reset-sent confirmation state ---------- */
+
+  if (resetSent && state === "reset") {
+    return (
+      <div role="status" className="flex w-full flex-col items-center gap-2.5 px-1 py-2.5 text-center">
+        <ReviewTayoOwl mood="happy" withCap alt="Happy ReviewTayo owl" />
+        <h2 tabIndex={-1} className={`font-display text-[23px] font-extrabold tracking-[-0.03em] ${INK}`}>
+          Check your inbox
+        </h2>
+        <p className={`max-w-[38ch] text-sm ${MUTED}`}>
+          If an account matches <b className={INK}>{sentEmail || "your email"}</b>, reset instructions are on
+          their way.
+        </p>
+        <button
+          type="button"
+          onClick={() => handleModeChange("sign-in")}
+          className={`mt-1.5 inline-flex items-center justify-center gap-2 rounded-xl border-[1.5px] ${LINE} px-4 py-2.5 text-sm font-extrabold ${INK} transition hover:-translate-y-0.5 hover:bg-[color:var(--blush)] ${FOCUS}`}
+        >
+          Back to sign in
+        </button>
+      </div>
+    );
+  }
+
+  const fieldId = (f: FieldSpec) => `${state}-${f.id}`;
+
   return (
     <div className="w-full">
-      {/* Header Titles */}
-      <div className="mb-5">
-        <h2
-          id="auth-form-title"
-          className="text-xl font-bold text-slate-900 dark:text-white tracking-tight"
-        >
-          {currentMode === "sign-in" && "Welcome back"}
-          {currentMode === "create-account" && "Create your free account"}
-          {currentMode === "forgot-password" && "Reset your password"}
-        </h2>
-        <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          {currentMode === "sign-in" &&
-            "Sign in to sync your study progress across devices."}
-          {currentMode === "create-account" &&
-            "Save your study progress and continue reviewing on any device."}
-          {currentMode === "forgot-password" &&
-            "Enter your email address and we'll send you instructions to reset your password."}
-        </p>
+      {/* Sign in / Create account tabs */}
+      <div
+        role="group"
+        aria-label="Sign in or create account"
+        className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-[color:var(--secondary)] p-1"
+      >
+        {(["signin", "create"] as const).map((s) => {
+          const tabMode = MODE_FOR_STATE[s];
+          const active = state === s;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => handleModeChange(tabMode)}
+              aria-pressed={active}
+              className={`rounded-lg py-2 text-sm font-bold transition ${FOCUS} ${
+                active
+                  ? `bg-[color:var(--card)] ${INK} shadow-[0_1px_4px_rgba(27,10,16,0.14)]`
+                  : `${MUTED} hover:text-[color:var(--brand-text)]`
+              }`}
+            >
+              {s === "signin" ? "Sign in" : "Create account"}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div
-          className="mb-4 flex items-start gap-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-3 text-xs text-rose-700 dark:text-rose-300"
-          role="alert"
+      <header className="mb-4">
+        <h2
+          id="auth-form-title"
+          tabIndex={-1}
+          className={`font-display text-[23px] font-extrabold tracking-[-0.03em] ${INK}`}
         >
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
-          <span>{error}</span>
+          {meta.title}
+        </h2>
+        <p className={`mt-1 text-sm ${MUTED}`}>{meta.sub}</p>
+      </header>
+
+      {formError && (
+        <div
+          role="alert"
+          className="mb-4 flex items-start gap-2.5 rounded-xl border border-[#f3ccd6] bg-[#fdeef1] p-3 text-[13px] font-semibold text-[#9d1a33] dark:border-[#4a1a27] dark:bg-[#4a1a27]/40 dark:text-[#ffb3c2]"
+        >
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{formError}</span>
         </div>
       )}
 
-      {/* Reset Sent Success Notice */}
-      {resetSent ? (
-        <div className="space-y-4 py-2">
-          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-sm">Check your email</p>
-              <p className="mt-1 text-slate-600 dark:text-slate-300 leading-relaxed">
-                If an account exists for <span className="font-medium text-slate-900 dark:text-white">{email}</span>,
-                you will receive password reset instructions shortly.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => handleModeChange("sign-in")}
-            className="w-full rounded-xl bg-slate-100 dark:bg-slate-800 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-          >
-            Back to sign in
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {/* Display Name (Create Account only) */}
-          {currentMode === "create-account" && (
-            <div>
-              <label
-                htmlFor="auth-name"
-                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                Display Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  id="auth-name"
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Juan Dela Cruz"
-                  className="w-full rounded-xl border border-input dark:border-border bg-white dark:bg-[#1E191C] pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition"
-                />
-              </div>
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                This is how your name appears in your reviewer profile.
-              </p>
-            </div>
-          )}
-
-          {/* Email Address */}
-          <div>
-            <label
-              htmlFor="auth-email"
-              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-            >
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-              <input
-                id="auth-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="juan@example.ph"
-                className="w-full rounded-xl border border-input dark:border-border bg-white dark:bg-[#1E191C] pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition"
-              />
-            </div>
-          </div>
-
-          {/* Password (Sign In & Create Account only) */}
-          {currentMode !== "forgot-password" && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label
-                  htmlFor="auth-password"
-                  className="text-xs font-semibold text-slate-700 dark:text-slate-300"
-                >
-                  Password
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+        {activeFields.map((f) => {
+          const inputId = fieldId(f);
+          const Icon = FIELD_ICON[f.icon];
+          const error = errors[f.id] ?? null;
+          const isPassword = f.type === "password";
+          return (
+            <div key={f.id} className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-2.5">
+                <label htmlFor={inputId} className={`text-[13px] font-bold ${INK}`}>
+                  {f.label}
                 </label>
-                {currentMode === "sign-in" && (
+                {f.forgot && currentMode === "sign-in" && (
                   <button
                     type="button"
                     onClick={() => handleModeChange("forgot-password")}
-                    className="text-xs text-brand-700 hover:text-brand-800 dark:text-brand-400 hover:underline font-medium"
+                    className={`rounded-md px-1 py-0.5 text-[13px] font-bold text-brand-700 hover:underline dark:text-[#ff9fb5] ${FOCUS}`}
                   >
                     Forgot password?
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  id="auth-password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={
-                    currentMode === "create-account"
-                      ? "At least 8 characters"
-                      : "Enter your password"
-                  }
-                  className="w-full rounded-xl border border-input dark:border-border bg-white dark:bg-[#1E191C] pl-9 pr-10 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition"
+                <Icon
+                  className={`pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 ${MUTED}`}
+                  aria-hidden="true"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+                <input
+                  id={inputId}
+                  name={f.id}
+                  type={isPassword && showPassword ? "text" : f.type}
+                  value={values[f.id] ?? ""}
+                  onChange={(e) => handleChange(f.id, e.target.value)}
+                  placeholder={f.placeholder}
+                  autoComplete={f.autoComplete}
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={
+                    error ? `${inputId}-err` : f.hint || f.meter ? `${inputId}-hint` : undefined
+                  }
+                  className={`w-full rounded-xl border-[1.5px] bg-transparent py-3 pl-11 ${
+                    f.eye ? "pr-11" : "pr-4"
+                  } text-[15px] ${INK} outline-none transition placeholder:opacity-65 focus:border-brand-700 focus:shadow-[0_0_0_3px_rgba(138,22,48,0.14)] dark:focus:border-[#ffd27a] dark:focus:shadow-[0_0_0_3px_rgba(255,210,122,0.16)] ${
+                    error
+                      ? "border-[#c4213f] shadow-[0_0_0_3px_rgba(157,26,51,0.12)]"
+                      : LINE
+                  }`}
+                />
+                {f.eye && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-pressed={showPassword}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className={`absolute right-1.5 top-1/2 grid h-[34px] w-[34px] -translate-y-1/2 place-items-center rounded-[9px] ${MUTED} transition hover:text-[color:var(--brand-text)] aria-pressed:text-brand-700 dark:aria-pressed:text-[#ff9fb5] ${FOCUS}`}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-[18px] w-[18px]" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-[18px] w-[18px]" aria-hidden="true" />
+                    )}
+                  </button>
+                )}
               </div>
-              {currentMode === "create-account" && (
-                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                  Use at least 8 characters.
+              {(f.hint || f.meter) && !error && (
+                <p id={`${inputId}-hint`} className={`text-[12.5px] ${MUTED}`}>
+                  {f.hint}
+                  {f.meter && (
+                    <>
+                      Use at least 8 characters.{" "}
+                      <span className={`font-extrabold ${(values[f.id] ?? "").length >= 8 ? "text-[#0b7a3b] dark:text-[#4ade80]" : ""}`}>
+                        {(values[f.id] ?? "").length}/8
+                      </span>
+                    </>
+                  )}
+                </p>
+              )}
+              {error && (
+                <p id={`${inputId}-err`} className="text-[12.5px] font-bold text-[#c4213f] dark:text-[#ff9fb5]">
+                  {error}
                 </p>
               )}
             </div>
-          )}
+          );
+        })}
 
-          {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 py-3 text-[15px] font-extrabold text-white shadow-[0_10px_24px_-10px_rgba(138,22,48,0.75)] transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-55 ${FOCUS}`}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              <span>
+                {state === "create" && "Creating account..."}
+                {state === "reset" && "Sending instructions..."}
+                {state === "signin" && "Signing in..."}
+              </span>
+            </>
+          ) : (
+            meta.cta
+          )}
+        </button>
+      </form>
+
+      {/* Guest option + footer links */}
+      <div className="mt-4 flex flex-col items-center gap-2.5">
+        {onGuestContinue && (
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-brand-700 hover:bg-brand-800 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+            type="button"
+            onClick={onGuestContinue}
+            className={`w-full rounded-xl border-[1.5px] ${LINE} py-2.5 text-center text-sm font-extrabold ${INK} transition hover:bg-[color:var(--blush)] ${FOCUS}`}
           >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>
-                  {currentMode === "create-account"
-                    ? "Creating account..."
-                    : currentMode === "forgot-password"
-                    ? "Sending instructions..."
-                    : "Signing in..."}
-                </span>
-              </>
-            ) : currentMode === "create-account" ? (
-              "Create Account & Sync"
-            ) : currentMode === "forgot-password" ? (
-              "Send Reset Link"
-            ) : (
-              "Sign In"
-            )}
+            Continue without an account
           </button>
+        )}
+        {state === "signin" && (
+          <p className={`text-[13.5px] ${MUTED}`}>
+            New to CSE Reviewer?{" "}
+            <button
+              type="button"
+              onClick={() => handleModeChange("create-account")}
+              className={`rounded font-bold text-brand-700 hover:underline dark:text-[#ff9fb5] ${FOCUS}`}
+            >
+              Create a free account
+            </button>
+          </p>
+        )}
+        {state === "create" && (
+          <p className={`text-[13.5px] ${MUTED}`}>
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => handleModeChange("sign-in")}
+              className={`rounded font-bold text-brand-700 hover:underline dark:text-[#ff9fb5] ${FOCUS}`}
+            >
+              Sign in
+            </button>
+          </p>
+        )}
+        {state === "reset" && (
+          <p className={`text-[13.5px] ${MUTED}`}>
+            <button
+              type="button"
+              onClick={() => handleModeChange("sign-in")}
+              className={`rounded font-bold text-brand-700 hover:underline dark:text-[#ff9fb5] ${FOCUS}`}
+            >
+              &larr; Back to sign in
+            </button>
+          </p>
+        )}
+      </div>
 
-          {/* Guest Option (Continue without an account) */}
-          {onGuestContinue && currentMode !== "forgot-password" && (
-            <div className="text-center pt-0.5">
-              <button
-                type="button"
-                onClick={onGuestContinue}
-                className="text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition py-1"
-              >
-                Continue without an account
-              </button>
-            </div>
-          )}
-
-          {/* Account Mode Switcher */}
-          <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-1">
-            {currentMode === "sign-in" && (
-              <>
-                New to CSE Reviewer?{" "}
-                <button
-                  type="button"
-                  onClick={() => handleModeChange("create-account")}
-                  className="font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline"
-                >
-                  Create a free account
-                </button>
-              </>
-            )}
-            {currentMode === "create-account" && (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => handleModeChange("sign-in")}
-                  className="font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-            {currentMode === "forgot-password" && (
-              <button
-                type="button"
-                onClick={() => handleModeChange("sign-in")}
-                className="font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline"
-              >
-                Back to sign in
-              </button>
-            )}
-          </div>
-
-          {/* Data Privacy (RA 10173) Notice Box */}
-          <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 p-3 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2.5 mt-4">
-            <ShieldCheck className="h-4 w-4 text-brand-600 dark:text-brand-400 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <Link
-                href="/privacy"
-                className="font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 underline underline-offset-2"
-              >
-                Data Privacy:
-              </Link>{" "}
-              Creating an account is optional. We use your email and display name to save and
-              sync your study progress across devices. You can export or delete your records anytime.
-            </div>
-          </div>
-        </form>
+      {/* Data privacy — only a create-account concern */}
+      {state === "create" && (
+        <div className={`mt-4 flex items-start gap-2.5 rounded-[14px] bg-[color:var(--secondary)] p-3.5 text-[12.5px] leading-relaxed ${MUTED}`}>
+          <ShieldCheck className="mt-0.5 h-[17px] w-[17px] shrink-0 text-brand-700 dark:text-[#ff9fb5]" aria-hidden="true" />
+          <p>
+            <Link
+              href="/privacy"
+              className={`font-bold ${INK} underline underline-offset-2 hover:text-brand-700 dark:hover:text-[#ff9fb5] ${FOCUS}`}
+            >
+              Data Privacy:
+            </Link>{" "}
+            Creating an account is optional. We use your email and display name to save and sync your study
+            progress across devices. You can export or delete your records anytime.
+          </p>
+        </div>
       )}
     </div>
   );
