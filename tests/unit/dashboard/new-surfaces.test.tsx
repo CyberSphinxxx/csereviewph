@@ -5,7 +5,6 @@ import LearnPage from "@/app/(app)/dashboard/learn/page";
 import AchievementsPage from "@/app/(app)/dashboard/achievements/page";
 import { HistoryView } from "@/features/dashboard/history/HistoryView";
 import { LocalStorageService } from "@/lib/storage";
-import { NotesService } from "@/lib/storage/notes-service";
 import { PreferencesService } from "@/lib/preferences";
 import { WorkspaceService } from "@/lib/workspace/workspace-service";
 import type { StoredAttemptDetails } from "@/lib/storage";
