@@ -23,6 +23,41 @@ function isDue(item: StoredMistakeItem): boolean {
   return new Date(item.nextReviewDue).getTime() <= Date.now();
 }
 
+/**
+ * Pure Leitner box/due counts, derived from the mistake list so that the
+ * Review view's stats stay a pure function of state (no hidden localStorage
+ * read inside useMemo, which both breaks exhaustive-deps and re-reads
+ * storage on every render).
+ */
+export function computeMistakeStats(items: StoredMistakeItem[]): {
+  total: number;
+  dueCount: number;
+  masteredCount: number;
+  byBox: Record<1 | 2 | 3 | 4 | 5, number>;
+} {
+  const now = Date.now();
+  const byBox: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  let dueCount = 0;
+  let masteredCount = 0;
+
+  for (const item of items) {
+    const box = (item.box || 1) as 1 | 2 | 3 | 4 | 5;
+    byBox[box] = (byBox[box] || 0) + 1;
+    if (box === 5) {
+      masteredCount++;
+    } else if (!item.nextReviewDue || new Date(item.nextReviewDue).getTime() <= now) {
+      dueCount++;
+    }
+  }
+
+  return {
+    total: items.length,
+    dueCount,
+    masteredCount,
+    byBox,
+  };
+}
+
 function dueLabel(item: StoredMistakeItem): string {
   const box = item.box || 1;
   if (box === 5) return "Mastered";
@@ -50,7 +85,9 @@ export function ReviewView() {
 
   const dueItems = useMemo(() => mistakes.filter(isDue), [mistakes]);
 
-  const stats = useMemo(() => LocalStorageService.getMistakeStats(), [mistakes]);
+  // Derived purely from the mistakes list, which reload() refreshes after
+  // every add/remove/master action.
+  const stats = useMemo(() => computeMistakeStats(mistakes), [mistakes]);
 
   if (drill && drill.length > 0) {
     const questions = drill.map((m) => m.question);
