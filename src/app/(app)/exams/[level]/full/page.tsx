@@ -30,18 +30,24 @@ export default async function FullMockExamPage({
     questionLimit: targetItemCount,
   });
 
+  // An insufficient bank yields an honest, clearly labeled shorter session —
+  // never duplicated filler presented as a complete exam.
+  const shortened = questions.length < targetItemCount;
+
   return (
     <ExamRunner
       initialQuestions={questions}
       rules={{
         ...rules,
-        itemCount: targetItemCount,
+        itemCount: questions.length,
         timeLimitMinutes,
       }}
       title={`${examLevel.name} — Full Mock Exam`}
-      subtitle={`${targetItemCount} items &bull; ${Math.floor(timeLimitMinutes / 60)}h ${
-        timeLimitMinutes % 60
-      }m continuous single timer &bull; Real CSE-PPT Simulation`}
+      subtitle={
+        shortened
+          ? `Honest practice: ${questions.length} of ${targetItemCount} items available — the full bank is still being written. Timer: ${Math.floor(timeLimitMinutes / 60)}h ${timeLimitMinutes % 60}m.`
+          : `${targetItemCount} items • ${Math.floor(timeLimitMinutes / 60)}h ${timeLimitMinutes % 60}m continuous single timer • Real CSE-PPT Simulation`
+      }
     />
   );
 }
