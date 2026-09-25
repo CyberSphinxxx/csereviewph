@@ -287,11 +287,6 @@ export function StudyPlanView() {
     [examDate, historyCount, target]
   );
 
-  const canPrev = calMonth
-    ? parseManilaDate(`${calMonth.y}-${String(calMonth.m + 1).padStart(2, "0")}-01`)!
-        .getTime() > parseManilaDate(today)!.getTime()
-    : false;
-
   const shiftMonth = (delta: number) => {
     if (!calMonth) return;
     const key = calMonth.y * 12 + calMonth.m + delta;
