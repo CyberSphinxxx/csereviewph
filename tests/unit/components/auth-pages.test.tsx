@@ -31,6 +31,33 @@ describe("Standalone Auth Pages (Concept C)", () => {
     window.history.replaceState(null, "", "/");
   });
 
+  it("standalone form ignores a second submit while a request is in flight", async () => {
+    let resolveSignIn: (value: unknown) => void = () => {};
+    vi.mocked(signIn.email).mockImplementationOnce(
+      () => new Promise((resolve) => { resolveSignIn = resolve; }) as ReturnType<typeof signIn.email>
+    );
+
+    render(<SignInPage />);
+
+    fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: "juan@example.ph" } });
+    fireEvent.change(screen.getByLabelText(/^Password/i), { target: { value: "Secret123!" } });
+
+    const submitBtn = screen.getByRole("button", { name: "Sign In" });
+    fireEvent.click(submitBtn);
+    await waitFor(() => expect(submitBtn).toBeDisabled());
+
+    // Second submit while in flight (e.g. pressing Enter in an input)
+    const form = submitBtn.closest("form");
+    expect(form).not.toBeNull();
+    fireEvent.submit(form as HTMLFormElement);
+
+    expect(signIn.email).toHaveBeenCalledTimes(1);
+
+    resolveSignIn({ data: { user: { id: "u-1" } } });
+    await waitFor(() => expect(submitBtn).toBeEnabled());
+    expect(signIn.email).toHaveBeenCalledTimes(1);
+  });
+
   it("renders /sign-in with brand panel, owl, benefits and the sign-in form", () => {
     render(<SignInPage />);
 
