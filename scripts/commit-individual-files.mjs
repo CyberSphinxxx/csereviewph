@@ -86,6 +86,10 @@ function generateCommitMessage(file) {
     return "chore(config): update Next.js runtime and compiler configuration";
   }
 
+  if (filePath === "playwright.config.ts") {
+    return "chore(test): support dynamic PORT environment variable in playwright config";
+  }
+
   if (filePath === "public/sw.js") {
     if (diff.includes("PRECACHE_ASSETS") || diff.includes("csereviewph-v2")) {
       return "perf(pwa): expand offline pre-caching to core study routes and bypass api endpoints";
@@ -179,10 +183,22 @@ function generateCommitMessage(file) {
   }
 
   // Auth Standalone Pages & Components
+  if (filePath === "src/components/auth/auth-fields.ts") {
+    return "feat(auth): add shared field specs, validation rules, and copy constants";
+  }
+  if (filePath === "src/components/auth/AuthForm.tsx") {
+    return "feat(auth): rebuild AuthForm with shared field specs, inline errors, and submit guard";
+  }
+  if (filePath === "src/components/auth/AuthModal.tsx") {
+    return "feat(auth): implement split-panel dialog with maroon brand panel and accessible focus trap";
+  }
   if (filePath === "src/components/auth/AuthPageLayout.tsx" && file.status.includes("D")) {
     return "refactor(auth): remove deprecated AuthPageLayout in favor of AuthStandaloneLayout";
   }
   if (filePath === "src/components/auth/AuthStandaloneForm.tsx") {
+    if (diff.includes("inFlightRef") || diff.includes("AUTH_FIELDS")) {
+      return "refactor(auth): integrate shared field specs and in-flight submit guard in AuthStandaloneForm";
+    }
     return "feat(auth): implement AuthStandaloneForm component for standalone auth pages";
   }
   if (filePath === "src/components/auth/AuthStandaloneLayout.tsx") {
@@ -434,6 +450,9 @@ function generateCommitMessage(file) {
     return "docs(agents): update guidelines for token efficiency and rolling progress handoffs";
   }
   if (filePath === "ARCHIVES/progress-history.md") {
+    if (diff.includes("FIX & IMPROVE ROUND") || diff.includes("ACADEMIC SPECIFICATION")) {
+      return "docs(archives): archive prior milestone status into progress history";
+    }
     return "docs(archives): update progress history archive with fix and improve round details";
   }
   if (filePath === "ARCHIVES/README.md") {
@@ -446,6 +465,9 @@ function generateCommitMessage(file) {
     return "docs(plan): update implementation plan for coach bubble, clean header, and cse redesign";
   }
   if (filePath.endsWith("PROGRESS.md")) {
+    if (diff.includes("SPLIT-PANEL AUTH MODAL") || diff.includes("auth-fields")) {
+      return "docs(progress): record split-panel auth modal redesign, shared field specs, and submit guard";
+    }
     return "docs(progress): record fix and improve round completion across sheet, workspace, and study strategies";
   }
   if (filePath.endsWith("walkthrough.md")) {
@@ -494,9 +516,21 @@ function generateCommitMessage(file) {
 
   // Test Files
   if (filePath === "tests/e2e/auth-modal.spec.ts") {
+    if (diff.includes("tab switcher") || diff.includes("brand panel") || diff.includes("renders dedicated /sign-in")) {
+      return "test(e2e): update auth modal specifications for split-panel layout, tab switching, and validation";
+    }
     return "test(e2e): update auth modal specifications for standalone layout integration";
   }
+  if (filePath === "tests/unit/components/auth-form.test.tsx") {
+    return "test(unit): update AuthForm tests for inline errors, tab switching, and submit guard";
+  }
+  if (filePath === "tests/unit/components/auth-modal.test.tsx") {
+    return "test(unit): update AuthModal unit tests for split-panel layout, brand panel, and a11y focus return";
+  }
   if (filePath === "tests/unit/components/auth-pages.test.tsx") {
+    if (diff.includes("in flight") || diff.includes("resolveSignIn")) {
+      return "test(unit): update auth pages tests for in-flight submit guard";
+    }
     return "test(unit): update auth pages tests for AuthStandaloneLayout and reset password";
   }
   if (filePath === "tests/unit/lib/study-plan-generator.test.ts") {
