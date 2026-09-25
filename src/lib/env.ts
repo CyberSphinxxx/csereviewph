@@ -50,8 +50,10 @@ export function getBaseUrl(): string {
     return `https://${process.env.VERCEL_URL.replace(/\/+$/, "")}`;
   }
 
-  // 8. Local development fallback
-  return "http://localhost:3000";
+  // 8. Local development fallback. Honors PORT so that `next dev -p <port>`
+  // / PORT=<port> npm run dev resolve to the origin the server actually binds
+  // (Windows may also silently rebind, so prefer explicit env overrides).
+  return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
 export function isVercel(): boolean {
