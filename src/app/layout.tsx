@@ -84,7 +84,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#faf8f7" media="(prefers-color-scheme: light)" />
