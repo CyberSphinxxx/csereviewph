@@ -28,9 +28,11 @@ describe("AuthForm Component", () => {
       expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/^Password/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText("Enter your password")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /^Sign In$/i })).toBeInTheDocument();
-      expect(screen.getByText(/Data Privacy:/i)).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /Data Privacy:/i })).toHaveAttribute("href", "/privacy");
+      expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument();
+      // Data privacy moved to create-account only in the split-panel redesign
+      expect(screen.queryByText(/Data Privacy:/i)).not.toBeInTheDocument();
+      // And the tab switcher is present with Sign in active
+      expect(screen.getByRole("button", { name: "Sign in" })).toHaveAttribute("aria-pressed", "true");
     });
 
     it("displays error when email format is invalid", async () => {
@@ -39,7 +41,7 @@ describe("AuthForm Component", () => {
       const emailInput = screen.getByLabelText(/Email Address/i);
       fireEvent.change(emailInput, { target: { value: "invalid-email" } });
 
-      const submitBtn = screen.getByRole("button", { name: /^Sign In$/i });
+      const submitBtn = screen.getByRole("button", { name: "Sign In" });
       fireEvent.click(submitBtn);
 
       expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
@@ -52,10 +54,12 @@ describe("AuthForm Component", () => {
       const emailInput = screen.getByLabelText(/Email Address/i);
       fireEvent.change(emailInput, { target: { value: "juan@example.ph" } });
 
-      const submitBtn = screen.getByRole("button", { name: /^Sign In$/i });
+      const submitBtn = screen.getByRole("button", { name: "Sign In" });
       fireEvent.click(submitBtn);
 
-      expect(await screen.findByText("The email or password is incorrect.")).toBeInTheDocument();
+      // Empty password now surfaces as a per-field inline error (not the
+      // form-level "incorrect credentials" message reserved for real API failures)
+      expect(await screen.findByText("Enter your password.")).toBeInTheDocument();
       expect(signIn.email).not.toHaveBeenCalled();
     });
 
@@ -68,7 +72,7 @@ describe("AuthForm Component", () => {
       fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: "juan@example.ph" } });
       fireEvent.change(screen.getByLabelText(/^Password/i), { target: { value: "Secret123!" } });
 
-      fireEvent.click(screen.getByRole("button", { name: /^Sign In$/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
 
       await waitFor(() => {
         expect(signIn.email).toHaveBeenCalledWith({
@@ -79,6 +83,40 @@ describe("AuthForm Component", () => {
       });
     });
 
+    it("ignores a second submit while a request is in flight (Enter key path)", async () => {
+      // A form fires its submit event on Enter inside an input even while the
+      // submit button is disabled, so the in-flight ref must make the second
+      // submission a no-op.
+      let resolveSignIn: (value: unknown) => void = () => {};
+      vi.mocked(signIn.email).mockImplementationOnce(
+        () => new Promise((resolve) => { resolveSignIn = resolve; }) as ReturnType<typeof signIn.email>
+      );
+      const onSuccess = vi.fn();
+
+      render(<AuthForm initialMode="sign-in" onSuccess={onSuccess} />);
+
+      fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: "juan@example.ph" } });
+      fireEvent.change(screen.getByLabelText(/^Password/i), { target: { value: "Secret123!" } });
+
+      const submitBtn = screen.getByRole("button", { name: "Sign In" });
+      fireEvent.click(submitBtn);
+      await waitFor(() => expect(submitBtn).toBeDisabled());
+
+      // Second submit while in flight (e.g. pressing Enter in the email input)
+      const form = submitBtn.closest("form");
+      expect(form).not.toBeNull();
+      fireEvent.submit(form as HTMLFormElement);
+
+      expect(signIn.email).toHaveBeenCalledTimes(1);
+
+      resolveSignIn({ data: { user: { id: "u-1" } } });
+      await waitFor(() => {
+        expect(onSuccess).toHaveBeenCalledTimes(1);
+        expect(submitBtn).toBeEnabled();
+      });
+      expect(signIn.email).toHaveBeenCalledTimes(1);
+    });
+
     it("displays 'The email or password is incorrect.' when signIn fails", async () => {
       vi.mocked(signIn.email).mockResolvedValueOnce({ error: { message: "Invalid credentials" } } as unknown as ReturnType<typeof signIn.email>);
 
@@ -87,7 +125,7 @@ describe("AuthForm Component", () => {
       fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: "juan@example.ph" } });
       fireEvent.change(screen.getByLabelText(/^Password/i), { target: { value: "WrongPassword" } });
 
-      fireEvent.click(screen.getByRole("button", { name: /^Sign In$/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
 
       expect(await screen.findByText("The email or password is incorrect.")).toBeInTheDocument();
     });
@@ -104,7 +142,7 @@ describe("AuthForm Component", () => {
       // Empty name
       fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: "juan@example.ph" } });
       fireEvent.click(screen.getByRole("button", { name: /Create Account & Sync/i }));
-      expect(await screen.findByText("Please enter your display name.")).toBeInTheDocument();
+      expect(await screen.findByText("Enter your display name.")).toBeInTheDocument();
 
       // Short password (< 8 chars)
       fireEvent.change(screen.getByLabelText(/Display Name/i), { target: { value: "Juan Dela Cruz" } });
@@ -147,7 +185,7 @@ describe("AuthForm Component", () => {
 
       await waitFor(() => {
         expect(requestPasswordReset).toHaveBeenCalledWith({ email: "juan@example.ph" });
-        expect(screen.getByText("Check your email")).toBeInTheDocument();
+        expect(screen.getByText("Check your inbox")).toBeInTheDocument();
       });
 
       // Back to sign in
