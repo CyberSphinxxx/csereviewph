@@ -5,12 +5,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  Flame,
-  Target,
-  TrendingUp,
-  BookMarked,
-  RotateCcw,
-  ListChecks,
   CalendarDays,
 } from "lucide-react";
 import {
@@ -26,7 +20,7 @@ import { getExamMockSpecsForLevel, getExamRoutesForLevel } from "@/config/exams"
 import { getNextBestStepRecommendation } from "./recommendation-engine";
 import { DashboardOnboardingView } from "./DashboardOnboardingView";
 import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
-import { daysUntilManila, formatManilaDate, getManilaTodayString, startOfWeekIso, addDaysIso } from "@/lib/study-plan";
+import { daysUntilManila, formatManilaDate, getManilaTodayString } from "@/lib/study-plan";
 import { generateWeeklyPlan, weeklyPlanSignature } from "@/lib/study-plan-generator";
 import { useDailyQuests } from "./useDailyQuests";
 import { questSummaryLine } from "@/lib/daily-quests";
@@ -265,10 +259,7 @@ export function DashboardView() {
 
   const goalPct = dailyGoal > 0 ? Math.min(1, dailyAnswered / dailyGoal) : 0;
   const ringCirc = 2 * Math.PI * 34;
-  const greeting = mounted
-    ? `Welcome back`
-    : "Your study command center";
-  const weekDates = weekCells[weekCells.length - 1];
+  const greeting = mounted ? "Welcome back" : "Your study command center";
 
   return (
     <div className="animate-page-enter space-y-5">
