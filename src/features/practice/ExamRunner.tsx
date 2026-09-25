@@ -183,6 +183,9 @@ export function ExamRunner({
   const [showReportModal, setShowReportModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
+  // Signature of the last autosaved draft state; used to suppress writes that
+  // would only capture timer movement.
+  const lastSavedSigRef = useRef<string>("");
   const sessionRef = useRef(session);
   sessionRef.current = session;
 
@@ -209,39 +212,54 @@ export function ExamRunner({
   useEffect(() => {
     if (isSubmittingRef.current || session.timer.isExpired) return;
 
+    // Recovery gate: while a saved draft's fate (Resume/Discard) is still
+    // unresolved, autosave must not run — otherwise the incoming session
+    // overwrites the draft the banner is offering to restore.
+    if (showResumeBanner) return;
+
     // Only auto-save if at least one question has been answered
-    if (session.answers.size > 0) {
-      const answersObj: Record<string, StoredUserAnswer> = {};
-      const flaggedIds: string[] = [];
+    if (session.answers.size === 0) return;
 
-      session.answers.forEach((ans, qId) => {
-        answersObj[qId] = {
-          questionId: ans.questionId,
-          selectedChoiceId: ans.selectedChoiceId ?? undefined,
-          isFlagged: Boolean(ans.isFlagged),
-          timeSpentSeconds: ans.timeSpentSeconds || 0,
-        };
-        if (ans.isFlagged) {
-          flaggedIds.push(qId);
-        }
-      });
+    // Skip timer-only renders: the timer mutates `session` every second, but
+    // only answers, flags and navigation are worth persisting (~190 KB of
+    // serialized draft per write otherwise). A tick changes only
+    // remainingSeconds, which this signature deliberately ignores.
+    const sig = `${session.answers.size}|${session.currentIndex}|${
+      Array.from(session.answers.values()).filter((a) => a.isFlagged).length
+    }`;
+    if (sig === lastSavedSigRef.current) return;
+    lastSavedSigRef.current = sig;
 
-      LocalStorageService.saveActiveDraft({
-        id: `draft-${levelSlug}-${rules.mode}${topicId ? `-${topicId}` : ""}`,
-        levelSlug,
-        mode: rules.mode,
-        title,
-        rules,
-        questions: initialQuestions,
-        answers: answersObj,
-        flaggedQuestionIds: flaggedIds,
-        currentQuestionIndex: session.currentIndex,
-        remainingSeconds: session.timer.remainingSeconds,
-        startedAt: startedAtRef.current,
-        lastSavedAt: new Date().toISOString(),
-      });
-    }
-  }, [session, levelSlug, rules, topicId, title, initialQuestions]);
+    const answersObj: Record<string, StoredUserAnswer> = {};
+    const flaggedIds: string[] = [];
+
+    session.answers.forEach((ans, qId) => {
+      answersObj[qId] = {
+        questionId: ans.questionId,
+        selectedChoiceId: ans.selectedChoiceId ?? undefined,
+        isFlagged: Boolean(ans.isFlagged),
+        timeSpentSeconds: ans.timeSpentSeconds || 0,
+      };
+      if (ans.isFlagged) {
+        flaggedIds.push(qId);
+      }
+    });
+
+    LocalStorageService.saveActiveDraft({
+      id: `draft-${levelSlug}-${rules.mode}${topicId ? `-${topicId}` : ""}`,
+      levelSlug,
+      mode: rules.mode,
+      title,
+      rules,
+      questions: initialQuestions,
+      answers: answersObj,
+      flaggedQuestionIds: flaggedIds,
+      currentQuestionIndex: session.currentIndex,
+      remainingSeconds: session.timer.remainingSeconds,
+      startedAt: startedAtRef.current,
+      lastSavedAt: new Date().toISOString(),
+    });
+  }, [session, showResumeBanner, levelSlug, rules, topicId, title, initialQuestions]);
 
 
   const handleSaveAndExit = () => {
