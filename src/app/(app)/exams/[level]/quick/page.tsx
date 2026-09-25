@@ -28,9 +28,9 @@ export default async function QuickTestPage({
   return (
     <ExamRunner
       initialQuestions={questions}
-      rules={rules}
+      rules={{ ...rules, itemCount: questions.length }}
       title={`${examLevel.name} — Quick Diagnostic Test`}
-      subtitle="10 questions &bull; 10 minutes &bull; Immediate score and concept explanations"
+      subtitle={`${questions.length} questions • 10 minutes • Immediate score and concept explanations`}
     />
   );
 }
