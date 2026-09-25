@@ -211,11 +211,16 @@ test.describe("Civil Service Exam Reviewer E2E Flows", () => {
     await expect(page.getByText(/Educational Concept & Rationale/i).first()).toBeVisible();
   });
 
-  test("loads Full Mock Exam with single continuous timer matching 170 items", async ({ page }) => {
+  test("loads Full Mock Exam with a single continuous timer and no duplicated filler items", async ({ page }) => {
     await page.goto("/exams/professional/full");
 
     await expect(page.getByText(/Full Mock Exam/i).first()).toBeVisible();
-    await expect(page.getByText(/Question 1 of 170/i)).toBeVisible();
+    // The bank is smaller than the 170-item target: the session runs each
+    // unique item once and says so, rather than cloning filler to fake the
+    // full length.
+    await expect(page.getByText(/Question 1 of \d+/i)).toBeVisible();
+    await expect(page.getByText(/Honest practice:/i)).toBeVisible();
+    await expect(page.getByText(/Question 1 of 170/i)).toHaveCount(0);
     await expect(page.locator("#exam-timer")).toBeVisible();
 
     // Verify palette displays items
