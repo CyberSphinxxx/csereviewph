@@ -20,7 +20,13 @@ describe("Environment & URL Resolution Helpers", () => {
   });
 
   it("returns fallback localhost:3000 when no environment variables are set", () => {
+    delete process.env.PORT;
     expect(getBaseUrl()).toBe("http://localhost:3000");
+  });
+
+  it("honors PORT in the local development fallback so dev servers resolve their real origin", () => {
+    process.env.PORT = "51090";
+    expect(getBaseUrl()).toBe("http://localhost:51090");
   });
 
   it("returns fallback https://www.reviewtayo.online in production when no domain env is provided", () => {
