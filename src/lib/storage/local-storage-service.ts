@@ -13,7 +13,7 @@ import type {
 } from "./types";
 import { WORKSPACE_STORAGE_KEYS, type ExamWorkspace } from "@/lib/workspace/types";
 import { getExamSubjects } from "@/config/exams";
-import { NotesService, NOTES_STORAGE_KEY, type StoredNote } from "./notes-service";
+import { NotesService, NOTES_STORAGE_KEY } from "./notes-service";
 
 // Storage Key Constants
 export const STORAGE_KEYS = {
