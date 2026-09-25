@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseBanner } from "@/components/ads/AdSenseBanner";
 import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
-import { ArrowRight, Clock, Lock, BookOpen, Lightbulb, Target, HelpCircle } from "lucide-react";
+import { ArrowRight, Clock, Lock, BookOpen, Lightbulb, Target } from "lucide-react";
 import { EXAM_CATALOG } from "@/config/exams";
 import {
   getAllStudyGuides,
