@@ -81,10 +81,20 @@ export function prepareExamSession(
   }
 ): { session: ExamSessionState; questions: EngineQuestion[]; rules: ExamRuleConfig } {
   const level = SEED_LEVELS.find((l) => l.slug === levelSlug) || SEED_LEVELS[0];
-  // Find candidate questions
-  let candidatePool = SEED_QUESTIONS;
+
+  // Scope the candidate pool to the requested exam level: only questions
+  // whose topic belongs to one of this level's subjects are eligible. This
+  // keeps professional exams free of clerical content and subprofessional
+  // exams free of analytical content, as the real exams are separated.
+  const levelSubjectIds = new Set(
+    SEED_SUBJECTS.filter((s) => s.examLevelId === level.id).map((s) => s.id)
+  );
+  const levelTopicIds = new Set(
+    SEED_TOPICS.filter((t) => levelSubjectIds.has(t.subjectId)).map((t) => t.id)
+  );
+  let candidatePool = SEED_QUESTIONS.filter((q) => levelTopicIds.has(q.topicId));
   if (options?.topicId) {
-    candidatePool = SEED_QUESTIONS.filter((q) => q.topicId === options.topicId);
+    candidatePool = candidatePool.filter((q) => q.topicId === options.topicId);
   }
 
   // Default item count and timing per mode
@@ -129,25 +139,10 @@ export function prepareExamSession(
 
   const selected = selectQuestionsForExam(candidatePool, ruleConfig, options?.exposureHistory);
 
-  // If pool was small in dev mock, expand with available seed questions for full/medium test flows, but never for topic practice
-  let finalQuestions = selected;
-  if (
-    mode !== "practice" &&
-    !options?.topicId &&
-    finalQuestions.length < effectiveCount &&
-    candidatePool.length > 0
-  ) {
-    while (finalQuestions.length < effectiveCount) {
-      const needed = effectiveCount - finalQuestions.length;
-      const clone = candidatePool.slice(0, needed).map((q, idx) => ({
-        ...q,
-        id: `${q.id}-dup-${finalQuestions.length + idx}`,
-      }));
-      finalQuestions = [...finalQuestions, ...clone];
-    }
-  } else if (finalQuestions.length === 0 && candidatePool.length > 0) {
-    finalQuestions = candidatePool.slice(0, effectiveCount);
-  }
+  // Honest selection: a pool smaller than the target yields a shorter exam
+  // rather than cloned filler. Duplicated "items" in a full mock misrepresent
+  // the real exam and double-count answers toward the score.
+  const finalQuestions = selected;
 
   const session = createExamSession(
     finalQuestions,
@@ -163,4 +158,12 @@ export function prepareExamSession(
       itemCount: finalQuestions.length,
     },
   };
+}
+
+/**
+ * True when the configured session can actually start: a runner must never
+ * open with a timer and zero questions.
+ */
+export function hasStartableQuestions(candidatePool: EngineQuestion[]): boolean {
+  return candidatePool.length > 0;
 }
