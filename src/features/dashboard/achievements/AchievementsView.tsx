@@ -5,10 +5,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   Award,
-  Bookmark,
   Check,
   Flame,
-  Layers,
   ListChecks,
   Repeat,
   StickyNote,
@@ -26,7 +24,6 @@ import {
   computeAchievements,
   type UserStatsSnapshot,
 } from "@/lib/achievement-engine";
-import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   check: Check,
