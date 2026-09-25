@@ -2,7 +2,33 @@
 
 Full prior status is archived in `ARCHIVES/progress-history.md`.
 
-**Current status: SPLIT-PANEL AUTH MODAL COMPLETE (VERIFY EXIT 0, BROWSER PASS)**
+**Current status: STAGE-1 AUDIT-PLAN FIXES COMPLETE (VERIFY EXIT 0 — 519 TESTS, 0 LINT PROBLEMS)**
+
+## External-audit plan round (latest)
+
+Triage + implementation of Stage 0/1 items from the external "Audit and Data-Efficiency Plan" (2026-09-26). All findings were re-verified against this checkout before acting; several were confirmed, one was disproven for this checkout, and the rest are tracked below as open work.
+
+**Fixed this round**
+- **A01 — duplicated filler + cross-level mixing**: `prepareExamSession` now scopes the candidate pool to the requested exam level (subject→topic→question join), and the clone-filling loop that repeated questions to fake 170/165/30-item exams is removed. Insufficient banks yield an honest shorter session; the full-exam page shows a clearly labeled "Honest practice: N of TARGET items" subtitle. Professional exams can no longer include clerical items or Subprofessional IDs, and vice versa (pinned by leak tests both directions).
+- **A07 — empty-topic unusable exam**: the topic-practice page now shows a friendly "No questions here yet" empty state instead of opening a timed runner at "Item 1 of 0". A `hasStartableQuestions` helper documents the invariant.
+- **A03 — fabricated results**: `/results/[attemptId]` no longer manufactures a 70% score from seed data for unknown/evicted attempts. There is an explicit honest "Result not available on this device" state (with history/practice links and a statement that estimates are never substituted). Pinned by new unit tests (`tests/unit/results/results-page.test.tsx`).
+- **A08 — fake-successful question reports**: `/api/questions/report` no longer returns 201 after a failed DB write (503 now), no longer accepts a client-supplied `userId` (identity comes only from the Better Auth session), and the modal already renders the error path. Covered by expanded unit tests including a write-failure and a spoofed-userId case.
+- **A02/A14 (partial, safe seam)**: `ExamRunner` autosave no longer overwrites an unconfirmed draft (the resume banner gates saving), and timer ticks no longer serialize ~190 KB drafts every second — a save-signature check persists only on genuine answer/flag/navigation changes. Deeper deadline-based recovery remains open work.
+
+**Disproven for this checkout**
+- **A05 as stated**: seed questions have no `status` field at all, so enforcing a publication gate today would blank the entire catalog. The real gap is that the schema lacks the publication lifecycle; adding it (and then gating practice on it) is a content-ops feature, not a one-line fix. Tracked under "Next".
+
+**Open from the plan (not started, by design)**
+- A02 full fix: single persisted deadline + elapsed-time recovery across reloads/deployments; draft question-set versioning.
+- A04: transactional/idempotent cloud sync, canonical score validation, paginated pull.
+- A06: full offline journey verification and SW navigation handling.
+- A09: per-attempt selection vs static build-time selection; difficulty distribution in the selector.
+- A10/A11/A12: export/import round-trip, unsynced eviction guard, per-account storage isolation.
+- A13: production auth secret fail-closed + real reset-email delivery (requires owner credentials/provider access).
+- A15: `npm audit` shows 3 production advisories (drizzle-orm SQL-injection class, next/postcss via Next) — all need major-version upgrades (drizzle-orm 0.39→0.45, next 15→16), deliberately not bundled into this correctness round.
+- Stage 2+ storage/sync feature, Google provider (Better Auth + Neon), monitoring.
+
+**Verification**: `npm run verify` exit 0 — 80 files / 519 tests (8 new tests: honest selection, leak guards, honest results, report honesty), ESLint 0 problems, production build clean.
 
 ## Done
 
@@ -34,6 +60,24 @@ Rebuilt the auth modal (`signinmodal.html` Concept A) as a polished split-panel 
   - Eye toggle (trusted click), Escape close, Tab wrap-around trap, focus returns to the trigger after close.
   - Mobile 390×844: brand panel hidden, no horizontal scroll, submit/guest/footer all visible without scrolling.
 - Dev-env note (pre-existing, not from this change): server-side better-auth resolves `baseURL` to `http://localhost:3000` via the `getBaseUrl()` fallback, so auth API calls 403 ("Invalid origin") on any other local port. Run `npm run dev` with `BETTER_AUTH_URL`/`NEXT_PUBLIC_APP_URL` set to the actual port for local auth testing; production (single canonical origin) is unaffected.
+
+## Project audit round (latest)
+
+A full-project audit found and fixed the following. All fixed items verified: `npm run verify` exit 0, **ESLint 0 errors / 0 warnings** (was 26 pre-existing warnings), Vitest **79 files / 511 tests**, production build clean.
+
+**Bugs fixed**
+- **Hydration mismatch warning on every page** (`app/layout.tsx`): the anti-FOUC inline script mutates `<html>` before React hydrates, so React logged a `className="dark"` mismatch on every load. Fixed with `suppressHydrationWarning` on `<html>` (correct scope — the mutation is intentional and limited to the class attribute). Verified live: a clean page load now produces a zero-error console.
+- **Server-side auth base URL ignored the actual dev port** (`lib/env.ts` step 8): local fallback was hardcoded to `http://localhost:3000`, so `better-auth`'s origin check returned 403 "Invalid origin" on any other port (root cause of the dev-env quirk documented below). Now honors `process.env.PORT` (falls back to 3000); covered by a new unit test (`honors PORT in the local development fallback`). Production paths unchanged.
+
+**Inefficiencies / dead code fixed (26 → 0 lint warnings)**
+- `ReviewView.tsx`: the `stats` memo called `LocalStorageService.getMistakeStats()` while declaring `[mistakes]` as its dependency — a hidden storage read inside `useMemo` that only worked by accident. Extracted a pure `computeMistakeStats(items)` helper in ReviewView and derive stats from the `mistakes` state (which `reload()` refreshes after every mutation). Dep warning gone; behavior identical.
+- Removed all dead imports/vars flagged by lint: `HelpCircle` (guides page), `createPortal` (AppShell), `Flame/Target/TrendingUp/BookMarked/RotateCcw/ListChecks` + `startOfWeekIso/addDaysIso` + unused `weekDates` (DashboardView), `Bookmark/Layers` + `ReviewTayoOwl` (AchievementsView), `canPrev` (StudyPlanView), `GraduationCap` + `ReviewTayoOwl` + unused `currentExamConfig`/`levelShort`/`enabled` + unused `index` param (PracticeHubView), `StoredNote` (local-storage-service), `vi`/`beforeEach` (dashboard.test), `NotesService` (new-surfaces.test), `StoredNote` (notes-service.test), unused `FieldMetaKey` (AuthStandaloneForm, prior round).
+
+**Drift-risk dedupe**
+- `AuthStandaloneLayout.tsx` carried its own inline copy of the three-item benefits list (the drift the shared `auth-fields.ts` module was created to prevent). Now imports `BENEFITS` from `auth-fields`; one source of truth for modal + standalone pages.
+
+**Ops note**
+- During verification the 51090 dev server began returning 500s (`Cannot find module './5873.js'`) — a stale `.next` chunk cache after heavy file edits, not an app bug. Fixed by killing the server, deleting `.next`, and restarting; page loads cleanly (200) with a zero-error console.
 
 ## Blocked
 
