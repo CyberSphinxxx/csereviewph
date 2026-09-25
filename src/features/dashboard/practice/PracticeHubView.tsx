@@ -12,7 +12,6 @@ import {
   Crosshair,
   FileText,
   Gauge,
-  GraduationCap,
   Layers,
   LetterText,
   ListChecks,
@@ -33,7 +32,6 @@ import {
 } from "@/config/practice-modes";
 import { LocalStorageService, type SubjectReadinessMetric } from "@/lib/storage";
 import { useExamWorkspace } from "@/lib/workspace/useExamWorkspace";
-import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
 
 const CARD =
   "rounded-3xl bg-white dark:bg-[#2b1620] shadow-[0_0_0_1.5px_rgba(138,22,48,0.12),0_18px_36px_-26px_rgba(90,15,35,0.4)] dark:shadow-[0_0_0_1.5px_rgba(255,255,255,0.1)] p-5";
@@ -109,7 +107,7 @@ function dialogFocusables(dialog: HTMLElement): HTMLElement[] {
 
 export function PracticeHubView() {
   const router = useRouter();
-  const { currentWorkspace, currentExamConfig, isLoaded } = useExamWorkspace();
+  const { currentWorkspace, isLoaded } = useExamWorkspace();
   const [filter, setFilter] = useState<string>("all");
   const [setup, setSetup] = useState<SetupState | null>(null);
   const [subjects, setSubjects] = useState<SubjectReadinessMetric[]>([]);
@@ -204,15 +202,13 @@ export function PracticeHubView() {
     setSetup({ mode, subject: "All subjects", feedback: "study", timer: true });
   };
 
-  const levelShort = currentWorkspace?.trackName === "Subprofessional" ? "subprofessional" : "professional";
-  const enabled = PRACTICE_MODES.filter((m) => m.enabled);
   const comingSoon = PRACTICE_MODES.filter((m) => !m.enabled);
 
   const grouped = PRACTICE_MODE_GROUPS.filter(
     (g) => filter === "all" || filter === g.id
   );
 
-  const modeCard = (mode: PracticeModeDef, index: number) => {
+  const modeCard = (mode: PracticeModeDef) => {
     const isSoon = !mode.enabled;
     const facts = mode.id === "srs" && dueCount > 0 ? [`${dueCount} due today`] : mode.facts;
     return isSoon ? (
@@ -369,7 +365,7 @@ export function PracticeHubView() {
             <span className="text-[13px] font-semibold text-[#8a7a80] dark:text-[#a89ba1]">{g.blurb}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {PRACTICE_MODES.filter((m) => m.group === g.id).map((m, i) => modeCard(m, i))}
+            {PRACTICE_MODES.filter((m) => m.group === g.id).map((m) => modeCard(m))}
           </div>
         </section>
       ))}
