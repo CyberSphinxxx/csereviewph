@@ -28,9 +28,9 @@ export default async function MediumTestPage({
   return (
     <ExamRunner
       initialQuestions={questions}
-      rules={rules}
+      rules={{ ...rules, itemCount: questions.length }}
       title={`${examLevel.name} — Medium Test`}
-      subtitle="30 questions &bull; 30 minutes &bull; Balanced subtests & detailed analytics"
+      subtitle={`${questions.length} questions • 30 minutes • Balanced subtests & detailed analytics`}
     />
   );
 }
