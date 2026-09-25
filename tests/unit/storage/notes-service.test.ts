@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { NotesService, NOTES_STORAGE_KEY, type StoredNote } from "@/lib/storage/notes-service";
+import { NotesService, NOTES_STORAGE_KEY } from "@/lib/storage/notes-service";
 import { LocalStorageService } from "@/lib/storage";
 
 describe("NotesService", () => {
