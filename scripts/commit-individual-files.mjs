@@ -68,6 +68,94 @@ function generateCommitMessage(file) {
   const diff = getDiff(file.path);
 
   // 1. Explicit / Known File Handlers with Content Inspection
+  if (filePath === "scripts/commit-individual-files.mjs") {
+    return "chore(scripts): update commit-individual-files.mjs with stage-1 audit commit handlers";
+  }
+  if (filePath === "PROGRESS.md") {
+    return "docs(progress): record stage-1 audit-plan fixes across selection, results, reports, and autosave";
+  }
+  if (filePath === "src/app/(app)/exams/[level]/full/page.tsx") {
+    return "feat(exams): display honest available question count in full mock subtitle";
+  }
+  if (filePath === "src/app/(app)/exams/[level]/medium/page.tsx") {
+    return "feat(exams): clamp medium test itemCount to available questions";
+  }
+  if (filePath === "src/app/(app)/exams/[level]/quick/page.tsx") {
+    return "feat(exams): clamp quick diagnostic test itemCount to available questions";
+  }
+  if (filePath === "src/app/(app)/practice/[topicId]/page.tsx") {
+    return "feat(practice): add empty-topic state and resolve level from topic subject";
+  }
+  if (filePath === "src/app/(app)/results/[attemptId]/page.tsx") {
+    return "feat(results): show honest missing result state instead of synthetic score";
+  }
+  if (filePath === "src/app/(public)/guides/page.tsx") {
+    return "refactor(guides): remove unused HelpCircle icon import in guides page";
+  }
+  if (filePath === "src/app/api/questions/report/route.ts") {
+    return "feat(api): authenticate question reports via session and return honest 503 on write failures";
+  }
+  if (filePath === "src/app/layout.tsx") {
+    return "style(layout): add suppressHydrationWarning to html root for client theme consistency";
+  }
+  if (filePath === "src/components/auth/AuthStandaloneLayout.tsx") {
+    return "refactor(auth): reuse shared BENEFITS constant in AuthStandaloneLayout";
+  }
+  if (filePath === "src/features/dashboard/AppShell.tsx") {
+    return "refactor(dashboard): remove unused createPortal import in AppShell";
+  }
+  if (filePath === "src/features/dashboard/DashboardView.tsx") {
+    return "refactor(dashboard): clean up unused icons and dead variables in DashboardView";
+  }
+  if (filePath === "src/features/dashboard/achievements/AchievementsView.tsx") {
+    return "refactor(dashboard): remove unused icons in AchievementsView";
+  }
+  if (filePath === "src/features/dashboard/plan/StudyPlanView.tsx") {
+    return "refactor(dashboard): remove unused canPrev variable in StudyPlanView";
+  }
+  if (filePath === "src/features/dashboard/practice/PracticeHubView.tsx") {
+    return "refactor(dashboard): clean up unused variables and imports in PracticeHubView";
+  }
+  if (filePath === "src/features/dashboard/review/ReviewView.tsx") {
+    return "feat(review): derive mistake stats purely from state with computeMistakeStats";
+  }
+  if (filePath === "src/features/practice/ExamRunner.tsx") {
+    return "feat(runner): debounce draft autosave and gate saving while resume banner is active";
+  }
+  if (filePath === "src/features/practice/practice-service.ts") {
+    return "feat(practice): scope question pool by exam level and eliminate cloned filler questions";
+  }
+  if (filePath === "src/lib/env.ts") {
+    return "feat(env): honor PORT environment variable in getBaseUrl development fallback";
+  }
+  if (filePath === "src/lib/storage/local-storage-service.ts") {
+    return "refactor(storage): remove unused StoredNote import in LocalStorageService";
+  }
+  if (filePath === "tests/e2e/exam-flow.spec.ts") {
+    return "test(e2e): assert honest question counts without duplicated filler in full mock e2e test";
+  }
+  if (filePath === "tests/unit/api/question-report.test.ts") {
+    return "test(unit): add database failure and session identity tests for question report API";
+  }
+  if (filePath === "tests/unit/dashboard/dashboard.test.tsx") {
+    return "test(unit): remove unused beforeEach import in dashboard unit tests";
+  }
+  if (filePath === "tests/unit/dashboard/new-surfaces.test.tsx") {
+    return "test(unit): remove unused NotesService import in new-surfaces unit tests";
+  }
+  if (filePath === "tests/unit/lib/env.test.ts") {
+    return "test(unit): add unit test for PORT override in getBaseUrl fallback";
+  }
+  if (filePath === "tests/unit/practice/practice-service.test.ts") {
+    return "test(unit): add leak guard and unique question assertion tests in practice service";
+  }
+  if (filePath === "tests/unit/storage/notes-service.test.ts") {
+    return "test(unit): remove unused StoredNote type import in notes-service unit tests";
+  }
+  if (filePath === "tests/unit/results/results-page.test.tsx") {
+    return "test(unit): add unit tests for honest missing attempt state in results page";
+  }
+
   if (filePath === ".gitignore") {
     return "chore(git): update gitignore patterns for project and archive directories";
   }
