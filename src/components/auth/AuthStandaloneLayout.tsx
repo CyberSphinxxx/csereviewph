@@ -6,6 +6,7 @@ import { AuthStandaloneForm } from "./AuthStandaloneForm";
 import { ReviewTayoOwl } from "@/components/brand/ReviewTayoOwl";
 import { Logo } from "@/components/ui/Logo";
 import { ArrowLeft } from "lucide-react";
+import { BENEFITS } from "./auth-fields";
 import type { AuthStandaloneState } from "./AuthStandaloneForm";
 
 const FOCUS =
@@ -83,11 +84,7 @@ export function AuthStandaloneLayout({ initialState }: { initialState?: AuthStan
               </p>
 
               <ul className="mt-auto flex flex-col gap-3 pt-7">
-                {[
-                  { t: "Sync your study progress", d: "Pick up on any device, right where you left off." },
-                  { t: "Track your readiness", d: "Accuracy and streaks saved as you review." },
-                  { t: "Your data, your call", d: "Export or delete your records anytime." },
-                ].map((b) => (
+                {BENEFITS.map((b) => (
                   <li key={b.t} className="flex items-start gap-2.5">
                     <span className="mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-[#f6b93b]/20 text-[#f6b93b]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
